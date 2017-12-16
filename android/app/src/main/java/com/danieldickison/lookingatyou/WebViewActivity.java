@@ -12,6 +12,8 @@ import android.widget.ImageView;
 
 public class WebViewActivity extends AppCompatActivity {
 
+    private final static String HOST = "http://10.0.1.10:3000";
+
     private View mContentView;
     private WebView mWebView;
     private ImageView mLoadingImage;
@@ -53,8 +55,7 @@ public class WebViewActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         hide();
-
-        mWebView.loadUrl("http://10.0.1.10:3000/tablettes/index");
+        mWebView.loadUrl(HOST + "/tablettes/index");
     }
 
     private void hide() {
