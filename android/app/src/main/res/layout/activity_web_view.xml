@@ -1,0 +1,23 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/content_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0099cc"
+    android:fitsSystemWindows="true"
+    tools:context="com.danieldickison.lookingatyou.WebViewActivity">
+
+    <WebView
+        android:id="@+id/web_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <ImageView
+        android:id="@+id/loading_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/loading"
+        android:scaleType="centerCrop"
+        android:contentDescription="@null" />
+
+</FrameLayout>
