@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="Looking_At_You" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <wkWebView multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Fdd-FD-r32">
+                                <rect key="frame" x="0.0" y="20" width="375" height="647"/>
+                                <color key="backgroundColor" red="0.36078431370000003" green="0.38823529410000002" blue="0.4039215686" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <wkWebViewConfiguration key="configuration" allowsAirPlayForMediaPlayback="NO" allowsInlineMediaPlayback="YES" allowsPictureInPictureMediaPlayback="NO">
+                                    <audiovisualMediaTypes key="mediaTypesRequiringUserActionForPlayback" none="YES"/>
+                                    <wkPreferences key="preferences"/>
+                                </wkWebViewConfiguration>
+                            </wkWebView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="loading" translatesAutoresizingMaskIntoConstraints="NO" id="oWh-c5-qXV">
+                                <rect key="frame" x="0.0" y="20" width="375" height="647"/>
+                            </imageView>
+                        </subviews>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="oWh-c5-qXV" firstAttribute="bottom" secondItem="Fdd-FD-r32" secondAttribute="bottom" id="8XB-8d-aKm"/>
+                            <constraint firstItem="Fdd-FD-r32" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="CUl-kc-Msk"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Fdd-FD-r32" secondAttribute="trailing" id="Fv0-gM-pH8"/>
+                            <constraint firstItem="oWh-c5-qXV" firstAttribute="trailing" secondItem="Fdd-FD-r32" secondAttribute="trailing" id="H4P-G3-QRx"/>
+                            <constraint firstItem="oWh-c5-qXV" firstAttribute="top" secondItem="Fdd-FD-r32" secondAttribute="top" id="KxB-LU-4wj"/>
+                            <constraint firstItem="oWh-c5-qXV" firstAttribute="leading" secondItem="Fdd-FD-r32" secondAttribute="leading" id="NEH-hV-Sgf"/>
+                            <constraint firstItem="Fdd-FD-r32" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="T8h-yn-o2l"/>
+                            <constraint firstItem="Fdd-FD-r32" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" id="riB-PJ-Frg"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                    </view>
+                    <connections>
+                        <outlet property="loadingImage" destination="oWh-c5-qXV" id="0k4-C3-ccJ"/>
+                        <outlet property="webView" destination="Fdd-FD-r32" id="Q6V-O5-pT3"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="136.80000000000001" y="132.68365817091455"/>
+        </scene>
+    </scenes>
+    <resources>
+        <image name="loading" width="4032" height="3024"/>
+    </resources>
+</document>
