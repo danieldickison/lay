@@ -11,10 +11,10 @@ import WebKit
 
 class ViewController: UIViewController, WKNavigationDelegate {
     
-    let HOST = "http://localhost:3000"
+    let HOST = "http://10.0.1.10:3000"
     
     @IBOutlet weak var webView: WKWebView!
-    @IBOutlet weak var loadingImage: UIImageView!
+    @IBOutlet weak var loadingImage: UIImageView?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -35,9 +35,9 @@ class ViewController: UIViewController, WKNavigationDelegate {
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         print("webview finished navigation \(navigation)")
         UIView.animate(withDuration: 0.5, delay: 0, options: [.curveEaseIn], animations: {
-            self.loadingImage.alpha = 0
+            self.loadingImage?.alpha = 0
         }, completion: {_ in
-            self.loadingImage.removeFromSuperview()
+            self.loadingImage?.removeFromSuperview()
         })
     }
 }
