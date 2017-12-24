@@ -19,9 +19,9 @@ class TablettesController < ApplicationController
         rx_time = Time.now
         render json: {
             :rx_time => (rx_time.to_f * 1000).round,
-            :tx_time => (Time.now.to_f * 1000).round,
             :next_cue_id => 1,
             :next_cue_time => (self.class.next_cue_time.to_f * 1000).round,
+            :tx_time => (Time.now.to_f * 1000).round,
         }
     end
 

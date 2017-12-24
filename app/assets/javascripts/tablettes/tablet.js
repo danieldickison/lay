@@ -5,7 +5,7 @@
 'use strict';
 
 let PING_INTERVAL = 2000;
-let CLOCK_OFFSET_FILTER = 0.1;
+let CLOCK_OFFSET_FILTER = 0.3;
 var clockOffset = null;
 var nextCueTimeout = null;
 
@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", event => {
 
 function sendPing() {
     let txTime = Date.now();
+
     var rxTime = null;
     fetch('/tablettes/ping.json', {method: 'POST'})
     .then(response => {
@@ -29,13 +30,16 @@ function sendPing() {
         updateClockOffset(txTime, rxTime, json);
 
         clearTimeout(nextCueTimeout);
-        let nextCueTime = json.next_cue_time + clockOffset;
+        let nextCueTime = json.next_cue_time - clockOffset;
         let now = Date.now();
         if (nextCueTime > now) {
             setTimeout(triggerCue, nextCueTime - now);
         }
+
+        setTimeout(sendPing, PING_INTERVAL);
     })
-    .finally(() => {
+    .catch((error) => {
+        log("ping failed", error);
         setTimeout(sendPing, PING_INTERVAL);
     });
 }
@@ -49,7 +53,7 @@ function updateClockOffset(txTime, rxTime, response) {
         log("initial clock offset set to " + theta + " round-trip: " + delta);
     } else {
         clockOffset = clockOffset * (1 - CLOCK_OFFSET_FILTER) + theta * CLOCK_OFFSET_FILTER;
-        log("clock offset updated to " + Math.round(clockOffset, 2), "this theta: " + theta, "round-trip: " + delta);
+        log("clock offset updated to " + Math.round(clockOffset, 2), "this theta: " + theta, "head: " + (response.rx_time - txTime), "tail: " + (response.tx_time - rxTime), "round-trip: " + delta);
     }
 }
 
