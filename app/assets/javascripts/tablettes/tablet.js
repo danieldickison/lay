@@ -14,6 +14,17 @@ document.addEventListener("DOMContentLoaded", event => {
     let video = document.getElementById('tablettes-video');
     if (!video) return;
 
+    // Try to preload the video so it starts quickly when triggered.
+    // I don't think this helps, since the <video> tag already specifies preload which gets things buffered.
+    /*
+    video.addEventListener('loadedmetadata', function () {
+        log('seeking to 2 second mark');
+        video.pause();
+        video.currentTime = 2; // Start at the 2 second mark.
+    });
+    video.play();
+    */
+
     sendPing();
 });
 
