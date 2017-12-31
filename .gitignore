@@ -19,3 +19,9 @@
 .byebug_history
 .DS_Store
 xcuserdata
+
+.ruby-version
+lay.sublime-project
+lay.sublime-workspace
+notes.txt
+
