@@ -8,4 +8,5 @@ Rails.application.routes.draw do
   post 'tablettes/cue'
 
   get 'secrets/index'
+  post 'secrets/fetch_spectators'
 end
