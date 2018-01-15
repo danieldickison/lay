@@ -1,6 +1,8 @@
 package com.danieldickison.lookingatyou;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -8,11 +10,17 @@ import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.EditText;
 import android.widget.ImageView;
 
-public class WebViewActivity extends AppCompatActivity {
+import java.net.UnknownHostException;
 
-    private final static String HOST = "http://10.0.1.10:3000";
+public class WebViewActivity extends AppCompatActivity implements NtpSync.Callback {
+
+    private final static String HOST_KEY = "com.danieldickison.lay.host";
+    private final static String DEFAULT_HOST = "10.0.1.10";
+    private final static int PORT = 3000;
+    private final static String PAGE_PATH = "/tablettes/index";
 
     private View mContentView;
     private WebView mWebView;
@@ -32,6 +40,8 @@ public class WebViewActivity extends AppCompatActivity {
             });
         }
     };
+
+    private NtpSync mNtpSync;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -54,11 +64,46 @@ public class WebViewActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        hide();
-        mWebView.loadUrl(HOST + "/tablettes/index");
+        hideChrome();
+
+        String host = getPreferences(0).getString(HOST_KEY, DEFAULT_HOST);
+        final EditText editText = new EditText(this);
+        editText.setHint("Server hostname or IP");
+        editText.setText(host);
+        new AlertDialog.Builder(this)
+                .setTitle("Server")
+                .setView(editText)
+                .setPositiveButton("Connect", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        connectToHost(editText.getText().toString());
+                    }
+                })
+                .setCancelable(false)
+                .show();
     }
 
-    private void hide() {
+    private void connectToHost(String host) {
+        try {
+            mNtpSync = new NtpSync(host, this);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("Unable to start NtpSync to host " + host, e);
+        }
+        mWebView.loadUrl("http://" + host + ":" + PORT + PAGE_PATH);
+        getPreferences(0).edit().putString(HOST_KEY, host).apply();
+    }
+
+    @Override
+    public void onUpdateClockOffset(final long offset) {
+        mWebView.post(new Runnable() {
+            @Override
+            public void run() {
+                mWebView.evaluateJavascript("setClockOffset(" + offset + ")", null);
+            }
+        });
+    }
+
+    private void hideChrome() {
         // Hide UI first
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
