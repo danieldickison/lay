@@ -20,14 +20,27 @@ public class NtpSync {
 
     final private NTPUDPClient client = new NTPUDPClient();
     final private InetAddress hostAddress;
-    final private Thread thread;
+    private Thread thread;
     final private Callback callback;
 
     public NtpSync(String host, Callback callback) throws UnknownHostException {
         hostAddress = InetAddress.getByName(host);
         this.callback = callback;
+    }
+
+    public synchronized void start() {
+        if (thread != null) {
+            thread.interrupt();
+        }
         thread = new Thread(updateRunnable);
         thread.start();
+    }
+
+    public synchronized void stop() {
+        if (thread != null) {
+            thread.interrupt();
+            thread = null;
+        }
     }
 
     final private Runnable updateRunnable = new Runnable() {
@@ -54,7 +67,9 @@ public class NtpSync {
 
     @Override
     protected void finalize() throws Throwable {
-        thread.interrupt();
+        if (thread != null) {
+            thread.interrupt();
+        }
         super.finalize();
     }
 }

@@ -38,6 +38,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                     mLoadingImage.setVisibility(View.GONE);
                 }
             });
+            mNtpSync.start();
         }
     };
 
@@ -82,8 +83,27 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 .show();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mNtpSync != null) {
+            mNtpSync.stop();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mNtpSync != null) {
+            mNtpSync.start();
+        }
+    }
+
     private void connectToHost(String host) {
         try {
+            if (mNtpSync != null) {
+                mNtpSync.stop();
+            }
             mNtpSync = new NtpSync(host, this);
         } catch (UnknownHostException e) {
             throw new RuntimeException("Unable to start NtpSync to host " + host, e);

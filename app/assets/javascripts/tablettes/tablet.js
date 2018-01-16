@@ -36,7 +36,7 @@ function sendPing() {
             log("Received new cue time", nextCueTime);
             clearTimeout(nextCueTimeout);
             currentCueTime = nextCueTime;
-            //primeVideo();
+            primeVideo();
             scheduleCueTick();
         }
 
