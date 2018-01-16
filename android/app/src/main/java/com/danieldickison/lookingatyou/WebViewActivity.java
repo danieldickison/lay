@@ -1,11 +1,10 @@
 package com.danieldickison.lookingatyou;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -15,7 +14,7 @@ import android.widget.ImageView;
 
 import java.net.UnknownHostException;
 
-public class WebViewActivity extends AppCompatActivity implements NtpSync.Callback {
+public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private final static String HOST_KEY = "com.danieldickison.lay.host";
     private final static String DEFAULT_HOST = "10.0.1.10";
@@ -29,6 +28,7 @@ public class WebViewActivity extends AppCompatActivity implements NtpSync.Callba
     private final WebViewClient mWebClient = new WebViewClient() {
         @Override
         public void onPageFinished(WebView view, String url) {
+            hideChrome();
             mLoadingImage.animate()
                     .setDuration(500)
                     .alpha(0)
@@ -64,7 +64,6 @@ public class WebViewActivity extends AppCompatActivity implements NtpSync.Callba
     @Override
     protected void onStart() {
         super.onStart();
-        hideChrome();
 
         String host = getPreferences(0).getString(HOST_KEY, DEFAULT_HOST);
         final EditText editText = new EditText(this);
@@ -104,12 +103,6 @@ public class WebViewActivity extends AppCompatActivity implements NtpSync.Callba
     }
 
     private void hideChrome() {
-        // Hide UI first
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.hide();
-        }
-
         // We might need to run this after a delay on older devices.
         mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -117,5 +110,6 @@ public class WebViewActivity extends AppCompatActivity implements NtpSync.Callba
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
     }
 }
