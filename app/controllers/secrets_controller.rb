@@ -1,6 +1,6 @@
 class SecretsController < ApplicationController
 
-  skip_before_action(:verify_authenticity_token, {only: [:fetch_spectators]})
+  skip_before_action(:verify_authenticity_token, {only: [:api_fetch_spectators]})
 
   def index
     begin
@@ -12,7 +12,7 @@ class SecretsController < ApplicationController
     @spectator.save
   end
 
-  def fetch_spectators
+  def api_fetch_spectators
     spectators = [{name: "Joe"}, {name: "Daniel"}, {name: "Dorothy"}, {name: "Ethan"}]
     render({json: {
       spectators: spectators,

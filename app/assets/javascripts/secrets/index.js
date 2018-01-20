@@ -33,7 +33,7 @@ function SecretsVM(view) {
 }
 
 function fetchSpectators(vm) {
-    fetch('/secrets/fetch_spectators.json', {method: 'POST'})
+    fetch('/secrets/api_fetch_spectators.json', {method: 'POST'})
     .then(response => {
         return response.json();
     })
@@ -42,7 +42,7 @@ function fetchSpectators(vm) {
         // setTimeout(fetchSpectators, SPECTATORS_INTERVAL);
     })
     .catch((error) => {
-        log("ping failed", error);
+        console.log("ping failed", error);
         // setTimeout(fetchSpectators, SPECTATORS_INTERVAL);
     });
 }
