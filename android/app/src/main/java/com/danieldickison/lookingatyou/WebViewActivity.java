@@ -4,13 +4,18 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.net.Uri;
 import android.os.Bundle;
+import android.text.InputType;
+import android.util.Log;
 import android.view.View;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.VideoView;
 
 import java.net.UnknownHostException;
 
@@ -23,7 +28,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private View mContentView;
     private WebView mWebView;
+    private VideoView mVideoView;
     private ImageView mLoadingImage;
+
+    private String mHost;
+    private volatile long mClockOffset;
 
     private final WebViewClient mWebClient = new WebViewClient() {
         @Override
@@ -42,6 +51,32 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
     };
 
+    private final Object mJSInterface = new Object() {
+        @JavascriptInterface
+        public void setVideoCue(final String path, long timestamp) {
+            Log.d("lay", "setVideoCue: " + path + " at " + timestamp);
+            mVideoView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mVideoView.stopPlayback();
+                    mVideoView.setVideoURI(Uri.parse("http://" + mHost + ":" + PORT + path));
+                }
+            });
+            long now = getServerNow();
+            if (timestamp > now) {
+                mVideoView.postDelayed(mStartVideoRunnable, timestamp - now);
+            }
+        }
+    };
+
+    private final Runnable mStartVideoRunnable = new Runnable() {
+        @Override
+        public void run() {
+            mVideoView.setAlpha(1);
+            mVideoView.start();
+        }
+    };
+
     private NtpSync mNtpSync;
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -53,11 +88,13 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         mContentView = findViewById(R.id.content_view);
         mWebView = findViewById(R.id.web_view);
+        mVideoView = findViewById(R.id.video_view);
         mLoadingImage = findViewById(R.id.loading_image);
 
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
+        mWebView.addJavascriptInterface(mJSInterface, "layNativeInterface");
 
         mWebView.setWebViewClient(mWebClient);
     }
@@ -70,6 +107,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         final EditText editText = new EditText(this);
         editText.setHint("Server hostname or IP");
         editText.setText(host);
+        editText.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
         new AlertDialog.Builder(this)
                 .setTitle("Server")
                 .setView(editText)
@@ -100,6 +138,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     private void connectToHost(String host) {
+        mHost = host;
         try {
             if (mNtpSync != null) {
                 mNtpSync.stop();
@@ -114,6 +153,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     @Override
     public void onUpdateClockOffset(final long offset) {
+        mClockOffset = offset;
         mWebView.post(new Runnable() {
             @Override
             public void run() {
@@ -131,5 +171,9 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+    }
+
+    private long getServerNow() {
+        return System.currentTimeMillis() + mClockOffset;
     }
 }
