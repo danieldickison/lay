@@ -19,12 +19,12 @@ public class NtpSync {
     final private static int INTERVAL_MS = 10_000;
 
     final private NTPUDPClient client = new NTPUDPClient();
-    final private InetAddress hostAddress;
+    final private String host;
     private Thread thread;
     final private Callback callback;
 
     public NtpSync(String host, Callback callback) throws UnknownHostException {
-        hostAddress = InetAddress.getByName(host);
+        this.host = host;
         this.callback = callback;
     }
 
@@ -48,6 +48,7 @@ public class NtpSync {
         public void run() {
             while (!Thread.interrupted()) {
                 try {
+                    InetAddress hostAddress = InetAddress.getByName(host);
                     TimeInfo time = client.getTime(hostAddress);
                     time.computeDetails();
                     long offset = time.getOffset();
@@ -55,6 +56,9 @@ public class NtpSync {
                     // TODO: maybe store the last 10 or so results and use the median or some other way of averaging and ruling out outliers.
                     callback.onUpdateClockOffset(offset);
                     Thread.sleep(INTERVAL_MS);
+                } catch (UnknownHostException e) {
+                    Log.w("lay", "NTP unknown host: " + host);
+                    return;
                 } catch (IOException e) {
                     Log.w("lay", "Failed to get NTP sync", e);
                 } catch (InterruptedException e) {
