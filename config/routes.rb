@@ -9,4 +9,5 @@ Rails.application.routes.draw do
 
   get 'secrets/index'
   post 'secrets/api_fetch_spectators'
+  get 'secrets/gdrive_test'
 end
