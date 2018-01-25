@@ -4,10 +4,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
+import android.view.SurfaceHolder;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -17,9 +19,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.VideoView;
 
+import java.io.IOException;
 import java.net.UnknownHostException;
 
-public class WebViewActivity extends Activity implements NtpSync.Callback {
+public class WebViewActivity extends Activity implements NtpSync.Callback, MediaPlayer.OnPreparedListener {
 
     private final static String HOST_KEY = "com.danieldickison.lay.host";
     private final static String DEFAULT_HOST = "10.0.1.10";
@@ -30,6 +33,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     private WebView mWebView;
     private VideoView mVideoView;
     private ImageView mLoadingImage;
+
+    private final MediaPlayer mMediaPlayer = new MediaPlayer();
 
     private String mHost;
     private volatile long mClockOffset;
@@ -58,8 +63,13 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mVideoView.post(new Runnable() {
                 @Override
                 public void run() {
-                    mVideoView.stopPlayback();
-                    mVideoView.setVideoURI(Uri.parse("http://" + mHost + ":" + PORT + path));
+                    mMediaPlayer.reset();
+                    try {
+                        mMediaPlayer.setDataSource("http://" + mHost + ":" + PORT + path);
+                        mMediaPlayer.prepareAsync();
+                    } catch (IOException e) {
+                        Log.w("lay", "Error setting video URL", e);
+                    }
                 }
             });
             long now = getServerNow();
@@ -73,7 +83,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         @Override
         public void run() {
             mVideoView.setAlpha(1);
-            mVideoView.start();
+            mMediaPlayer.start();
         }
     };
 
@@ -90,6 +100,19 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mWebView = findViewById(R.id.web_view);
         mVideoView = findViewById(R.id.video_view);
         mLoadingImage = findViewById(R.id.loading_image);
+
+        mVideoView.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder surfaceHolder) {
+                mMediaPlayer.setDisplay(surfaceHolder);
+            }
+            @Override
+            public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {}
+            @Override
+            public void surfaceDestroyed(SurfaceHolder surfaceHolder) {}
+        });
+
+        mMediaPlayer.setOnPreparedListener(this);
 
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -175,5 +198,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private long getServerNow() {
         return System.currentTimeMillis() + mClockOffset;
+    }
+
+    @Override
+    public void onPrepared(MediaPlayer mediaPlayer) {
+        mediaPlayer.start();
+        mediaPlayer.pause();
     }
 }
