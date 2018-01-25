@@ -55,12 +55,14 @@ public class NtpSync {
                     Log.d("lay", "Setting clockOffset to " + offset);
                     // TODO: maybe store the last 10 or so results and use the median or some other way of averaging and ruling out outliers.
                     callback.onUpdateClockOffset(offset);
-                    Thread.sleep(INTERVAL_MS);
                 } catch (UnknownHostException e) {
                     Log.w("lay", "NTP unknown host: " + host);
                     return;
                 } catch (IOException e) {
                     Log.w("lay", "Failed to get NTP sync", e);
+                }
+                try {
+                    Thread.sleep(INTERVAL_MS);
                 } catch (InterruptedException e) {
                     break;
                 }
