@@ -4,11 +4,14 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.support.annotation.MainThread;
 import android.text.InputType;
 import android.util.Log;
-import android.view.SurfaceHolder;
+import android.view.Surface;
+import android.view.TextureView;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
@@ -16,7 +19,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.VideoView;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -27,13 +29,14 @@ public class WebViewActivity extends Activity implements NtpSync.Callback, Media
     private final static String DEFAULT_HOST = "10.0.1.10";
     private final static int PORT = 3000;
     private final static String PAGE_PATH = "/tablettes/index";
+    private final static String TAG = "lay";
 
     private View mContentView;
     private WebView mWebView;
-    private VideoView mVideoView;
     private ImageView mLoadingImage;
 
-    private final MediaPlayer mMediaPlayer = new MediaPlayer();
+    private VideoViewHolder[] mVideoHolders = new VideoViewHolder[2];
+    private int mVideoViewIndex = 0;
 
     private String mHost;
     private volatile long mClockOffset;
@@ -57,32 +60,14 @@ public class WebViewActivity extends Activity implements NtpSync.Callback, Media
 
     private final Object mJSInterface = new Object() {
         @JavascriptInterface
-        public void setVideoCue(final String path, long timestamp) {
-            Log.d("lay", "setVideoCue: " + path + " at " + timestamp);
-            mVideoView.post(new Runnable() {
+        public void setVideoCue(final String path, final long timestamp) {
+            Log.d(TAG, "setVideoCue: " + path + " at " + timestamp);
+            mContentView.post(new Runnable() {
                 @Override
                 public void run() {
-                    mMediaPlayer.reset();
-                    try {
-                        mMediaPlayer.setDataSource("http://" + mHost + ":" + PORT + path);
-                        mMediaPlayer.prepareAsync();
-                    } catch (IOException e) {
-                        Log.w("lay", "Error setting video URL", e);
-                    }
+                    setNextVideoCue(path, timestamp);
                 }
             });
-            long now = getServerNow();
-            if (timestamp > now) {
-                mVideoView.postDelayed(mStartVideoRunnable, timestamp - now);
-            }
-        }
-    };
-
-    private final Runnable mStartVideoRunnable = new Runnable() {
-        @Override
-        public void run() {
-            mVideoView.setAlpha(1);
-            mMediaPlayer.start();
         }
     };
 
@@ -97,21 +82,10 @@ public class WebViewActivity extends Activity implements NtpSync.Callback, Media
 
         mContentView = findViewById(R.id.content_view);
         mWebView = findViewById(R.id.web_view);
-        mVideoView = findViewById(R.id.video_view);
         mLoadingImage = findViewById(R.id.loading_image);
 
-        mVideoView.getHolder().addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(SurfaceHolder surfaceHolder) {
-                mMediaPlayer.setDisplay(surfaceHolder);
-            }
-            @Override
-            public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {}
-            @Override
-            public void surfaceDestroyed(SurfaceHolder surfaceHolder) {}
-        });
-
-        mMediaPlayer.setOnPreparedListener(this);
+        mVideoHolders[0] = new VideoViewHolder((TextureView) findViewById(R.id.video_view_0));
+        mVideoHolders[1] = new VideoViewHolder((TextureView) findViewById(R.id.video_view_1));
 
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -195,6 +169,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback, Media
         getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
     }
 
+    @MainThread
+    private void setNextVideoCue(String path, long timestamp) {
+        mVideoViewIndex = (mVideoViewIndex + 1) % 2;
+        mVideoHolders[mVideoViewIndex].cueNext("http://" + mHost + ":" + PORT + path, timestamp);
+    }
+
     private long getServerNow() {
         return System.currentTimeMillis() + mClockOffset;
     }
@@ -203,5 +183,72 @@ public class WebViewActivity extends Activity implements NtpSync.Callback, Media
     public void onPrepared(MediaPlayer mediaPlayer) {
         mediaPlayer.start();
         mediaPlayer.pause();
+    }
+
+    private class VideoViewHolder implements TextureView.SurfaceTextureListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
+        private final MediaPlayer mediaPlayer = new MediaPlayer();
+        private final TextureView textureView;
+
+        private VideoViewHolder(TextureView textureView) {
+            this.textureView = textureView;
+            textureView.setSurfaceTextureListener(this);
+            mediaPlayer.setOnPreparedListener(this);
+            mediaPlayer.setOnCompletionListener(this);
+        }
+
+        @Override
+        public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
+            Log.d(TAG, "onSurfaceTextureAvailable: " + this);
+            mediaPlayer.setSurface(new Surface(surfaceTexture));
+        }
+
+        @Override
+        public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture, int i, int i1) {}
+
+        @Override
+        public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+            return false;
+        }
+
+        @Override
+        public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {}
+
+        @Override
+        public void onPrepared(MediaPlayer mediaPlayer) {
+            Log.d(TAG, "onPrepared: " + this);
+            mediaPlayer.start();
+            mediaPlayer.pause();
+        }
+
+        private void cueNext(String url, long timestamp) {
+            mediaPlayer.reset();
+            textureView.setAlpha(0.25f);
+            try {
+                mediaPlayer.setDataSource(url);
+                mediaPlayer.prepareAsync();
+            } catch (IOException e) {
+                Log.w(TAG, "Error setting video URL", e);
+            }
+
+            long now = getServerNow();
+            if (timestamp < now) {
+                Log.w(TAG, "setNextVideoCue called for timestamp in the past");
+                return;
+            }
+            textureView.postDelayed(startVideoRunnable, timestamp - now);
+        }
+
+        private final Runnable startVideoRunnable = new Runnable() {
+            @Override
+            public void run() {
+                textureView.animate().setDuration(1000).alpha(1);
+                mediaPlayer.start();
+            }
+        };
+
+        @Override
+        public void onCompletion(MediaPlayer mediaPlayer) {
+            textureView.animate().setDuration(1000).alpha(0);
+        }
     }
 }

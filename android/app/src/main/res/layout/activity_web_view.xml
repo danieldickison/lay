@@ -11,11 +11,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <VideoView
-        android:id="@+id/video_view"
+    <TextureView
+        android:id="@+id/video_view_0"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:layout_gravity="bottom"
+        android:layout_height="match_parent"
+        android:alpha="0"/>
+    <TextureView
+        android:id="@+id/video_view_1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:alpha="0"/>
 
     <ImageView
