@@ -29,6 +29,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback, Media
     private final static String DEFAULT_HOST = "10.0.1.10";
     private final static int PORT = 3000;
     private final static String PAGE_PATH = "/tablettes/index";
+    private final static long FADE_DURATION = 1000;
     private final static String TAG = "lay";
 
     private View mContentView;
@@ -175,6 +176,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback, Media
         mVideoHolders[mVideoViewIndex].cueNext("http://" + mHost + ":" + PORT + path, timestamp);
     }
 
+    private void stopInactiveVideo() {
+        int index = (mVideoViewIndex + 1) % 2;
+        mVideoHolders[index].fadeOut();
+    }
+
     private long getServerNow() {
         return System.currentTimeMillis() + mClockOffset;
     }
@@ -240,14 +246,29 @@ public class WebViewActivity extends Activity implements NtpSync.Callback, Media
         private final Runnable startVideoRunnable = new Runnable() {
             @Override
             public void run() {
-                textureView.animate().setDuration(1000).alpha(1);
+                textureView.animate().setDuration(FADE_DURATION).alpha(1);
                 mediaPlayer.start();
+                stopInactiveVideo();
+            }
+        };
+
+        private final Runnable stopVideoRunnable = new Runnable() {
+            @Override
+            public void run() {
+                mediaPlayer.stop();
             }
         };
 
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
-            textureView.animate().setDuration(1000).alpha(0);
+            fadeOut();
+        }
+
+        private void fadeOut() {
+            textureView.animate()
+                    .setDuration(FADE_DURATION)
+                    .alpha(0)
+                    .withEndAction(stopVideoRunnable);
         }
     }
 }
