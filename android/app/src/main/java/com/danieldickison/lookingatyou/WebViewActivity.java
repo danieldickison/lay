@@ -20,10 +20,13 @@ import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import net.hockeyapp.android.CrashManager;
+import net.hockeyapp.android.UpdateManager;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-public class WebViewActivity extends Activity implements NtpSync.Callback, MediaPlayer.OnPreparedListener {
+public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private final static String HOST_KEY = "com.danieldickison.lay.host";
     private final static String DEFAULT_HOST = "10.0.1.10";
@@ -94,12 +97,13 @@ public class WebViewActivity extends Activity implements NtpSync.Callback, Media
         mWebView.addJavascriptInterface(mJSInterface, "layNativeInterface");
 
         mWebView.setWebViewClient(mWebClient);
+
+        checkForUpdates();
+
+        promptForServerHost();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-
+    private void promptForServerHost() {
         String host = getPreferences(0).getString(HOST_KEY, DEFAULT_HOST);
         final EditText editText = new EditText(this);
         editText.setHint("Server hostname or IP");
@@ -124,6 +128,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback, Media
         if (mNtpSync != null) {
             mNtpSync.stop();
         }
+        unregisterManagers();
     }
 
     @Override
@@ -132,6 +137,13 @@ public class WebViewActivity extends Activity implements NtpSync.Callback, Media
         if (mNtpSync != null) {
             mNtpSync.start();
         }
+        checkForCrashes();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterManagers();
     }
 
     private void connectToHost(String host) {
@@ -185,10 +197,17 @@ public class WebViewActivity extends Activity implements NtpSync.Callback, Media
         return System.currentTimeMillis() + mClockOffset;
     }
 
-    @Override
-    public void onPrepared(MediaPlayer mediaPlayer) {
-        mediaPlayer.start();
-        mediaPlayer.pause();
+    private void checkForCrashes() {
+        CrashManager.register(this);
+    }
+
+    private void checkForUpdates() {
+        // Remove this for store builds!
+        UpdateManager.register(this);
+    }
+
+    private void unregisterManagers() {
+        UpdateManager.unregister();
     }
 
     private class VideoViewHolder implements TextureView.SurfaceTextureListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
