@@ -98,8 +98,6 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         mWebView.setWebViewClient(mWebClient);
 
-        checkForUpdates();
-
         promptForServerHost();
     }
 
@@ -138,6 +136,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mNtpSync.start();
         }
         checkForCrashes();
+        checkForUpdates();
     }
 
     @Override
