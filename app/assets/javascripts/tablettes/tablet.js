@@ -9,10 +9,13 @@ window.setClockOffset = function (offset) {
     clockOffset = offset;
 };
 
-let PING_INTERVAL = 2000;
+let PING_INTERVAL = 1000;
 var clockOffset = 0;
 var currentCueTime = null;
 var nextCueTimeout = null;
+
+let LOGO_BG_INTERVAL = 20000;
+var currentLogoBgIndex = 0;
 
 document.addEventListener("DOMContentLoaded", event => {
     let isIndexPage = document.getElementById('tablettes-index');
@@ -21,6 +24,8 @@ document.addEventListener("DOMContentLoaded", event => {
     document.getElementById('reload-button').addEventListener('click', function () {
         location.reload();
     });
+
+    setInterval(cycleLogoBg, LOGO_BG_INTERVAL);
 
     sendPing();
 });
@@ -43,7 +48,7 @@ function sendPing() {
 
         setTimeout(sendPing, PING_INTERVAL);
     })
-    .catch((error) => {
+    .catch(error => {
         log("ping failed", error);
         setTimeout(sendPing, PING_INTERVAL);
     });
@@ -81,6 +86,14 @@ function log() {
     console.log.apply(console, arguments);
     let status = document.getElementById('status');
     status.innerText = Array.prototype.join.call(arguments, ' ');
+}
+
+function cycleLogoBg() {
+    let list = document.querySelectorAll('#logo-bg > li');
+    currentLogoBgIndex = (currentLogoBgIndex + 1) % list.length;
+    list.forEach((el, i) => {
+        el.classList.toggle('logo-bg-active', i === currentLogoBgIndex);
+    });
 }
 
 })();
