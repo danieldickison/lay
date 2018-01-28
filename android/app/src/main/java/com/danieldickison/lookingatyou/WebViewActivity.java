@@ -222,7 +222,6 @@ public class WebViewActivity extends Activity implements NtpSync.Callback, Media
 
         private void cueNext(String url, long timestamp) {
             mediaPlayer.reset();
-            textureView.setAlpha(0.25f);
             try {
                 mediaPlayer.setDataSource(url);
                 mediaPlayer.prepareAsync();
