@@ -37,13 +37,13 @@ function sendPing() {
     })
     .then(json => {
         let nextCueTime = json.next_cue_time;
+        let nextCueFile = json.next_cue_file;
         if (currentCueTime !== nextCueTime) {
             log("Received new cue time", nextCueTime);
             clearTimeout(nextCueTimeout);
             currentCueTime = nextCueTime;
-            //primeVideo();
             scheduleCueTick();
-            layNativeInterface.setVideoCue("/videos/molly.mp4", nextCueTime);
+            layNativeInterface.setVideoCue("/videos/" + encodeURIComponent(nextCueFile), nextCueTime);
         }
 
         setTimeout(sendPing, PING_INTERVAL);
@@ -64,22 +64,12 @@ function scheduleCueTick() {
 function cueTick() {
     let now = serverNow();
     let seconds = Math.floor((now - currentCueTime) / 1000);
-    if (seconds === 0) {
-        //document.getElementById('tablettes-video').play();
-    }
     document.getElementById('cue').innerText = "T" + (seconds < 0 ? "" : "+") + seconds + " seconds";
     scheduleCueTick();
 }
 
 function serverNow() {
     return Date.now() + clockOffset;
-}
-
-function primeVideo() {
-    log('seeking to 2 second mark');
-    let video = document.getElementById('tablettes-video');
-    video.pause();
-    video.currentTime = 2; // Start at the 2 second mark.
 }
 
 function log() {
