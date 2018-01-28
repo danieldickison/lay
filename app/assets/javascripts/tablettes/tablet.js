@@ -15,8 +15,8 @@ var currentCueTime = null;
 var nextCueTimeout = null;
 
 document.addEventListener("DOMContentLoaded", event => {
-    let video = document.getElementById('tablettes-video');
-    if (!video) return;
+    let isIndexPage = document.getElementById('tablettes-index');
+    if (!isIndexPage) return;
 
     document.getElementById('reload-button').addEventListener('click', function () {
         location.reload();
@@ -36,8 +36,9 @@ function sendPing() {
             log("Received new cue time", nextCueTime);
             clearTimeout(nextCueTimeout);
             currentCueTime = nextCueTime;
-            primeVideo();
+            //primeVideo();
             scheduleCueTick();
+            layNativeInterface.setVideoCue("/videos/molly.mp4", nextCueTime);
         }
 
         setTimeout(sendPing, PING_INTERVAL);
@@ -59,7 +60,7 @@ function cueTick() {
     let now = serverNow();
     let seconds = Math.floor((now - currentCueTime) / 1000);
     if (seconds === 0) {
-        document.getElementById('tablettes-video').play();
+        //document.getElementById('tablettes-video').play();
     }
     document.getElementById('cue').innerText = "T" + (seconds < 0 ? "" : "+") + seconds + " seconds";
     scheduleCueTick();
