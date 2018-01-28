@@ -1,4 +1,4 @@
-require("google_drive")
+require 'google_drive'
 
 class SecretsController < ApplicationController
 
