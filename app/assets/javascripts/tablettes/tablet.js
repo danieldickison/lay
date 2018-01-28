@@ -38,7 +38,7 @@ function sendPing() {
     .then(json => {
         let nextCueTime = json.next_cue_time;
         let nextCueFile = json.next_cue_file;
-        if (currentCueTime !== nextCueTime) {
+        if (currentCueTime !== nextCueTime && nextCueFile) {
             log("Received new cue time", nextCueTime);
             clearTimeout(nextCueTimeout);
             currentCueTime = nextCueTime;
