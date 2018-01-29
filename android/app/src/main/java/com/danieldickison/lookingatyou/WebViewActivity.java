@@ -280,7 +280,9 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         private final Runnable stopVideoRunnable = new Runnable() {
             @Override
             public void run() {
-                mediaPlayer.stop();
+                if (mediaPlayer.isPlaying()) {
+                    mediaPlayer.stop();
+                }
             }
         };
 
