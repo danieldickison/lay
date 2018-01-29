@@ -13,10 +13,10 @@ document.addEventListener("DOMContentLoaded", event => {
         let seconds = parseInt(cueForm.elements.seconds.value);
         let time = Date.now() + seconds * 1000;
         cueForm.elements.time.value = new Date(time).toString();
-        let file = cueForm.elements.file.value;
         let body = new URLSearchParams();
         body.append('time', time);
-        body.append('file', file);
+        body.append('file', cueForm.elements.file.value);
+        body.append('seek', cueForm.elements.seek.value)
         fetch('/tablettes/cue.json', {method: 'POST', body: body});
     });
 });

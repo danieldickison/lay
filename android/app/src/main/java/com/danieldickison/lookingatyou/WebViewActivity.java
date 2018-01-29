@@ -64,12 +64,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private final Object mJSInterface = new Object() {
         @JavascriptInterface
-        public void setVideoCue(final String path, final long timestamp) {
+        public void setVideoCue(final String path, final long timestamp, final int seekTime) {
             Log.d(TAG, "setVideoCue: " + path + " at " + timestamp);
             mContentView.post(new Runnable() {
                 @Override
                 public void run() {
-                    setNextVideoCue(path, timestamp);
+                    setNextVideoCue(path, timestamp, seekTime);
                 }
             });
         }
@@ -189,9 +189,9 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     @MainThread
-    private void setNextVideoCue(String path, long timestamp) {
+    private void setNextVideoCue(String path, long timestamp, int seekTime) {
         mVideoViewIndex = (mVideoViewIndex + 1) % 2;
-        mVideoHolders[mVideoViewIndex].cueNext("http://" + mHost + ":" + PORT + path, timestamp);
+        mVideoHolders[mVideoViewIndex].cueNext("http://" + mHost + ":" + PORT + path, timestamp, seekTime);
     }
 
     private void stopInactiveVideo() {
@@ -216,14 +216,16 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         UpdateManager.unregister();
     }
 
-    private class VideoViewHolder implements TextureView.SurfaceTextureListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
+    private class VideoViewHolder implements TextureView.SurfaceTextureListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener {
         private final MediaPlayer mediaPlayer = new MediaPlayer();
         private final TextureView textureView;
+        private int seekTime;
 
         private VideoViewHolder(TextureView textureView) {
             this.textureView = textureView;
             textureView.setSurfaceTextureListener(this);
             mediaPlayer.setOnPreparedListener(this);
+            mediaPlayer.setOnSeekCompleteListener(this);
             mediaPlayer.setOnCompletionListener(this);
         }
 
@@ -244,14 +246,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {}
 
-        @Override
-        public void onPrepared(MediaPlayer mediaPlayer) {
-            Log.d(TAG, "onPrepared: " + this);
-            mediaPlayer.start();
-            mediaPlayer.pause();
-        }
-
-        private void cueNext(String url, long timestamp) {
+        private void cueNext(String url, long timestamp, int seekTime) {
+            this.seekTime = seekTime;
             mediaPlayer.reset();
             try {
                 mediaPlayer.setDataSource(url);
@@ -266,6 +262,19 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 return;
             }
             textureView.postDelayed(startVideoRunnable, timestamp - now);
+        }
+
+        @Override
+        public void onPrepared(MediaPlayer mediaPlayer) {
+            Log.d(TAG, "onPrepared: seeking to " + seekTime + "ms");
+            mediaPlayer.seekTo(seekTime);
+        }
+
+        @Override
+        public void onSeekComplete(MediaPlayer mediaPlayer) {
+            mediaPlayer.start();
+            mediaPlayer.pause();
+            Log.d(TAG, "onSeekComplete to " + mediaPlayer.getCurrentPosition() + "ms; doing a start/pause to prime video");
         }
 
         private final Runnable startVideoRunnable = new Runnable() {
