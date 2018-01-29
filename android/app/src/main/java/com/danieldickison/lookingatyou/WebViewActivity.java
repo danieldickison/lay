@@ -81,7 +81,6 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_web_view);
 
         mContentView = findViewById(R.id.content_view);
@@ -171,14 +170,18 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     private void hideChrome() {
-        // We might need to run this after a delay on older devices.
-        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-        getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                | View.SYSTEM_UI_FLAG_LOW_PROFILE;
+        mContentView.setSystemUiVisibility(flags);
+        getWindow().getDecorView().setSystemUiVisibility(flags);
+
+        // This prevents exiting the app by the user unless they press and hold the back and task buttons.
+        startLockTask();
     }
 
     @MainThread
