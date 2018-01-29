@@ -31,13 +31,29 @@ module Lay
       puts "OSCApplication"
       @server = OSC::Server.new(53000)
 
+      # I think there's a bug in osc-ruby's parsing of * in OSC addresses in address_pattern.rb:
+      # https://github.com/aberant/osc-ruby/blob/master/lib/osc-ruby/address_pattern.rb#L31
+      #   # handles osc * - 0 or more matching
+      #   @pattern.gsub!(/\*[^\*]/, '[^/]*')
+      # That regex fails to match a trailing * if it's the last character of the string. So that's problematic, but maybe we can just use /cue as the address and get all the args via the arguments.
       @server.add_method('/cue/*') do |message|
         puts "A #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
+      end
+
+      @server.add_method('/cue') do |message|
+        # Take 3 args: <video file name: string> <preroll time: float> <seek time: float>
+        file, preroll, seek = message.to_a
+        puts "Set cue file: #{file} preroll: #{preroll} seek: #{seek}"
+        TablettesController.next_cue_file = file
+        TablettesController.next_cue_time = Time.now + preroll
+        TablettesController.next_seek_time = seek
       end
 
       @server.add_method('*') do |message|
         puts "B #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
       end
+
+      puts @server.instance_eval {@matchers}.inspect
 
       Thread.new do
         @server.run
