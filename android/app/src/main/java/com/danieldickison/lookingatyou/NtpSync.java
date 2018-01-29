@@ -9,6 +9,7 @@ import org.apache.commons.net.ntp.TimeInfo;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 public class NtpSync {
 
@@ -17,15 +18,22 @@ public class NtpSync {
     }
 
     final private static int INTERVAL_MS = 10_000;
+    final private static int PAST_OFFSETS_COUNT = 11;
 
     final private NTPUDPClient client = new NTPUDPClient();
     final private String host;
     private Thread thread;
     final private Callback callback;
 
+    final private long[] pastOffsets = new long[PAST_OFFSETS_COUNT];
+    private int nextOffsetIndex = 0;
+
     public NtpSync(String host, Callback callback) throws UnknownHostException {
         this.host = host;
         this.callback = callback;
+        for (int i = 0; i < pastOffsets.length; i++) {
+            pastOffsets[i] = Long.MIN_VALUE;
+        }
     }
 
     public synchronized void start() {
@@ -43,6 +51,22 @@ public class NtpSync {
         }
     }
 
+    public long getMedianOffset() {
+        long[] offsets;
+        synchronized (pastOffsets) {
+            int length = pastOffsets.length;
+            for (int i = 0; i < pastOffsets.length; i++) {
+                if (pastOffsets[i] == Long.MIN_VALUE) {
+                    length = i;
+                    break;
+                }
+            }
+            offsets = Arrays.copyOf(pastOffsets, length);
+        }
+        Arrays.sort(offsets);
+        return offsets.length == 0 ? 0 : offsets[offsets.length / 2];
+    }
+
     final private Runnable updateRunnable = new Runnable() {
         @Override
         public void run() {
@@ -52,9 +76,13 @@ public class NtpSync {
                     TimeInfo time = client.getTime(hostAddress);
                     time.computeDetails();
                     long offset = time.getOffset();
-                    Log.d("lay", "Setting clockOffset to " + offset);
-                    // TODO: maybe store the last 10 or so results and use the median or some other way of averaging and ruling out outliers.
-                    callback.onUpdateClockOffset(offset);
+                    synchronized (pastOffsets) {
+                        pastOffsets[nextOffsetIndex] = offset;
+                        nextOffsetIndex = (nextOffsetIndex + 1) % pastOffsets.length;
+                    }
+                    long median = getMedianOffset();
+                    Log.d("lay", "NTP new clockOffset: " + offset + "ms median: " + median + "ms");
+                    callback.onUpdateClockOffset(median);
                 } catch (UnknownHostException e) {
                     Log.w("lay", "NTP unknown host: " + host);
                     return;

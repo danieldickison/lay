@@ -162,6 +162,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     @Override
     public void onUpdateClockOffset(final long offset) {
+        if (offset == mClockOffset) return;
+
         mClockOffset = offset;
         mWebView.post(new Runnable() {
             @Override
