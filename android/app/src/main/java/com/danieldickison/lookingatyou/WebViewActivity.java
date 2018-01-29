@@ -18,7 +18,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
@@ -37,7 +37,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private View mContentView;
     private WebView mWebView;
-    private ImageView mLoadingImage;
+    private ProgressBar mSpinny;
 
     private VideoViewHolder[] mVideoHolders = new VideoViewHolder[2];
     private int mVideoViewIndex = 0;
@@ -48,17 +48,17 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     private final WebViewClient mWebClient = new WebViewClient() {
         @Override
         public void onPageFinished(WebView view, String url) {
+            mSpinny.setVisibility(View.GONE);
             hideChrome();
-            mLoadingImage.animate()
-                    .setDuration(500)
-                    .alpha(0)
-                    .withEndAction(new Runnable() {
-                @Override
-                public void run() {
-                    mLoadingImage.setVisibility(View.GONE);
-                }
-            });
             mNtpSync.start();
+        }
+
+        @Override
+        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+            super.onReceivedError(view, errorCode, description, failingUrl);
+            if (failingUrl.endsWith(PAGE_PATH)) {
+                promptForServerHost();
+            }
         }
     };
 
@@ -85,7 +85,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         mContentView = findViewById(R.id.content_view);
         mWebView = findViewById(R.id.web_view);
-        mLoadingImage = findViewById(R.id.loading_image);
+        mSpinny = findViewById(R.id.spinny);
 
         mVideoHolders[0] = new VideoViewHolder((TextureView) findViewById(R.id.video_view_0));
         mVideoHolders[1] = new VideoViewHolder((TextureView) findViewById(R.id.video_view_1));
@@ -145,6 +145,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     private void connectToHost(String host) {
+        mSpinny.setVisibility(View.VISIBLE);
+
         mHost = host;
         try {
             if (mNtpSync != null) {

@@ -10,7 +10,7 @@
     <WebView
         android:id="@+id/web_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
 
     <TextureView
         android:id="@+id/video_view_0"
@@ -23,12 +23,12 @@
         android:layout_height="match_parent"
         android:alpha="0"/>
 
-    <ImageView
-        android:id="@+id/loading_image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@drawable/loading"
-        android:scaleType="centerCrop"
-        android:contentDescription="@null" />
+    <ProgressBar
+        android:id="@+id/spinny"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        style="?android:progressBarStyleLarge"/>
 
 </FrameLayout>
