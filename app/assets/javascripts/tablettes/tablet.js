@@ -44,7 +44,8 @@ function sendPing() {
             clearTimeout(nextCueTimeout);
             currentCueTime = nextCueTime;
             scheduleCueTick();
-            layNativeInterface.setVideoCue("/videos/" + encodeURIComponent(nextCueFile), nextCueTime, nextSeekTime);
+            let path = nextCueFile.split('/').map(c => encodeURIComponent(c)).join('/');
+            layNativeInterface.setVideoCue('/videos/' + path, nextCueTime, nextSeekTime);
         }
 
         setTimeout(sendPing, PING_INTERVAL);
