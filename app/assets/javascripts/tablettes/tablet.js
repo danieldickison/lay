@@ -40,7 +40,7 @@ function sendPing() {
         let nextCueFile = json.next_cue_file;
         let nextSeekTime = json.next_seek_time;
         if (currentCueTime !== nextCueTime && nextCueFile) {
-            log("Received new cue time", nextCueTime);
+            log("Received new cue time", nextCueTime, nextCueFile);
             clearTimeout(nextCueTimeout);
             currentCueTime = nextCueTime;
             scheduleCueTick();
