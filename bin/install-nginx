@@ -1,0 +1,17 @@
+#!/usr/bin/env ruby
+require 'pathname'
+require 'fileutils'
+require 'shellwords'
+include FileUtils
+
+# path to your application root.
+APP_ROOT = Pathname.new File.expand_path('../../', __FILE__)
+
+system('brew install nginx')
+
+ln_sf("#{APP_ROOT}/config/nginx.conf", '/usr/local/etc/nginx/servers/lay', :verbose => true)
+
+puts "Creating /usr/local/etc/nginx/lay-root.conf"
+File.open('/usr/local/etc/nginx/lay-root.conf', 'w') do |f|
+    f.puts("root \"#{APP_ROOT}/public\";")
+end
