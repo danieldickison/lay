@@ -5,7 +5,7 @@
 'use strict';
 
 window.setClockOffset = function (offset) {
-    log("Setting clock offset to " + offset + "ms");
+    document.getElementById('clock-offset').innerText = "Clock offset: " + offset + " ms";
     clockOffset = offset;
 };
 
