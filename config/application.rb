@@ -50,10 +50,12 @@ module Lay
       end
 
       # /play <media>
-      @server.add_method('/play') do |message|
-        TablettesController.next_cue_file = message.to_a[0]
+      @server.add_method('/start') do |message|
+        args = message.to_a
+        TablettesController.next_cue_file = args[0]
         TablettesController.next_cue_time = Time.now + 7
         TablettesController.next_seek_time = 0
+        TablettesController.next_tablets = args[1 .. -1]
       end
 
       @server.add_method('*') do |message|

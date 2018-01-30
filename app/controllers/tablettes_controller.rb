@@ -6,6 +6,7 @@ class TablettesController < ApplicationController
     @next_cue_time = Time.now
     @next_cue_file = nil
     @next_seek_time = 0
+    @next_tablets = nil
 
     def index
     end
@@ -26,6 +27,7 @@ class TablettesController < ApplicationController
             :next_cue_file => self.class.next_cue_file,
             :next_cue_time => (self.class.next_cue_time.to_f * 1000).round,
             :next_seek_time => (self.class.next_seek_time * 1000).round,
+            :next_tablets => self.class.next_tablets,
             :tx_time => (Time.now.to_f * 1000).round,
         }
     end
@@ -52,5 +54,17 @@ class TablettesController < ApplicationController
 
     def self.next_seek_time=(time)
         @next_seek_time = time
+    end
+
+    def self.next_tablets
+        @next_tablets
+    end
+
+    def self.next_tablets=(tablets)
+        if tablets && !tablets.empty?
+            @next_tablets = tablets
+        else
+            @next_tablets = nil
+        end
     end
 end
