@@ -60,8 +60,6 @@ module Lay
         puts "UNRECOGNIZED OSC COMMAND #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
       end
 
-      puts @server.instance_eval {@matchers}.inspect
-
       Thread.new do
         @server.run
       end
