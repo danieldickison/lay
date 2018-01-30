@@ -22,7 +22,7 @@ module Lay
 #
 # require 'osc-ruby'
 # c = OSC::Client.new('localhost', 53000)
-# c.send(OSC::Message.new("/cue", "hi"))
+# c.send(OSC::Message.new("/play", "/lay/Tablet/Tablettes/tablette cue 1 T1.mp4"))
 
   class OSCApplication < Rails::Application
     def initialize
@@ -49,8 +49,15 @@ module Lay
         TablettesController.next_seek_time = seek
       end
 
+      # /play <media>
+      @server.add_method('/play') do |message|
+        TablettesController.next_cue_file = message.to_a[0]
+        TablettesController.next_cue_time = Time.now + 7
+        TablettesController.next_seek_time = 0
+      end
+
       @server.add_method('*') do |message|
-        puts "B #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
+        puts "UNRECOGNIZED OSC COMMAND #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
       end
 
       puts @server.instance_eval {@matchers}.inspect
