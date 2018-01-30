@@ -16,10 +16,13 @@ class TablettesController < ApplicationController
     end
 
     def ping
-        tablet = request.headers['X-Forwarded-For'].split(',').first.split('.')[3].to_i % 100
+        ip = request.headers['X-Forwarded-For'].split(',').first
+        tablet = ip.split('.')[3].to_i % 100
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
         puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue}"
         render json: {
+            :tablet_ip => ip,
+            :tablet_number => tablet,
             :next_cue_file => cue[:file],
             :next_cue_time => (cue[:time].to_f * 1000).round,
             :next_seek_time => (cue[:seek].to_f * 1000).round,

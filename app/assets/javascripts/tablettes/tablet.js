@@ -47,6 +47,8 @@ function sendPing() {
             let path = nextCueFile.split('/').map(c => encodeURIComponent(c)).join('/');
             layNativeInterface.setVideoCue(path, nextCueTime, nextSeekTime);
         }
+        
+        document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " — " + json.tablet_ip;
 
         setTimeout(sendPing, PING_INTERVAL);
     })
