@@ -50,6 +50,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         public void onPageFinished(WebView view, String url) {
             mSpinny.setVisibility(View.GONE);
             hideChrome();
+            mClockOffset = 0;
             mNtpSync.start();
         }
 
