@@ -10,13 +10,15 @@ document.addEventListener("DOMContentLoaded", event => {
 
     cueForm.addEventListener('submit', event => {
         event.preventDefault();
+        let tablet = parseInt(cueForm.elements.tablet.value);
         let seconds = parseInt(cueForm.elements.seconds.value);
         let time = Date.now() + seconds * 1000;
         cueForm.elements.time.value = new Date(time).toString();
         let body = new URLSearchParams();
+        body.append('tablet', tablet);
         body.append('time', time);
         body.append('file', cueForm.elements.file.value);
-        body.append('seek', cueForm.elements.seek.value)
+        body.append('seek', cueForm.elements.seek.value);
         fetch('/tablettes/cue.json', {method: 'POST', body: body});
     });
 });

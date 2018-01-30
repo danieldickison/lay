@@ -3,10 +3,7 @@ class TablettesController < ApplicationController
     skip_before_action :verify_authenticity_token, :only => [:ping, :cue]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
-    @next_cue_time = Time.now
-    @next_cue_file = nil
-    @next_seek_time = 0
-    @next_tablets = nil
+    @cues = {} # {int => {:time => int, :file => string, :seek => int}}
 
     def index
     end
@@ -15,56 +12,25 @@ class TablettesController < ApplicationController
     end
 
     def cue
-        self.class.next_cue_time = Time.at(params[:time].to_f / 1000)
-        self.class.next_cue_file = params[:file]
-        self.class.next_seek_time = params[:seek].to_f
+        self.class.set_cue(params[:tablet].to_i, params[:file], params[:time].to_f / 1000, seek: params[:seek].to_f)
     end
 
     def ping
-        rx_time = Time.now
+        tablet = request.headers['X-Forwarded-For'].split(',').first.split('.')[3].to_i % 100
+        cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
+        puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue}"
         render json: {
-            :rx_time => (rx_time.to_f * 1000).round,
-            :next_cue_file => self.class.next_cue_file,
-            :next_cue_time => (self.class.next_cue_time.to_f * 1000).round,
-            :next_seek_time => (self.class.next_seek_time * 1000).round,
-            :next_tablets => self.class.next_tablets,
-            :tx_time => (Time.now.to_f * 1000).round,
+            :next_cue_file => cue[:file],
+            :next_cue_time => (cue[:time].to_f * 1000).round,
+            :next_seek_time => (cue[:seek].to_f * 1000).round,
         }
     end
 
-    def self.next_cue_time
-        @next_cue_time
+    def self.set_cue(tablet, file, time, seek: 0)
+        @cues[tablet.to_i] = {:file => file, :time => time.to_i, :seek => seek.to_f}
     end
 
-    def self.next_cue_time=(time)
-        @next_cue_time = time
-    end
-
-    def self.next_cue_file
-        @next_cue_file
-    end
-
-    def self.next_cue_file=(file)
-        @next_cue_file = file
-    end
-
-    def self.next_seek_time
-        @next_seek_time
-    end
-
-    def self.next_seek_time=(time)
-        @next_seek_time = time
-    end
-
-    def self.next_tablets
-        @next_tablets
-    end
-
-    def self.next_tablets=(tablets)
-        if tablets && !tablets.empty?
-            @next_tablets = tablets
-        else
-            @next_tablets = nil
-        end
+    def self.cues
+        return @cues
     end
 end

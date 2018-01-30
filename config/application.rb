@@ -22,7 +22,7 @@ module Lay
 #
 # require 'osc-ruby'
 # c = OSC::Client.new('localhost', 53000)
-# c.send(OSC::Message.new("/play", "/lay/Tablet/Tablettes/tablette cue 1 T1.mp4"))
+# c.send(OSC::Message.new("/start", "/lay/Tablet/Tablettes/tablette cue 2 T1.mp4", 1))
 
   class OSCApplication < Rails::Application
     def initialize
@@ -40,22 +40,15 @@ module Lay
         puts "A #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
       end
 
-      @server.add_method('/cue') do |message|
-        # Take 3 args: <video file name: string> <preroll time: float> <seek time: float>
-        file, preroll, seek = message.to_a
-        puts "Set cue file: #{file} preroll: #{preroll} seek: #{seek}"
-        TablettesController.next_cue_file = file
-        TablettesController.next_cue_time = Time.now + preroll
-        TablettesController.next_seek_time = seek
-      end
-
-      # /play <media>
+      # /start <media> <tablet#> [<tablet#> ...]
       @server.add_method('/start') do |message|
+        puts "B #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
+        time = Time.now + 7
         args = message.to_a
-        TablettesController.next_cue_file = args[0]
-        TablettesController.next_cue_time = Time.now + 7
-        TablettesController.next_seek_time = 0
-        TablettesController.next_tablets = args[1 .. -1]
+        file = args[0]
+        args[1 .. -1].each do |tablet|
+            TablettesController.set_cue(tablet, file, time)
+        end
       end
 
       @server.add_method('*') do |message|
