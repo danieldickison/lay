@@ -14,6 +14,10 @@ class SecretsController < ApplicationController
     @spectator.save
   end
 
+  def ping
+    puts("ping")
+  end
+
   def gdrive_test
     Google::Apis.logger.level = Logger::WARN
     puts("#{Time.now.strftime('%H:%M:%S.%3N')} gdrive_test")

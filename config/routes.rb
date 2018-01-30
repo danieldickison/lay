@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   post 'tablettes/cue'
 
   get 'secrets/index'
+  get 'secrets/ping'
   post 'secrets/api_fetch_spectators'
   get 'secrets/gdrive_test'
 end
