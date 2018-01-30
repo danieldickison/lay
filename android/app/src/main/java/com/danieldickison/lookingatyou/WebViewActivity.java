@@ -190,8 +190,13 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     @MainThread
     private void setNextVideoCue(String path, long timestamp, int seekTime) {
-        mVideoViewIndex = (mVideoViewIndex + 1) % 2;
-        mVideoHolders[mVideoViewIndex].cueNext("http://" + mHost + ":" + PORT + path, timestamp, seekTime);
+        if (path == null) {
+            mVideoHolders[0].fadeOut();
+            mVideoHolders[1].fadeOut();
+        } else {
+            mVideoViewIndex = (mVideoViewIndex + 1) % 2;
+            mVideoHolders[mVideoViewIndex].cueNext("http://" + mHost + ":" + PORT + path, timestamp, seekTime);
+        }
     }
 
     private void stopInactiveVideo() {
@@ -301,6 +306,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         private void fadeOut() {
+            textureView.removeCallbacks(startVideoRunnable);
             textureView.animate()
                     .setDuration(FADE_DURATION)
                     .alpha(0)

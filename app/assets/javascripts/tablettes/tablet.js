@@ -39,15 +39,15 @@ function sendPing() {
         let nextCueTime = json.next_cue_time;
         let nextCueFile = json.next_cue_file;
         let nextSeekTime = json.next_seek_time;
-        if (currentCueTime !== nextCueTime && nextCueFile) {
+        if (currentCueTime !== nextCueTime) {
             log("Received new cue time", nextCueTime, nextCueFile);
             clearTimeout(nextCueTimeout);
             currentCueTime = nextCueTime;
             scheduleCueTick();
-            let path = nextCueFile.split('/').map(c => encodeURIComponent(c)).join('/');
+            let path = nextCueFile && nextCueFile.split('/').map(c => encodeURIComponent(c)).join('/');
             layNativeInterface.setVideoCue(path, nextCueTime, nextSeekTime);
         }
-        
+
         document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " — " + json.tablet_ip;
 
         setTimeout(sendPing, PING_INTERVAL);

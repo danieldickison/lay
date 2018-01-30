@@ -51,6 +51,13 @@ module Lay
         end
       end
 
+      # /stop <tablet#>...
+      @server.add_method('/stop') do |message|
+        message.to_a.each do |tablet|
+          TablettesController.stop_cue(tablet)
+        end
+      end
+
       @server.add_method('*') do |message|
         puts "UNRECOGNIZED OSC COMMAND #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
       end

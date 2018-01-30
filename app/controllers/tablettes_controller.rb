@@ -33,6 +33,10 @@ class TablettesController < ApplicationController
         @cues[tablet.to_i] = {:file => file, :time => time.to_i, :seek => seek.to_f}
     end
 
+    def self.stop_cue(tablet)
+        @cues[tablet.to_i] = nil
+    end
+
     def self.cues
         return @cues
     end
