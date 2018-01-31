@@ -6,7 +6,7 @@ android {
         applicationId "com.danieldickison.lookingatyou"
         minSdkVersion 22
         targetSdkVersion 27
-        versionCode 5
+        versionCode 6
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [HOCKEYAPP_APP_ID: "c18ec27b26df41fb9f93f23b38df95c6"]
