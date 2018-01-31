@@ -20,16 +20,20 @@ class TablettesController < ApplicationController
     end
 
     def preload
-        files = params[:files].split("\n")
-        self.class.set_preload([params[:tablet].to_i], files)
+        if params[:files].empty?
+            self.class.reset_cue([params[:tablet].to_i])
+        else
+            files = params[:files].split("\n");
+            self.class.load_cue([params[:tablet].to_i], files)
+        end
     end
 
     def ping
         ip = request.headers['X-Forwarded-For'].split(',').first
         tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
-        preload = self.class.preload[tablet] || []
-        puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue} preload: #{preload.join(', ')}"
+        preload = self.class.preload[tablet]
+        puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue} preload: #{preload && preload.join(', ')}"
         render json: {
             :tablet_ip => ip,
             :tablet_number => tablet,
@@ -71,7 +75,7 @@ class TablettesController < ApplicationController
 
     def self.reset_cue(tablet)
         tablet_enum(tablet).each do |t|
-            #
+            @preload[t] = nil
         end
     end
 

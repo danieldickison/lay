@@ -106,15 +106,37 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             });
         }
 
+        private void rmDir(File dir) {
+            if (!dir.exists()) return;
+            for (File f : dir.listFiles()) {
+                if (f.isDirectory()) {
+                    rmDir(f);
+                } else {
+                    Log.d(TAG, "rmDir: deleting file " + f);
+                    if (!f.delete()) {
+                        Log.w(TAG, "rmDir: failed to delete " + f);
+                    }
+                }
+            }
+            if (!dir.delete()) {
+                Log.w(TAG, "rmDir: failed to delete dir " + dir);
+            }
+        }
+
         @JavascriptInterface
         public void setPreloadFiles(final String[] paths) {
+            if (paths == null) {
+                Log.d(TAG, "setPreloadFiles: clearing cache");
+                rmDir(new File(mDownloadDirectory, "lay"));
+                return;
+            }
+
             Log.d(TAG, "setPreloadFiles: " + Arrays.toString(paths));
             byte[] buffer = new byte[10240];
             for (String path : paths) {
                 File file = new File(mDownloadDirectory, path);
                 if (!file.getParentFile().mkdirs()) {
-                    Log.e(TAG, "setPreloadFiles: failed to create dir for " + file);
-                    break;
+                    Log.d(TAG, "setPreloadFiles: failed to create dir for " + file);
                 }
                 if (file.exists()) {
                     Log.d(TAG, "setPreloadFiles: already exists: " + file);

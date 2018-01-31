@@ -13,7 +13,7 @@ let PING_INTERVAL = 1000;
 var clockOffset = 0;
 var currentCueTime = null;
 var nextCueTimeout = null;
-var currentPreload = [];
+var currentPreload = null;
 
 let LOGO_BG_INTERVAL = 20000;
 var currentLogoBgIndex = 0;
@@ -52,7 +52,7 @@ function sendPing() {
         if (!arraysEqual(json.preload_files, currentPreload)) {
             log("Received new preload files", json.preload_files);
             currentPreload = json.preload_files;
-            let paths = currentPreload.map(p => uriEscapePath(p));
+            let paths = currentPreload && currentPreload.map(p => uriEscapePath(p));
             layNativeInterface.setPreloadFiles(paths);
         }
 
@@ -99,6 +99,8 @@ function cycleLogoBg() {
 }
 
 function arraysEqual(a1, a2) {
+    if (a1 == a2) return true; // e.g. both null
+    if (a1 == null || a2 == null) return false; // one is null.
     if (a1.length !== a2.length) return false;
     for (var i = 0; i < a1.length; i++) {
         if (a1[i] !== a2[i]) return false;
