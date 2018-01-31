@@ -34,7 +34,7 @@ class TablettesController < ApplicationController
 
     def self.tablet_enum(tablet)
         if !tablet || tablet.empty?
-            return 1 ... NUM_TABLETS
+            return 1 .. NUM_TABLETS
         else
             return tablet
         end
@@ -51,6 +51,12 @@ class TablettesController < ApplicationController
         tablet_enum(tablet).each do |t|
             @cues[t] = nil
         end
+    end
+
+    def self.load_cue(tablet, file)
+    end
+
+    def self.reset_cue(tablet)
     end
 
     def self.cues
