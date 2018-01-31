@@ -32,7 +32,19 @@
     opacity: 1;
 }
 
-#cue-form label {
+.director-form {
+    border: solid 1px green;
+    margin-bottom: 10px;
+    padding: 10px;
+}
+
+.director-form textarea {
+    display: block;
+    width: 100%;
+    min-height: 100px;
+}
+
+.director-form label {
     display: block;
     margin-bottom: 5px;
 }

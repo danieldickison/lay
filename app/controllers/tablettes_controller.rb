@@ -3,10 +3,11 @@ class TablettesController < ApplicationController
     TABLET_BASE_IP_NUM = 200
     NUM_TABLETS = 10
 
-    skip_before_action :verify_authenticity_token, :only => [:ping, :cue]
+    skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :preload]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
+    @preload = {} # {int => [file1, file2, ...]}
 
     def index
     end
@@ -15,17 +16,24 @@ class TablettesController < ApplicationController
     end
 
     def cue
-        self.class.set_cue(params[:tablet].to_i, params[:file], params[:time].to_f / 1000, seek: params[:seek].to_f)
+        self.class.start_cue([params[:tablet].to_i], params[:file], params[:time].to_f / 1000, seek: params[:seek].to_f)
+    end
+
+    def preload
+        files = params[:files].split("\n")
+        self.class.set_preload([params[:tablet].to_i], files)
     end
 
     def ping
         ip = request.headers['X-Forwarded-For'].split(',').first
-        tablet = ip.split('.')[3].to_i - TABLET_BASE_IP_NUM
+        tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
-        puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue}"
+        preload = self.class.preload[tablet] || []
+        puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue} preload: #{preload.join(', ')}"
         render json: {
             :tablet_ip => ip,
             :tablet_number => tablet,
+            :preload_files => preload,
             :next_cue_file => cue[:file],
             :next_cue_time => (cue[:time].to_f * 1000).round,
             :next_seek_time => (cue[:seek].to_f * 1000).round,
@@ -37,6 +45,13 @@ class TablettesController < ApplicationController
             return 1 .. NUM_TABLETS
         else
             return tablet
+        end
+    end
+
+    def self.set_preload(tablet, files)
+        tablet_enum(tablet).each do |t|
+            @preload[t] = files
+            puts "preload[#{t}] - #{files.join(', ')}"
         end
     end
 
@@ -61,5 +76,9 @@ class TablettesController < ApplicationController
 
     def self.cues
         return @cues
+    end
+
+    def self.preload
+        return @preload
     end
 end

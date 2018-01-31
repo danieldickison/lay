@@ -4,8 +4,10 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.MainThread;
@@ -64,6 +66,18 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 promptForServerHost();
             }
         }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            Log.d(TAG, "shouldOverrideUrlLoading: " + url);
+            if (url.endsWith(PAGE_PATH)) {
+                return false;
+            } else {
+                stopLockTask();
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                return true;
+            }
+        }
     };
 
     private final Object mJSInterface = new Object() {
@@ -76,6 +90,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                     setNextVideoCue(path, timestamp, seekTime);
                 }
             });
+        }
+
+        @JavascriptInterface
+        public void setPreloadFiles(final String[] paths) {
+            Log.d(TAG, "setPreloadFiles: " + Arrays.toString(paths));
         }
     };
 
@@ -141,8 +160,9 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         checkForCrashes();
         checkForUpdates();
 
-        File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        Log.d(TAG, "downloads list: " + Arrays.toString(downloads.list()));
+        if (mHost != null) {
+            startLockTask();
+        }
     }
 
     @Override
