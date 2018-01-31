@@ -20,7 +20,7 @@ class TablettesController < ApplicationController
 
     def ping
         ip = request.headers['X-Forwarded-For'].split(',').first
-        tablet = ip.split('.')[3].to_i - TABLET_BASE_IP_NUM
+        tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
         puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue}"
         render json: {
