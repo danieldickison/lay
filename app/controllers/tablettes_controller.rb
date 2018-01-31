@@ -48,7 +48,8 @@ class TablettesController < ApplicationController
         end
     end
 
-    def self.set_preload(tablet, files)
+    def self.load_cue(tablet, files)
+        files = [files] if !files.is_a?(Array)
         tablet_enum(tablet).each do |t|
             @preload[t] = files
             puts "preload[#{t}] - #{files.join(', ')}"
@@ -68,10 +69,10 @@ class TablettesController < ApplicationController
         end
     end
 
-    def self.load_cue(tablet, file)
-    end
-
     def self.reset_cue(tablet)
+        tablet_enum(tablet).each do |t|
+            #
+        end
     end
 
     def self.cues
