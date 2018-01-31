@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.MainThread;
 import android.text.InputType;
 import android.util.Log;
@@ -23,8 +24,10 @@ import android.widget.ProgressBar;
 import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 public class WebViewActivity extends Activity implements NtpSync.Callback {
 
@@ -137,6 +140,9 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
         checkForCrashes();
         checkForUpdates();
+
+        File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        Log.d(TAG, "downloads list: " + Arrays.toString(downloads.list()));
     }
 
     @Override
@@ -196,7 +202,14 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mVideoHolders[1].fadeOut();
         } else {
             mVideoViewIndex = (mVideoViewIndex + 1) % 2;
-            mVideoHolders[mVideoViewIndex].cueNext("http://" + mHost + ":" + PORT + path, timestamp, seekTime);
+            String url;
+            if (path.startsWith("downloads:")) {
+                File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                url = new File(downloads, path.substring(10)).getAbsolutePath();
+            } else {
+                url ="http://" + mHost + ":" + PORT + path;
+            }
+            mVideoHolders[mVideoViewIndex].cueNext(url, timestamp, seekTime);
         }
     }
 
