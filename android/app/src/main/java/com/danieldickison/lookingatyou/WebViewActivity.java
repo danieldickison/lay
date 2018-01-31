@@ -3,14 +3,22 @@ package com.danieldickison.lookingatyou;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.DownloadManager;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.MainThread;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Surface;
@@ -27,7 +35,11 @@ import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
@@ -49,6 +61,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private String mHost;
     private volatile long mClockOffset;
+
+    private File mDownloadDirectory;
 
     private final WebViewClient mWebClient = new WebViewClient() {
         @Override
@@ -95,6 +109,58 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         @JavascriptInterface
         public void setPreloadFiles(final String[] paths) {
             Log.d(TAG, "setPreloadFiles: " + Arrays.toString(paths));
+            byte[] buffer = new byte[10240];
+            for (String path : paths) {
+                File file = new File(mDownloadDirectory, path);
+                if (!file.getParentFile().mkdirs()) {
+                    Log.e(TAG, "setPreloadFiles: failed to create dir for " + file);
+                    break;
+                }
+                if (file.exists()) {
+                    Log.d(TAG, "setPreloadFiles: already exists: " + file);
+                } else {
+                    Log.d(TAG, "setPreloadFiles: starting download of " + serverURL(path) + " to " + file);
+                    try {
+                        if (!file.createNewFile()) {
+                            Log.e(TAG, "setPreloadFiles: failed to create file " + file);
+                            break;
+                        }
+                        URL url = new URL(serverURL(path));
+                        URLConnection conn = url.openConnection();
+                        InputStream stream = conn.getInputStream();
+                        try (FileOutputStream out = new FileOutputStream(file)) {
+                            int len;
+                            while ((len = stream.read(buffer)) > 0) {
+                                out.write(buffer, 0, len);
+                            }
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "setPreloadFiles: failed to download file", e);
+                    }
+                    Log.d(TAG, "setPreloadFiles: finished download to " + file);
+
+                    /* Fails with permissions saying we need WRITE_EXTERNAL_STORAGE even though we have that permission already...
+                    Uri uri = Uri.parse(serverURL(path));
+                    DownloadManager.Request req = new DownloadManager.Request(uri);
+                    req.setDestinationUri(Uri.fromFile(file));
+                    DownloadManager manager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+                    assert manager != null;
+                    Log.d(TAG, "setPreloadFiles: starting download of " + uri + " to " + file);
+                    manager.enqueue(req);
+                    */
+                }
+            }
+        }
+    };
+
+    private final BroadcastReceiver mDownloadReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            int dlId = intent.getIntExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
+            DownloadManager manager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+            assert manager != null;
+            Uri localUri = manager.getUriForDownloadedFile(dlId);
+            Log.d(TAG, "Download completed: " + localUri);
         }
     };
 
@@ -120,7 +186,47 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         mWebView.setWebViewClient(mWebClient);
 
+        registerReceiver(mDownloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+        //mDownloadDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        mDownloadDirectory = getExternalFilesDir(null);
+
         promptForServerHost();
+
+        if (checkPermission()) {
+            Log.d(TAG, "already have necessary permissions");
+        } else {
+            Log.d(TAG, "requesting for permissions");
+        }
+    }
+
+    public static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
+
+    private boolean checkPermission() {
+        int currentAPIVersion = Build.VERSION.SDK_INT;
+        Log.d(TAG, "checkPermission: currentAPIVersion = " + currentAPIVersion);
+        if (currentAPIVersion >= android.os.Build.VERSION_CODES.M) {
+            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+    
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "onRequestPermissionsResult: granted!");
+                } else {
+                    Log.e(TAG, "onRequestPermissionsResult: denied!");
+                }
+                break;
+        }
     }
 
     private void promptForServerHost() {
@@ -183,7 +289,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         } catch (UnknownHostException e) {
             throw new RuntimeException("Unable to start NtpSync to host " + host, e);
         }
-        mWebView.loadUrl("http://" + host + ":" + PORT + PAGE_PATH);
+        mWebView.loadUrl(serverURL(PAGE_PATH));
         getPreferences(0).edit().putString(HOST_KEY, host).apply();
     }
 
@@ -224,13 +330,16 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mVideoViewIndex = (mVideoViewIndex + 1) % 2;
             String url;
             if (path.startsWith("downloads:")) {
-                File downloads = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-                url = new File(downloads, path.substring(10)).getAbsolutePath();
+                url = new File(mDownloadDirectory, path.substring(10)).getAbsolutePath();
             } else {
-                url ="http://" + mHost + ":" + PORT + path;
+                url = serverURL(path);
             }
             mVideoHolders[mVideoViewIndex].cueNext(url, timestamp, seekTime);
         }
+    }
+
+    private String serverURL(String path) {
+        return "http://" + mHost + ":" + PORT + path;
     }
 
     private void stopInactiveVideo() {
@@ -270,7 +379,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
-            Log.d(TAG, "onSurfaceTextureAvailable: " + this);
+            //Log.d(TAG, "onSurfaceTextureAvailable: " + this);
             mediaPlayer.setSurface(new Surface(surfaceTexture));
         }
 
