@@ -76,6 +76,7 @@ class TablettesController < ApplicationController
     def self.reset_cue(tablet)
         tablet_enum(tablet).each do |t|
             @preload[t] = nil
+            @cues[t] = nil
         end
     end
 
