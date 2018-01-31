@@ -29,6 +29,7 @@ import net.hockeyapp.android.UpdateManager;
 import java.io.File;
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 public class WebViewActivity extends Activity implements NtpSync.Callback {
 
@@ -89,6 +90,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                     setNextVideoCue(path, timestamp, seekTime);
                 }
             });
+        }
+
+        @JavascriptInterface
+        public void setPreloadFiles(final String[] paths) {
+            Log.d(TAG, "setPreloadFiles: " + Arrays.toString(paths));
         }
     };
 

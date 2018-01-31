@@ -21,5 +21,16 @@ document.addEventListener("DOMContentLoaded", event => {
         body.append('seek', cueForm.elements.seek.value);
         fetch('/tablettes/cue.json', {method: 'POST', body: body});
     });
+
+    let preloadForm = document.getElementById('preload-form');
+    preloadForm.addEventListener('submit', event => {
+        event.preventDefault();
+        let tablet = parseInt(preloadForm.elements.tablet.value);
+        let files = preloadForm.elements.files.value;
+        let body = new URLSearchParams();
+        body.append('tablet', tablet);
+        body.append('files', files);
+        fetch('/tablettes/preload.json', {method: 'POST', body: body});
+    });
 });
 })();

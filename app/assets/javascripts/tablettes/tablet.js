@@ -13,6 +13,7 @@ let PING_INTERVAL = 1000;
 var clockOffset = 0;
 var currentCueTime = null;
 var nextCueTimeout = null;
+var currentPreload = [];
 
 let LOGO_BG_INTERVAL = 20000;
 var currentLogoBgIndex = 0;
@@ -44,10 +45,15 @@ function sendPing() {
             clearTimeout(nextCueTimeout);
             currentCueTime = nextCueTime;
             scheduleCueTick();
-            let path = nextCueFile && nextCueFile.replace(/([\/:]?)([^\/:]+)([\/:]?)/g, function (match, p1, p2, p3) {
-                return p1 + encodeURIComponent(p2) + p3;
-            });
+            let path = uriEscapePath(nextCueFile);
             layNativeInterface.setVideoCue(path, nextCueTime, nextSeekTime);
+        }
+
+        if (!arraysEqual(json.preload_files, currentPreload)) {
+            log("Received new preload files", json.preload_files);
+            currentPreload = json.preload_files;
+            let paths = currentPreload.map(p => uriEscapePath(p));
+            layNativeInterface.setPreloadFiles(paths);
         }
 
         document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " — " + json.tablet_ip;
@@ -90,6 +96,18 @@ function cycleLogoBg() {
     list.forEach((el, i) => {
         el.classList.toggle('logo-bg-active', i === currentLogoBgIndex);
     });
+}
+
+function arraysEqual(a1, a2) {
+    if (a1.length !== a2.length) return false;
+    for (var i = 0; i < a1.length; i++) {
+        if (a1[i] !== a2[i]) return false;
+    }
+    return true;
+}
+
+function uriEscapePath(path) {
+    return path && path.replace(/([\/:]?)([^\/:]+)([\/:]?)/g, (m, p1, p2, p3) => p1 + encodeURIComponent(p2) + p3);
 }
 
 })();

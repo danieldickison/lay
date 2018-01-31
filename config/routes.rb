@@ -6,6 +6,7 @@ Rails.application.routes.draw do
   get 'tablettes/director'
   post 'tablettes/ping'
   post 'tablettes/cue'
+  post 'tablettes/preload'
 
   get 'secrets/index'
   get 'secrets/ping'
