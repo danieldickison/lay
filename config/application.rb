@@ -46,21 +46,20 @@ module Lay
         time = Time.now + 7
         args = message.to_a
         file = args[0]
-        args[1 .. -1].each do |tablet|
-            TablettesController.set_cue(tablet, file, time)
-        end
+        tablets = args[1 .. -1].collect {|t| t.to_i}
+        puts "B tablets #{tablets.inspect}"
+        TablettesController.start_cue(tablets, file, time)
       end
 
       # /stop <tablet#>...
       @server.add_method('/stop') do |message|
-        message.to_a.each do |tablet|
-          TablettesController.stop_cue(tablet)
-        end
+        tablets = message.to_a.collect {|t| t.to_i}
+        TablettesController.stop_cue(tablets)
       end
 
-      @server.add_method('*') do |message|
-        puts "UNRECOGNIZED OSC COMMAND #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
-      end
+      # @server.add_method('*') do |message|
+      #   puts "UNRECOGNIZED OSC COMMAND #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
+      # end
 
       Thread.new do
         @server.run
