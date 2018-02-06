@@ -65,19 +65,22 @@ public class Downloader {
             } else {
                 Log.d(TAG, "downloader: starting download of " + serverURL(path) + " to " + file);
                 try {
-                    if (!file.createNewFile()) {
-                        Log.e(TAG, "setPreloadFiles: failed to create file " + file);
-                        return;
-                    }
+                    File temp = File.createTempFile("download", null, mDownloadDirectory);
                     URL url = new URL(serverURL(path));
                     URLConnection conn = url.openConnection();
                     InputStream stream = conn.getInputStream();
-                    try (FileOutputStream out = new FileOutputStream(file)) {
+                    try (FileOutputStream out = new FileOutputStream(temp)) {
                         byte[] buffer = new byte[10240];
                         int len;
                         while ((len = stream.read(buffer)) > 0) {
                             out.write(buffer, 0, len);
                         }
+                    }
+                    Log.d(TAG, "setPreloadFiles: rename " + temp + " to " + file);
+                    if (!temp.renameTo(file)) {
+                        Log.w(TAG, "setPreloadFiles: failed to rename temp file");
+                        //noinspection ResultOfMethodCallIgnored
+                        temp.delete();
                     }
                     Log.d(TAG, "setPreloadFiles: finished download to " + file);
                 } catch (IOException e) {
