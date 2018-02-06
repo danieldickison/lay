@@ -58,7 +58,7 @@ class TablettesController < ApplicationController
             puts
             @@cache_infos.each_with_index do |info, t|
                 next if !info
-                puts "tablet #{t} cache: #{info}"
+                puts "tablet #{t} cache:"
                 info.split('|').each do |f|
                     path, start_time, end_time, error = f.split(';')
                     error = nil if error == ''
