@@ -24,6 +24,7 @@ public class Downloader {
     private final File mDownloadDirectory;
     private String mHost;
     private int mPort;
+    private final Object mCacheLock = new Object();
     private final List<CacheInfo> mCachedPaths = new ArrayList<>(10);
 
     private static class CacheInfo {
@@ -61,8 +62,10 @@ public class Downloader {
         }
     }
 
-    synchronized public String getCacheInfo() {
-        return TextUtils.join("|", mCachedPaths);
+    public String getCacheInfo() {
+        synchronized (mCacheLock) {
+            return TextUtils.join("|", mCachedPaths);
+        }
     }
 
     private final Runnable clearCacheRunnable = new Runnable() {
@@ -70,21 +73,22 @@ public class Downloader {
         public void run() {
             Log.d(TAG, "downloader: clearing cache");
             rmDir(new File(mDownloadDirectory, "lay"));
-            synchronized (this) {
+            synchronized (mCacheLock) {
                 mCachedPaths.clear();
             }
         }
     };
 
     private class DownloadRunnable implements Runnable {
-        private final String path;
+        private final CacheInfo info;
 
-        private DownloadRunnable(String path) {
-            this.path = path;
+        private DownloadRunnable(CacheInfo info) {
+            this.info = info;
         }
 
         @Override
         public void run() {
+            String path = info.path;
             File file = new File(mDownloadDirectory, path);
             if (!file.getParentFile().mkdirs()) {
                 Log.d(TAG, "downloader: failed to create dir for " + file);
@@ -93,9 +97,7 @@ public class Downloader {
                 Log.d(TAG, "downloader: already exists: " + file);
             } else {
                 Log.d(TAG, "downloader: starting download of " + serverURL(path) + " to " + file);
-                CacheInfo info = new CacheInfo(path);
-                synchronized (this) {
-                    mCachedPaths.add(info);
+                synchronized (mCacheLock) {
                     info.startTime = new Date();
                 }
                 try {
@@ -116,12 +118,12 @@ public class Downloader {
                         //noinspection ResultOfMethodCallIgnored
                         temp.delete();
                     }
-                    synchronized (this) {
+                    synchronized (mCacheLock) {
                         info.endTime = new Date();
                     }
                     Log.d(TAG, "setPreloadFiles: finished download to " + file);
                 } catch (IOException e) {
-                    synchronized (this) {
+                    synchronized (mCacheLock) {
                         info.error = e;
                     }
                     Log.e(TAG, "setPreloadFiles: failed to download file", e);
@@ -138,7 +140,14 @@ public class Downloader {
 
         Log.d(TAG, "setPreloadFiles: " + Arrays.toString(paths));
         for (String path : paths) {
-            mExecutorService.submit(new DownloadRunnable(path));
+            File file = new File(mDownloadDirectory, path);
+            if (!file.exists()) {
+                CacheInfo info = new CacheInfo(path);
+                synchronized (mCacheLock) {
+                    mCachedPaths.add(info);
+                }
+                mExecutorService.submit(new DownloadRunnable(info));
+            }
         }
     }
 
