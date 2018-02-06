@@ -4,9 +4,16 @@
 (() => {
 'use strict';
 
-window.setClockOffset = function (offset) {
-    document.getElementById('clock-offset').innerText = "Clock offset: " + offset + "ms";
-    clockOffset = offset;
+window.setClockOffsets = function (offsets) {
+    let latest = offsets[0];
+    let len = offsets.length;
+    let sum = offsets.reduce((accum, val) => accum + val, 0);
+    let mean = sum / offsets.length;
+    offsets.sort((a, b) => a - b);
+    let median = offsets[Math.floor(offsets.length / 2)];
+    let stdev = Math.sqrt(offsets.reduce((accum, val) => accum + Math.pow(val - mean, 2)) / Math.max(1, (len - 1)));
+    document.getElementById('clock-offset').innerText = "Clock offset (ms): latest=" + latest + " mean=" + latest.toFixed(1) + " median=" + median + " stdev=" + stdev.toFixed(1);
+    clockOffset = median;
 };
 
 window.setNowPlaying = function (np) {

@@ -9,12 +9,11 @@ import org.apache.commons.net.ntp.TimeInfo;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 
 public class NtpSync {
 
     public interface Callback {
-        @WorkerThread void onUpdateClockOffset(long offset);
+        @WorkerThread void onUpdateClockOffsets(long[] offsets);
     }
 
     final private static int INTERVAL_MS = 2_000;
@@ -27,6 +26,7 @@ public class NtpSync {
 
     final private long[] pastOffsets = new long[PAST_OFFSETS_COUNT];
     private int nextOffsetIndex = 0;
+    private int successfulRequests = 0;
 
     public NtpSync(String host, Callback callback) throws UnknownHostException {
         this.host = host;
@@ -51,20 +51,18 @@ public class NtpSync {
         }
     }
 
-    public long getMedianOffset() {
+    private void notifyCallback() {
         long[] offsets;
         synchronized (pastOffsets) {
-            int length = pastOffsets.length;
-            for (int i = 0; i < pastOffsets.length; i++) {
-                if (pastOffsets[i] == Long.MIN_VALUE) {
-                    length = i;
-                    break;
-                }
+            int count = Math.min(successfulRequests, pastOffsets.length);
+            offsets = new long[count];
+            for (int i = 0; i < count; i++) {
+                int j = nextOffsetIndex - i - 1;
+                if (j < 0) j += pastOffsets.length;
+                offsets[i] = pastOffsets[j];
             }
-            offsets = Arrays.copyOf(pastOffsets, length);
         }
-        Arrays.sort(offsets);
-        return offsets.length == 0 ? 0 : offsets[offsets.length / 2];
+        callback.onUpdateClockOffsets(offsets);
     }
 
     final private Runnable updateRunnable = new Runnable() {
@@ -79,10 +77,10 @@ public class NtpSync {
                     synchronized (pastOffsets) {
                         pastOffsets[nextOffsetIndex] = offset;
                         nextOffsetIndex = (nextOffsetIndex + 1) % pastOffsets.length;
+                        successfulRequests++;
                     }
-                    long median = getMedianOffset();
-                    Log.d("lay", "NTP new clockOffset: " + offset + "ms median: " + median + "ms");
-                    callback.onUpdateClockOffset(median);
+                    Log.d("lay", "NTP received clockOffset: " + offset + "; " + successfulRequests + " successful requests");
+                    notifyCallback();
                 } catch (UnknownHostException e) {
                     Log.w("lay", "NTP unknown host: " + host);
                     return;
