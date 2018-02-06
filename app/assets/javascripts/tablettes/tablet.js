@@ -47,6 +47,9 @@ document.addEventListener("DOMContentLoaded", event => {
         location.reload();
     });
 
+    let version = document.getElementById('version');
+    version.innerText = "Build: " + layNativeInterface.getBuildName();
+
     //setInterval(cycleLogoBg, LOGO_BG_INTERVAL);
     setInterval(sendPing, PING_INTERVAL);
     setInterval(cueTick, 100);

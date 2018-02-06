@@ -7,7 +7,7 @@ android {
         minSdkVersion 22
         targetSdkVersion 27
         versionCode 6
-        versionName "1.0"
+        versionName "Roundabout Brewery"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [HOCKEYAPP_APP_ID: "c18ec27b26df41fb9f93f23b38df95c6"]
     }

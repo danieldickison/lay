@@ -110,6 +110,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         public String getCacheInfo() {
             return mDownloader.getCacheInfo();
         }
+
+        @JavascriptInterface
+        public String getBuildName() {
+            return BuildConfig.VERSION_NAME;
+        }
     };
 
     private NtpSync mNtpSync;
