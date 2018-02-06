@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", event => {
 function sendPing() {
     let body = new URLSearchParams();
     body.append('now_playing_path', nowPlaying.path);
+    body.append('clock_offset', clockOffset);
     fetch('/tablettes/ping.json', {method: 'POST', body: body})
     .then(response => {
         return response.json();

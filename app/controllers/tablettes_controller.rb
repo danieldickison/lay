@@ -6,6 +6,7 @@ class TablettesController < ApplicationController
     @@last_ping_stats = Time.now
     @@ping_stats = []
     @@now_playing_paths = []
+    @@clock_offsets = []
 
     skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :preload]
 
@@ -32,9 +33,10 @@ class TablettesController < ApplicationController
         end
     end
 
-    def ping_stats(tablet, now_playing_path)
+    def ping_stats(tablet, now_playing_path, clock_offset)
         @@ping_stats[tablet] = Time.now
         @@now_playing_paths[tablet] = now_playing_path
+        @@clock_offsets[tablet] = clock_offset
         if (Time.now - @@last_ping_stats) >= 5
             puts
             @@last_ping_stats = Time.now
@@ -44,7 +46,12 @@ class TablettesController < ApplicationController
                 else
                     ago = "  ???"
                 end
-                puts "[#{'%2d' % t}] - #{ago} - #{@@now_playing_paths[t]}"
+                if @@clock_offsets[t]
+                    clock = "%3.0fms" % @@clock_offsets[t]
+                else
+                    clock = "  ???"
+                end
+                puts "[#{'%2d' % t}] - #{ago} - #{clock} - #{@@now_playing_paths[t]}"
             end
         end
     end
@@ -52,7 +59,7 @@ class TablettesController < ApplicationController
     def ping
         ip = request.headers['X-Forwarded-For'].split(',').first
         tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
-        ping_stats(tablet, params[:now_playing_path])
+        ping_stats(tablet, params[:now_playing_path], params[:clock_offset])
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
         preload = self.class.preload[tablet]
         # puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue} preload: #{preload && preload.join(', ')}"
