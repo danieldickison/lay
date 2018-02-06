@@ -52,7 +52,11 @@ function sendPing() {
         }
 
         if (!arraysEqual(json.preload_files, currentPreload)) {
-            log("Received new preload files", json.preload_files);
+            if (json.preload_files) {
+                log("Received new preload files", json.preload_files);
+            } else {
+                log("Clearing preload cache");
+            }
             currentPreload = json.preload_files;
             let paths = currentPreload && currentPreload.map(p => uriEscapePath(p));
             layNativeInterface.setPreloadFiles(paths);

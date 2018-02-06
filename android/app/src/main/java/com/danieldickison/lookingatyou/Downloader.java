@@ -79,10 +79,10 @@ public class Downloader {
                             out.write(buffer, 0, len);
                         }
                     }
+                    Log.d(TAG, "setPreloadFiles: finished download to " + file);
                 } catch (IOException e) {
                     Log.e(TAG, "setPreloadFiles: failed to download file", e);
                 }
-                Log.d(TAG, "setPreloadFiles: finished download to " + file);
             }
         }
     }
