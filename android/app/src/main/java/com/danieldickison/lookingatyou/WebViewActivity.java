@@ -3,12 +3,8 @@ package com.danieldickison.lookingatyou;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
@@ -34,14 +30,8 @@ import android.widget.ProgressBar;
 import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 
 public class WebViewActivity extends Activity implements NtpSync.Callback {
 
@@ -62,7 +52,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     private String mHost;
     private volatile long mClockOffset;
 
-    private File mDownloadDirectory;
+    private Downloader mDownloader;
 
     private final WebViewClient mWebClient = new WebViewClient() {
         @Override
@@ -106,83 +96,9 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             });
         }
 
-        private void rmDir(File dir) {
-            if (!dir.exists()) return;
-            for (File f : dir.listFiles()) {
-                if (f.isDirectory()) {
-                    rmDir(f);
-                } else {
-                    Log.d(TAG, "rmDir: deleting file " + f);
-                    if (!f.delete()) {
-                        Log.w(TAG, "rmDir: failed to delete " + f);
-                    }
-                }
-            }
-            if (!dir.delete()) {
-                Log.w(TAG, "rmDir: failed to delete dir " + dir);
-            }
-        }
-
         @JavascriptInterface
         public void setPreloadFiles(final String[] paths) {
-            if (paths == null) {
-                Log.d(TAG, "setPreloadFiles: clearing cache");
-                rmDir(new File(mDownloadDirectory, "lay"));
-                return;
-            }
-
-            Log.d(TAG, "setPreloadFiles: " + Arrays.toString(paths));
-            byte[] buffer = new byte[10240];
-            for (String path : paths) {
-                File file = new File(mDownloadDirectory, path);
-                if (!file.getParentFile().mkdirs()) {
-                    Log.d(TAG, "setPreloadFiles: failed to create dir for " + file);
-                }
-                if (file.exists()) {
-                    Log.d(TAG, "setPreloadFiles: already exists: " + file);
-                } else {
-                    Log.d(TAG, "setPreloadFiles: starting download of " + serverURL(path) + " to " + file);
-                    try {
-                        if (!file.createNewFile()) {
-                            Log.e(TAG, "setPreloadFiles: failed to create file " + file);
-                            break;
-                        }
-                        URL url = new URL(serverURL(path));
-                        URLConnection conn = url.openConnection();
-                        InputStream stream = conn.getInputStream();
-                        try (FileOutputStream out = new FileOutputStream(file)) {
-                            int len;
-                            while ((len = stream.read(buffer)) > 0) {
-                                out.write(buffer, 0, len);
-                            }
-                        }
-                    } catch (IOException e) {
-                        Log.e(TAG, "setPreloadFiles: failed to download file", e);
-                    }
-                    Log.d(TAG, "setPreloadFiles: finished download to " + file);
-
-                    /* Fails with permissions saying we need WRITE_EXTERNAL_STORAGE even though we have that permission already...
-                    Uri uri = Uri.parse(serverURL(path));
-                    DownloadManager.Request req = new DownloadManager.Request(uri);
-                    req.setDestinationUri(Uri.fromFile(file));
-                    DownloadManager manager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-                    assert manager != null;
-                    Log.d(TAG, "setPreloadFiles: starting download of " + uri + " to " + file);
-                    manager.enqueue(req);
-                    */
-                }
-            }
-        }
-    };
-
-    private final BroadcastReceiver mDownloadReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            int dlId = intent.getIntExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0);
-            DownloadManager manager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
-            assert manager != null;
-            Uri localUri = manager.getUriForDownloadedFile(dlId);
-            Log.d(TAG, "Download completed: " + localUri);
+            mDownloader.setPreloadFiles(paths);
         }
     };
 
@@ -208,9 +124,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         mWebView.setWebViewClient(mWebClient);
 
-        registerReceiver(mDownloadReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-        //mDownloadDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        mDownloadDirectory = getExternalFilesDir(null);
+        mDownloader = new Downloader(getExternalFilesDir(null));
 
         promptForServerHost();
 
@@ -301,6 +215,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private void connectToHost(String host) {
         mSpinny.setVisibility(View.VISIBLE);
+        Log.d(TAG, "connectToHost: " + host);
 
         mHost = host;
         try {
@@ -311,6 +226,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         } catch (UnknownHostException e) {
             throw new RuntimeException("Unable to start NtpSync to host " + host, e);
         }
+        mDownloader.setHost(host, PORT);
         mWebView.loadUrl(serverURL(PAGE_PATH));
         getPreferences(0).edit().putString(HOST_KEY, host).apply();
     }
@@ -350,12 +266,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mVideoHolders[1].fadeOut();
         } else {
             mVideoViewIndex = (mVideoViewIndex + 1) % 2;
-            String url;
-            if (path.startsWith("downloads:")) {
-                url = new File(mDownloadDirectory, path.substring(10)).getAbsolutePath();
-            } else {
-                url = serverURL(path);
-            }
+            String url = mDownloader.getVideoURL(path);
             mVideoHolders[mVideoViewIndex].cueNext(url, timestamp, seekTime);
         }
     }
@@ -417,6 +328,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {}
 
         private void cueNext(String url, long timestamp, int seekTime) {
+            Log.i(TAG, "cueNext: " + url + " at " + timestamp);
             this.seekTime = seekTime;
             mediaPlayer.reset();
             try {
