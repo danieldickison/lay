@@ -66,8 +66,8 @@ class TablettesController < ApplicationController
                     end_time = nil if end_time == ''
                     status = case
                     when error then "error: #{error}"
-                    when start_time && end_time then 'cached'
-                    when start_time then 'downloading'
+                    when start_time && end_time then 'cached (%2.0fs)' % ((end_time.to_i - start_time.to_i) / 1000)
+                    when start_time then 'downloading (%2.0fs)' % (Time.now.to_f - start_time.to_i / 1000)
                     else 'queued'
                     end
                     puts "  #{status}: #{path}"
