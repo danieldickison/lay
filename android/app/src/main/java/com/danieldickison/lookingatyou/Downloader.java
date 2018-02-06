@@ -1,5 +1,6 @@
 package com.danieldickison.lookingatyou;
 
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.io.File;
@@ -8,7 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,6 +24,25 @@ public class Downloader {
     private final File mDownloadDirectory;
     private String mHost;
     private int mPort;
+    private final Object mCacheLock = new Object();
+    private final List<CacheInfo> mCachedPaths = new ArrayList<>(10);
+
+    private static class CacheInfo {
+        private final String path;
+        private Date startTime;
+        private Date endTime;
+        private Throwable error;
+
+        private CacheInfo(String path) {
+            this.path = path;
+        }
+
+        @Override
+        public String toString() {
+            // path;startTime;endTime;error
+            return path + ";" + (startTime != null ? startTime.getTime() : "") + ";" + (endTime != null ? endTime.getTime() : "") + ";" + (error != null ? error.toString() : "");
+        }
+    }
 
     public Downloader(File downloadDirectory) {
         mDownloadDirectory = downloadDirectory;
@@ -39,23 +62,33 @@ public class Downloader {
         }
     }
 
+    public String getCacheInfo() {
+        synchronized (mCacheLock) {
+            return TextUtils.join("|", mCachedPaths);
+        }
+    }
+
     private final Runnable clearCacheRunnable = new Runnable() {
         @Override
         public void run() {
             Log.d(TAG, "downloader: clearing cache");
             rmDir(new File(mDownloadDirectory, "lay"));
+            synchronized (mCacheLock) {
+                mCachedPaths.clear();
+            }
         }
     };
 
     private class DownloadRunnable implements Runnable {
-        private final String path;
+        private final CacheInfo info;
 
-        private DownloadRunnable(String path) {
-            this.path = path;
+        private DownloadRunnable(CacheInfo info) {
+            this.info = info;
         }
 
         @Override
         public void run() {
+            String path = info.path;
             File file = new File(mDownloadDirectory, path);
             if (!file.getParentFile().mkdirs()) {
                 Log.d(TAG, "downloader: failed to create dir for " + file);
@@ -64,6 +97,9 @@ public class Downloader {
                 Log.d(TAG, "downloader: already exists: " + file);
             } else {
                 Log.d(TAG, "downloader: starting download of " + serverURL(path) + " to " + file);
+                synchronized (mCacheLock) {
+                    info.startTime = new Date();
+                }
                 try {
                     File temp = File.createTempFile("download", null, mDownloadDirectory);
                     URL url = new URL(serverURL(path));
@@ -82,8 +118,14 @@ public class Downloader {
                         //noinspection ResultOfMethodCallIgnored
                         temp.delete();
                     }
+                    synchronized (mCacheLock) {
+                        info.endTime = new Date();
+                    }
                     Log.d(TAG, "setPreloadFiles: finished download to " + file);
                 } catch (IOException e) {
+                    synchronized (mCacheLock) {
+                        info.error = e;
+                    }
                     Log.e(TAG, "setPreloadFiles: failed to download file", e);
                 }
             }
@@ -98,7 +140,14 @@ public class Downloader {
 
         Log.d(TAG, "setPreloadFiles: " + Arrays.toString(paths));
         for (String path : paths) {
-            mExecutorService.submit(new DownloadRunnable(path));
+            File file = new File(mDownloadDirectory, path);
+            if (!file.exists()) {
+                CacheInfo info = new CacheInfo(path);
+                synchronized (mCacheLock) {
+                    mCachedPaths.add(info);
+                }
+                mExecutorService.submit(new DownloadRunnable(info));
+            }
         }
     }
 

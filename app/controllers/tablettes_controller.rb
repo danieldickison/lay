@@ -6,6 +6,8 @@ class TablettesController < ApplicationController
     @@last_ping_stats = Time.now
     @@ping_stats = []
     @@now_playing_paths = []
+    @@clock_infos = []
+    @@cache_infos = []
 
     skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :preload]
 
@@ -32,9 +34,11 @@ class TablettesController < ApplicationController
         end
     end
 
-    def ping_stats(tablet, now_playing_path)
+    def ping_stats(tablet, now_playing_path, clock_info, cache_info)
         @@ping_stats[tablet] = Time.now
         @@now_playing_paths[tablet] = now_playing_path
+        @@clock_infos[tablet] = clock_info
+        @@cache_infos[tablet] = cache_info
         if (Time.now - @@last_ping_stats) >= 2
             puts
             @@last_ping_stats = Time.now
@@ -44,7 +48,30 @@ class TablettesController < ApplicationController
                 else
                     ago = "  ???"
                 end
-                puts "[#{'%2d' % t}] - #{ago} - #{@@now_playing_paths[t]}"
+                if @@clock_infos[t]
+                    clock = @@clock_infos[t]
+                else
+                    clock = "  ???"
+                end
+                puts "[#{'%2d' % t}] - #{ago} - #{clock} - #{@@now_playing_paths[t]}"
+            end
+            puts
+            @@cache_infos.each_with_index do |info, t|
+                next if !info
+                puts "tablet #{t} cache:"
+                info.split('|').each do |f|
+                    path, start_time, end_time, error = f.split(';')
+                    error = nil if error == ''
+                    start_time = nil if start_time == ''
+                    end_time = nil if end_time == ''
+                    status = case
+                    when error then "error: #{error}"
+                    when start_time && end_time then 'cached (%2.0fs)' % ((end_time.to_i - start_time.to_i) / 1000)
+                    when start_time then 'downloading (%2.0fs)' % (Time.now.to_f - start_time.to_i / 1000)
+                    else 'queued'
+                    end
+                    puts "  #{status}: #{path}"
+                end
             end
         end
     end
@@ -52,7 +79,7 @@ class TablettesController < ApplicationController
     def ping
         ip = request.headers['X-Forwarded-For'].split(',').first
         tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
-        ping_stats(tablet, params[:now_playing_path])
+        ping_stats(tablet, params[:now_playing_path], params[:clock_info], params[:cache_info])
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
         preload = self.class.preload[tablet]
         # puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue} preload: #{preload && preload.join(', ')}"

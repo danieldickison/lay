@@ -30,11 +30,13 @@ import android.widget.ProgressBar;
 import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 
 public class WebViewActivity extends Activity implements NtpSync.Callback {
 
@@ -102,6 +104,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         @JavascriptInterface
         public void setPreloadFiles(final String[] paths) {
             mDownloader.setPreloadFiles(paths);
+        }
+
+        @JavascriptInterface
+        public String getCacheInfo() {
+            return mDownloader.getCacheInfo();
         }
     };
 
@@ -235,14 +242,18 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     @Override
-    public void onUpdateClockOffset(final long offset) {
-        if (offset == mClockOffset) return;
-
-        mClockOffset = offset;
+    public void onUpdateClockOffsets(final long[] offsets) {
+        final JSONArray json = new JSONArray();
+        for (long offset : offsets) {
+            json.put(offset);
+        }
+        // Set mClockOffset to the median. Don't care about averaging the middle 2 if length is even.
+        Arrays.sort(offsets);
+        mClockOffset = offsets[offsets.length / 2];
         mWebView.post(new Runnable() {
             @Override
             public void run() {
-                mWebView.evaluateJavascript("setClockOffset(" + offset + ")", null);
+                mWebView.evaluateJavascript("setClockOffsets(" + json.toString() + ")", null);
             }
         });
     }
