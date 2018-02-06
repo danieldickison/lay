@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", event => {
         location.reload();
     });
 
-    setInterval(cycleLogoBg, LOGO_BG_INTERVAL);
+    //setInterval(cycleLogoBg, LOGO_BG_INTERVAL);
     setInterval(sendPing, PING_INTERVAL);
     setInterval(cueTick, 100);
 
