@@ -12,7 +12,8 @@ window.setClockOffsets = function (offsets) {
     offsets.sort((a, b) => a - b);
     let median = offsets[Math.floor(offsets.length / 2)];
     let stdev = Math.sqrt(offsets.reduce((accum, val) => accum + Math.pow(val - mean, 2)) / Math.max(1, (len - 1)));
-    document.getElementById('clock-offset').innerText = "Clock offset (ms): latest=" + latest + " mean=" + latest.toFixed(1) + " median=" + median + " stdev=" + stdev.toFixed(1);
+    clockInfo = "latest=" + latest + " mean=" + latest.toFixed(1) + " median=" + median + " stdev=" + stdev.toFixed(1);
+    document.getElementById('clock-offset').innerText = "Clock offset (ms): " + clockInfo;
     clockOffset = median;
 };
 
@@ -28,6 +29,7 @@ window.clearNowPlaying = function (np) {
 
 let PING_INTERVAL = 100;
 var clockOffset = 0;
+var clockInfo = null;
 var currentCueTime = null;
 var nextCueTimeout = null;
 var currentPreload = null;
@@ -55,7 +57,8 @@ document.addEventListener("DOMContentLoaded", event => {
 function sendPing() {
     let body = new URLSearchParams();
     body.append('now_playing_path', nowPlaying.path);
-    body.append('clock_offset', clockOffset);
+    body.append('clock_info', clockInfo);
+    body.append('cache_info', layNativeInterface.getCacheInfo());
     fetch('/tablettes/ping.json', {method: 'POST', body: body})
     .then(response => {
         return response.json();

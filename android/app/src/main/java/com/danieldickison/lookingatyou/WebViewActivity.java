@@ -105,6 +105,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         public void setPreloadFiles(final String[] paths) {
             mDownloader.setPreloadFiles(paths);
         }
+
+        @JavascriptInterface
+        public String getCacheInfo() {
+            return mDownloader.getCacheInfo();
+        }
     };
 
     private NtpSync mNtpSync;
