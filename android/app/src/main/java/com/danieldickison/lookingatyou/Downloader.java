@@ -54,6 +54,16 @@ public class Downloader {
     }
 
     public String getVideoURL(String path) {
+        if (path.startsWith("downloads:")) {
+            Log.d(TAG, "getVideoURL: forcing local cache file for " + path);
+            path = path.substring(10);
+            File file = new File(mDownloadDirectory, path);
+            if (!file.exists()) {
+                Log.w(TAG, "getVideoURL: file does not exist; returning its path anyways" + file.getAbsolutePath());
+            }
+            return file.getAbsolutePath();
+        }
+
         File cacheFile = new File(mDownloadDirectory, path);
         if (cacheFile.exists()) {
             return cacheFile.getAbsolutePath();
@@ -170,8 +180,8 @@ public class Downloader {
                 }
             }
         }
-        if (!dir.delete()) {
-            Log.w(TAG, "rmDir: failed to delete dir " + dir);
-        }
+        //if (!dir.delete()) {
+        //    Log.w(TAG, "rmDir: failed to delete dir " + dir);
+        //}
     }
 }
