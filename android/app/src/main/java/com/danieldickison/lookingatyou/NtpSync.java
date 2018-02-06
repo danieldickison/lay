@@ -17,8 +17,8 @@ public class NtpSync {
         @WorkerThread void onUpdateClockOffset(long offset);
     }
 
-    final private static int INTERVAL_MS = 10_000;
-    final private static int PAST_OFFSETS_COUNT = 11;
+    final private static int INTERVAL_MS = 2_000;
+    final private static int PAST_OFFSETS_COUNT = 15;
 
     final private NTPUDPClient client = new NTPUDPClient();
     final private String host;
