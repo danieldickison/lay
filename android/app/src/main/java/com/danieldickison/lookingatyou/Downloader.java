@@ -110,7 +110,10 @@ public class Downloader {
                 rmDir(f);
             } else {
                 Log.d(TAG, "rmDir: deleting file " + f);
-                if (!f.delete()) {
+                File to = new File(f.getAbsolutePath() + System.currentTimeMillis());
+                if (!f.renameTo(to)) {
+                    Log.w(TAG, "rmDir: failed to rename " + f + " to " + to);
+                } else if (!to.delete()) {
                     Log.w(TAG, "rmDir: failed to delete " + f);
                 }
             }
