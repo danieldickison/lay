@@ -3,6 +3,9 @@ class TablettesController < ApplicationController
     TABLET_BASE_IP_NUM = 200
     NUM_TABLETS = 10
 
+    @@last_ping_stats = Time.now
+    @@ping_stats = []
+
     skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :preload]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
@@ -28,19 +31,36 @@ class TablettesController < ApplicationController
         end
     end
 
+    def ping_stats(tablet)
+        @@ping_stats[tablet] = Time.now
+        if (Time.now - @@last_ping_stats) >= 5
+            puts
+            @@last_ping_stats = Time.now
+            (1 .. NUM_TABLETS).each do |t|
+                if @@ping_stats[t]
+                    ago = "%3.0fms" % ((Time.now - @@ping_stats[t]) * 1000)
+                else
+                    ago = "  ???"
+                end
+                puts "[#{'%2d' % t}] - #{ago}"
+            end
+        end
+    end
+
     def ping
         ip = request.headers['X-Forwarded-For'].split(',').first
         tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
+        ping_stats(tablet)
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
         preload = self.class.preload[tablet]
-        puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue} preload: #{preload && preload.join(', ')}"
+        # puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue} preload: #{preload && preload.join(', ')}"
         render json: {
             :tablet_ip => ip,
             :tablet_number => tablet,
             :preload_files => preload,
             :next_cue_file => cue[:file],
-            :next_cue_time => (cue[:time].to_f * 1000).round,
-            :next_seek_time => (cue[:seek].to_f * 1000).round,
+            :next_cue_time => (cue[:time] * 1000).round,
+            :next_seek_time => (cue[:seek] * 1000).round,
         }
     end
 
@@ -56,25 +76,27 @@ class TablettesController < ApplicationController
         files = [files] if !files.is_a?(Array)
         tablet_enum(tablet).each do |t|
             @preload[t] = files
-            puts "preload[#{t}] - #{files.join(', ')}"
+            puts "load[#{t}] - #{files.join(', ')}"
         end
     end
 
     def self.start_cue(tablet, file, time, seek: 0)
         tablet_enum(tablet).each do |t|
-            @cues[t] = {:file => file, :time => time.to_i, :seek => seek.to_f}
-            puts "B start_cue[#{t}] - #{@cues[t].inspect}"
+            @cues[t] = {:file => file, :time => time.to_f, :seek => seek.to_f}
+            puts "start[#{t}] - #{@cues[t].inspect}"
         end
     end
 
     def self.stop_cue(tablet)
         tablet_enum(tablet).each do |t|
+            puts "stop[#{t}]"
             @cues[t] = nil
         end
     end
 
     def self.reset_cue(tablet)
         tablet_enum(tablet).each do |t|
+            puts "reset[#{t}]"
             @preload[t] = nil
             @cues[t] = nil
         end

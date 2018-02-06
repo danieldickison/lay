@@ -5,11 +5,11 @@
 'use strict';
 
 window.setClockOffset = function (offset) {
-    document.getElementById('clock-offset').innerText = "Clock offset: " + offset + " ms";
+    document.getElementById('clock-offset').innerText = "Clock offset: " + offset + "ms";
     clockOffset = offset;
 };
 
-let PING_INTERVAL = 1000;
+let PING_INTERVAL = 100;
 var clockOffset = 0;
 var currentCueTime = null;
 var nextCueTimeout = null;
@@ -41,7 +41,7 @@ function sendPing() {
         let nextCueFile = json.next_cue_file;
         let nextSeekTime = json.next_seek_time;
         if (currentCueTime !== nextCueTime) {
-            log("Received new cue time", nextCueTime, nextCueFile);
+            log("Received new cue time", lz(nextCueTime % 10000, 4), nextCueFile);
             clearTimeout(nextCueTimeout);
             currentCueTime = nextCueTime;
             scheduleCueTick();
@@ -66,17 +66,36 @@ function sendPing() {
     });
 }
 
+function lz(num, size) {
+    let p = "";
+    if (num < 10 && size >= 2)
+        p += "0";
+    if (num < 100 && size >= 3)
+        p += "0";
+    if (num < 1000 && size >= 4)
+        p += "0";
+    if (num < 10000 && size >= 5)
+        p += "0";
+
+    return p + num;
+}
+
 function scheduleCueTick() {
     let now = serverNow();
     let seconds = Math.ceil((now - currentCueTime) / 1000);
     let tickTime = currentCueTime + 1000 * seconds;
-    nextCueTimeout = setTimeout(cueTick, tickTime - now);
+//    nextCueTimeout = setTimeout(cueTick, tickTime - now);
+    nextCueTimeout = setTimeout(cueTick, 100);
 }
 
 function cueTick() {
     let now = serverNow();
-    let seconds = Math.floor((now - currentCueTime) / 1000);
-    document.getElementById('cue').innerText = "T" + (seconds < 0 ? "" : "+") + seconds + " seconds";
+    let cue_msg = "";
+    if (currentCueTime) {
+        let seconds = now - currentCueTime;
+        cue_msg = "   T" + (seconds < 0 ? "" : "+") + seconds + "ms";
+    }
+    document.getElementById('cue').innerText = "now " + lz(now % 10000, 4)  + cue_msg;
     scheduleCueTick();
 }
 

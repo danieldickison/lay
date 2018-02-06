@@ -42,29 +42,33 @@ module Lay
 
       # /start <media> [<tablet#> ...]
       @server.add_method('/start') do |message|
-        puts "B #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
-        time = Time.now + 7
+        puts "#{message.inspect}"
+        time = Time.now + 1
         args = message.to_a
         file = args[0]
         tablets = args[1 .. -1].collect {|t| t.to_i}
-        puts "B tablets #{tablets.inspect}"
         TablettesController.start_cue(tablets, file, time)
       end
 
       # /stop [<tablet#> ...]
       @server.add_method('/stop') do |message|
+        puts "#{message.inspect}"
         tablets = message.to_a.collect {|t| t.to_i}
         TablettesController.stop_cue(tablets)
       end
 
       # /load <media> [<tablet#> ...]
       @server.add_method('/load') do |message|
-        tablets = message.to_a.collect {|t| t.to_i}
+        puts "#{message.inspect}"
+        args = message.to_a
+        file = args[0]
+        tablets = args[1 .. -1].collect {|t| t.to_i}
         TablettesController.load_cue(tablets, file)
       end
 
       # /clear [<tablet#> ...]
       @server.add_method('/reset') do |message|
+        puts "#{message.inspect}"
         tablets = message.to_a.collect {|t| t.to_i}
         TablettesController.reset_cue(tablets)
       end

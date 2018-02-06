@@ -54,4 +54,6 @@ Rails.application.configure do
 
   # Set up nginx in dev
   config.public_file_server.enabled = false
+
+  config.log_level = :warn
 end
