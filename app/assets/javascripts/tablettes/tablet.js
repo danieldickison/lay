@@ -11,7 +11,7 @@ window.setClockOffsets = function (offsets) {
     let mean = sum / offsets.length;
     offsets.sort((a, b) => a - b);
     let median = offsets[Math.floor(offsets.length / 2)];
-    let stdev = Math.sqrt(offsets.reduce((accum, val) => accum + Math.pow(val - mean, 2)) / Math.max(1, (len - 1)));
+    let stdev = Math.sqrt(offsets.reduce((accum, val) => accum + Math.pow(val - mean, 2), 0) / Math.max(1, (len - 1)));
     clockInfo = "latest=" + latest + " mean=" + latest.toFixed(1) + " median=" + median + " stdev=" + stdev.toFixed(1);
     document.getElementById('clock-offset').innerText = "Clock offset (ms): " + clockInfo;
     clockOffset = median;
