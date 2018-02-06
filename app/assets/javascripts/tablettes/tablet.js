@@ -27,6 +27,8 @@ document.addEventListener("DOMContentLoaded", event => {
     });
 
     setInterval(cycleLogoBg, LOGO_BG_INTERVAL);
+    setInterval(sendPing, PING_INTERVAL);
+    setInterval(cueTick, 100);
 
     sendPing();
 });
@@ -42,9 +44,9 @@ function sendPing() {
         let nextSeekTime = json.next_seek_time;
         if (currentCueTime !== nextCueTime) {
             log("Received new cue time", lz(nextCueTime % 10000, 4), nextCueFile);
-            clearTimeout(nextCueTimeout);
+            // clearTimeout(nextCueTimeout);
             currentCueTime = nextCueTime;
-            scheduleCueTick();
+            // scheduleCueTick();
             let path = uriEscapePath(nextCueFile);
             layNativeInterface.setVideoCue(path, nextCueTime, nextSeekTime);
         }
@@ -58,11 +60,11 @@ function sendPing() {
 
         document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " — " + json.tablet_ip;
 
-        setTimeout(sendPing, PING_INTERVAL);
+        // setTimeout(sendPing, PING_INTERVAL);
     })
     .catch(error => {
         log("ping failed", error);
-        setTimeout(sendPing, PING_INTERVAL);
+        // setTimeout(sendPing, PING_INTERVAL);
     });
 }
 
@@ -85,7 +87,7 @@ function scheduleCueTick() {
     let seconds = Math.ceil((now - currentCueTime) / 1000);
     let tickTime = currentCueTime + 1000 * seconds;
 //    nextCueTimeout = setTimeout(cueTick, tickTime - now);
-    nextCueTimeout = setTimeout(cueTick, 100);
+    // nextCueTimeout = setTimeout(cueTick, 100);
 }
 
 function cueTick() {
@@ -96,7 +98,7 @@ function cueTick() {
         cue_msg = "   T" + (seconds < 0 ? "" : "+") + seconds + "ms";
     }
     document.getElementById('cue').innerText = "now " + lz(now % 10000, 4)  + cue_msg;
-    scheduleCueTick();
+    // scheduleCueTick();
 }
 
 function serverNow() {
