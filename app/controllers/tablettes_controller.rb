@@ -35,7 +35,7 @@ class TablettesController < ApplicationController
     def ping_stats(tablet, now_playing_path)
         @@ping_stats[tablet] = Time.now
         @@now_playing_paths[tablet] = now_playing_path
-        if (Time.now - @@last_ping_stats) >= 5
+        if (Time.now - @@last_ping_stats) >= 2
             puts
             @@last_ping_stats = Time.now
             (1 .. NUM_TABLETS).each do |t|
