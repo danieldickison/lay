@@ -30,6 +30,9 @@ import android.widget.ProgressBar;
 import net.hockeyapp.android.CrashManager;
 import net.hockeyapp.android.UpdateManager;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 
@@ -244,6 +247,36 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         });
     }
 
+    private void setNowPlaying(final String path) {
+        mWebView.post(new Runnable() {
+            @Override
+            public void run() {
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("path", path);
+                } catch (JSONException e) {
+                    Log.e(TAG, "setNowPlaying: failed to put path", e);
+                }
+                mWebView.evaluateJavascript("setNowPlaying(" + json.toString() + ")", null);
+            }
+        });
+    }
+
+    private void clearNowPlaying(final String path) {
+        mWebView.post(new Runnable() {
+            @Override
+            public void run() {
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("path", path);
+                } catch (JSONException e) {
+                    Log.e(TAG, "clearNowPlaying: failed to put path", e);
+                }
+                mWebView.evaluateJavascript("clearNowPlaying(" + json.toString() + ")", null);
+            }
+        });
+    }
+
     private void hideChrome() {
         int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
@@ -301,6 +334,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         private final MediaPlayer mediaPlayer = new MediaPlayer();
         private final TextureView textureView;
         private int seekTime;
+        private String url;
 
         private VideoViewHolder(TextureView textureView) {
             this.textureView = textureView;
@@ -329,6 +363,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         private void cueNext(String url, long timestamp, int seekTime) {
             Log.i(TAG, "cueNext: " + url + " at " + timestamp);
+            this.url = url;
             this.seekTime = seekTime;
             mediaPlayer.reset();
             try {
@@ -365,6 +400,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 textureView.animate().setDuration(FADE_DURATION).alpha(1);
                 mediaPlayer.start();
                 stopInactiveVideo();
+                setNowPlaying(url);
             }
         };
 
@@ -374,6 +410,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 if (mediaPlayer.isPlaying()) {
                     mediaPlayer.stop();
                 }
+                clearNowPlaying(url);
+                url = null;
             }
         };
 

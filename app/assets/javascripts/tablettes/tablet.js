@@ -9,11 +9,23 @@ window.setClockOffset = function (offset) {
     clockOffset = offset;
 };
 
+window.setNowPlaying = function (np) {
+    nowPlaying = np;
+};
+
+window.clearNowPlaying = function (np) {
+    if (nowPlaying.path == np.path) {
+        nowPlaying = {};
+    }
+};
+
 let PING_INTERVAL = 100;
 var clockOffset = 0;
 var currentCueTime = null;
 var nextCueTimeout = null;
 var currentPreload = null;
+
+var nowPlaying = {};
 
 let LOGO_BG_INTERVAL = 20000;
 var currentLogoBgIndex = 0;
@@ -34,7 +46,9 @@ document.addEventListener("DOMContentLoaded", event => {
 });
 
 function sendPing() {
-    fetch('/tablettes/ping.json', {method: 'POST'})
+    let body = new URLSearchParams();
+    body.append('now_playing_path', nowPlaying.path);
+    fetch('/tablettes/ping.json', {method: 'POST', body: body})
     .then(response => {
         return response.json();
     })
