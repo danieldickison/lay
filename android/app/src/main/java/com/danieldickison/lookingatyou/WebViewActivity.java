@@ -37,6 +37,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.Date;
 
 public class WebViewActivity extends Activity implements NtpSync.Callback {
 
@@ -247,7 +248,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     @Override
-    public void onUpdateClockOffsets(final long[] offsets) {
+    public void onUpdateClockOffsets(final long[] offsets, final Date lastSuccess) {
         final JSONArray json = new JSONArray();
         for (long offset : offsets) {
             json.put(offset);
@@ -258,7 +259,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mWebView.post(new Runnable() {
             @Override
             public void run() {
-                mWebView.evaluateJavascript("setClockOffsets(" + json.toString() + ")", null);
+                mWebView.evaluateJavascript("setClockOffsets(" + json.toString() + ", " + lastSuccess.getTime() + ")", null);
             }
         });
     }
