@@ -22,9 +22,67 @@ module Lay
 #
 # require 'osc-ruby'
 # c = OSC::Client.new('localhost', 53000)
-# c.send(OSC::Message.new("/start", "/lay/Tablet/Tablettes/tablette cue 2 T1.mp4", 1))
+# c.send(OSC::Message.new("/load", "/lay/tc.mp4"))
+# c.send(OSC::Message.new("/start", "/lay/tc.mp4"))
 
   class OSCApplication < Rails::Application
+
+    class Rail
+      WORDS = [
+        "Going into a sort of deep meditation for a few days. See you on the other side.",
+        "Don't miss the http://www.human-time-machine.com  - #APAP showcase @barbestweets w/ special guest #Jesseneuman! #artspresenters #worldbeat #humantimemachine",
+        "Another tweet",        
+        "And Another tweet",        
+        "And Yet Another tweet",        
+      ]
+
+      NUM_RAILS = 5
+      @@run = false
+
+      def self.start
+        @@run = true
+        Thread.new do
+          rails = NUM_RAILS.times.collect {|i| new(i + 2)}
+          while true
+            NUM_RAILS.times {|i| rails[i].run}
+            break if !@@run
+            sleep(0.1)
+          end
+        end
+      end
+
+      def self.stop
+        @@run = false
+      end
+
+      def initialize(channel)
+        @channel_base = channel - 2
+        @channel = "/channel/#{channel}"
+        @c = OSC::Client.new('10.1.1.100', 1234)  # Isadora
+        @state = :idle
+        @time = nil
+      end
+
+      def run
+        case @state
+        when :idle
+          @time = Time.now + rand * 2
+          @text = WORDS[rand(WORDS.length)]
+          @state = :pre
+        when :pre
+          if Time.now >= @time
+            @c.send(OSC::Message.new(@channel, @text))
+            @state = :anim
+            @time = Time.now + @channel_base + 4
+          end
+        when :anim
+          if Time.now > @time
+            @state = :idle
+          end
+        end
+      end
+    end
+
     def initialize
       super
       require 'osc-ruby'
@@ -73,7 +131,15 @@ module Lay
         TablettesController.reset_cue(tablets)
       end
 
-
+      # /offtherails
+      @server.add_method('/offtherails') do |message|
+        puts "offtherails #{message}"
+        if message.to_a[0] == "start"
+          Rail.start
+        elsif message.to_a[0] == "stop"
+          Rail.stop
+        end
+      end
       # @server.add_method('*') do |message|
       #   puts "UNRECOGNIZED OSC COMMAND #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
       # end
