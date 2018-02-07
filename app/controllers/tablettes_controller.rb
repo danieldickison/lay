@@ -40,22 +40,7 @@ class TablettesController < ApplicationController
         @@clock_infos[tablet] = clock_info
         @@cache_infos[tablet] = cache_info
         if (Time.now - @@last_ping_stats) >= 2
-            puts
-            @@last_ping_stats = Time.now
-            (1 .. NUM_TABLETS).each do |t|
-                if @@ping_stats[t]
-                    ago = "%3.0fms" % ((Time.now - @@ping_stats[t]) * 1000)
-                else
-                    ago = "  ???"
-                end
-                if @@clock_infos[t]
-                    clock = @@clock_infos[t]
-                else
-                    clock = "  ???"
-                end
-                puts "[#{'%2d' % t}] - #{ago} - #{clock} - #{@@now_playing_paths[t]}"
-            end
-            puts
+            puts "---"
             @@cache_infos.each_with_index do |info, t|
                 next if !info
                 puts "tablet #{t} cache:"
@@ -72,6 +57,21 @@ class TablettesController < ApplicationController
                     end
                     puts "  #{status}: #{path}"
                 end
+            end
+            puts
+            @@last_ping_stats = Time.now
+            (1 .. NUM_TABLETS).each do |t|
+                if @@ping_stats[t]
+                    ago = "%3.0fms" % ((Time.now - @@ping_stats[t]) * 1000)
+                else
+                    ago = "  ???"
+                end
+                if @@clock_infos[t]
+                    clock = @@clock_infos[t]
+                else
+                    clock = "  ???"
+                end
+                puts "[#{'%2d' % t}] - #{ago} - #{clock} - #{@@now_playing_paths[t]}"
             end
         end
     end
