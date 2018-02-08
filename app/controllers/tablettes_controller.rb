@@ -3,7 +3,7 @@ class TablettesController < ApplicationController
     TABLET_BASE_IP_NUM = 200
     NUM_TABLETS = 11
 
-    @debug = false
+    @debug = true
 
     @@last_ping_stats = Time.now
     @@ping_stats = []
