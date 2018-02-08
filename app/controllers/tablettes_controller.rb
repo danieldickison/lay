@@ -189,7 +189,7 @@ class TablettesController < ApplicationController
         return @preload
     end
 
-    def self.show_time
-        @@show_time = true
+    def self.show_time(bool)
+        @@show_time = !!bool
     end
 end

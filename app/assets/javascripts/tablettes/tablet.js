@@ -227,12 +227,15 @@ function sendPing() {
 
         document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " — " + json.tablet_ip;
         document.getElementById('tablettes-debug').classList.toggle('visible', json.debug);
+        
+        let preShow = document.getElementById('tablettes-pre-show');
         if (json.show_time) {
-            let preShow = document.getElementById('tablettes-pre-show');
             if (preShow.style.display != 'none') {
                 layNativeInterface.hideChrome();
             }
             preShow.style.display = 'none';
+        } else {
+            preShow.style.display = 'block';
         }
 
         pingStartTime = null;

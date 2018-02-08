@@ -260,7 +260,7 @@ module Lay
       end
 
       @server.add_method('/show_time') do |message|
-        TablettesController.show_time
+        TablettesController.show_time(message.to_a[0])
       end
 
       # /start <media> [<tablet#> ...]
