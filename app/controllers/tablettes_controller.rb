@@ -3,6 +3,20 @@ class TablettesController < ApplicationController
     TABLET_BASE_IP_NUM = 200
     NUM_TABLETS = 11
 
+    TABLET_TO_TABLE = {
+        1 => 'X',
+        2 => 'A',
+        3 => 'B',
+        4 => 'C',
+        5 => 'D',
+        6 => 'E',
+        7 => 'F',
+        8 => 'G',
+        9 => 'H',
+        10 => 'J',
+        11 => 'Y',
+    }
+
     @debug = true
 
     @@last_ping_stats = Time.now
@@ -12,7 +26,7 @@ class TablettesController < ApplicationController
     @@cache_infos = []
     @@battery_percents = []
 
-    skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :preload]
+    skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :preload, :update_patron]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
@@ -101,6 +115,21 @@ class TablettesController < ApplicationController
             :next_seek_time => (cue[:seek] * 1000).round,
             :debug => self.class.debug,
         }
+    end
+
+    def update_patron
+        ip = request.headers['X-Forwarded-For'].split(',').first
+        tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
+        begin
+            Lay::OSCApplication::Patrons.update(params[:patron_id].to_i, TABLET_TO_TABLE[tablet] || tablet, params[:drink], params[:opt])
+            render json: {
+                :error => false
+            }
+        rescue
+            render json: {
+                :error => true
+            }
+        end
     end
 
     def self.tablet_enum(tablet)

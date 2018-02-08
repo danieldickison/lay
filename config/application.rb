@@ -192,14 +192,14 @@ module Lay
             puts '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
             puts "Patron columns not found table_col=#{table_col.inspect}  drink_col=#{drink_col.inspect} opt_col=#{opt_col.inspect}"
             puts '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-            return
+            raise "Patron columns not found table_col=#{table_col.inspect}  drink_col=#{drink_col.inspect} opt_col=#{opt_col.inspect}"
         end
         row = db.patrons[patron_id]
         if !row
             puts '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
             puts "Patron ID #{patron_id} not found in worksheet"
             puts '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-            return
+            raise "Patron ID #{patron_id} not found in worksheet"
         end
         puts "row=#{row.inspect} table_col=#{table_col.inspect}  drink_col=#{drink_col.inspect} opt_col=#{opt_col.inspect}"
         ws[row, table_col] = table

@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   post 'tablettes/ping'
   post 'tablettes/cue'
   post 'tablettes/preload'
+  post 'tablettes/update_patron'
 
   get 'secrets/index'
   get 'secrets/ping'

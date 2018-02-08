@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", event => {
         window.layNativeInterface = {
             getBuildName: function () { return 'fake native interface'; },
             getCacheInfo: function () { return ''; },
+            getBatteryPercent: function () { return -1; },
             setVideoCue: function () {},
             setPreloadFiles: function () {},
         };
@@ -79,7 +80,84 @@ document.addEventListener("DOMContentLoaded", event => {
 
     sendPing();
     updateBatteryStatus();
+
+    preShowInit();
 });
+
+function preShowInit() {
+    var params;
+
+    let introButton = document.getElementById('intro-button');
+    let dataEntry = document.getElementById('pre-show-data-entry');
+    let programNumber = document.getElementById('program-number-input');
+    let drinkMenu = document.getElementById('drink-menu');
+    let optOutButton = document.getElementById('opt-out-button');
+    let optInButton = document.getElementById('opt-in-button');
+    let popup = document.getElementById('consent-popup');
+
+    introButton.addEventListener('click', function () {
+        params = new URLSearchParams();
+        introButton.style.display = 'none';
+        dataEntry.style.display = 'block';
+        programNumber.focus();
+    });
+    document.getElementById('no-drink-button').addEventListener('click', () => {
+        drinkMenu.style.display = 'none';
+        showConsentPopup();
+    });
+    document.getElementById('yes-drink-button').addEventListener('click', () => {
+        drinkMenu.style.display = 'block';
+    });
+    document.querySelectorAll('#drink-menu button').forEach(button => {
+        button.addEventListener('click', () => {
+            params.set('drink', button.innerText);
+            showConsentPopup();
+        });
+    });
+    
+    function showConsentPopup() {
+        popup.style.display = 'block';
+    }
+
+    optOutButton.addEventListener('click', () => {
+        params.set('opt', 'N');
+        submit();
+    });
+    optInButton.addEventListener('click', () => {
+        params.set('opt', 'Y');
+        submit();
+    });
+
+    function submit() {
+        optInButton.disabled = true;
+        optOutButton.disabled = true;
+
+        params.set('patron_id', programNumber.value);
+        fetch('/tablettes/update_patron.json', {method: 'POST', body: params})
+        .then(response => {
+            return response.json();
+        });
+        // Don't wait for fetch to complete. Fail silently.
+        reset();
+    }
+
+    function failed() {
+        alert("Please double check your program number and try again.");
+        optInButton.disabled = false;
+        optOutButton.disabled = false;
+        popup.style.display = 'none';
+    }
+
+    function reset() {
+        optInButton.disabled = false;
+        optOutButton.disabled = false;
+        popup.style.display = 'none';
+        dataEntry.style.display = 'none';
+        drinkMenu.style.display = 'none';
+        introButton.style.display = 'block';
+        programNumber.value = '';
+    }
+}
 
 function sendPing() {
     if (pingStartTime) {
@@ -113,7 +191,7 @@ function sendPing() {
     })
     .then(json => {
         if (!json) return;
-        
+
         let nextCueTime = json.next_cue_time;
         let nextCueFile = json.next_cue_file;
         let nextSeekTime = json.next_seek_time;
