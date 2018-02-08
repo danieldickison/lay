@@ -158,6 +158,7 @@ function preShowInit() {
         drinkMenu.style.display = 'none';
         introButton.style.display = 'block';
         programNumber.value = '';
+        document.getElementById('consent-popup-box').scrollTop = 0;
     }
 }
 
