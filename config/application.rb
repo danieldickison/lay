@@ -28,22 +28,51 @@ module Lay
 
   class OSCApplication < Rails::Application
 
-    class Rail
+    class SpectatorsDB
+      SPECTACTORS_SPREADSHEET = '1HSgh8-6KQGOKPjB_XRUbLAskCWgM5CpFFiospjn5Iq4'
+
+      attr_accessor(:session, :ws, :col, :patrons)
+
+      def initialize
+        @session = GoogleDrive::Session.from_service_account_key("config/gdrive-api.json")
+        @ws = session.spreadsheet_by_key(SPECTACTORS_SPREADSHEET).worksheets[0]
+        @col = {}
+        @ws.num_cols.times do |c|
+          @col[ws[2, c+1]] = c+1  # column numbers by name
+        end
+        @patrons = (2 .. @ws.num_rows)
+      end
+    end
+
+
+    class Isadora
       ISADORA_IP = '10.1.1.100'
       ISADORA_PORT = 1234
 
-      SPECTACTORS_SPREADSHEET = '1HSgh8-6KQGOKPjB_XRUbLAskCWgM5CpFFiospjn5Iq4'
-      FIRST_SPECTATOR_ROW = 2
-      TWEET1_COLUMN = 56
-      TWEET2_COLUMN = 57
+      attr_accessor(:cl)
 
-      WORDS = [
-        "Going into a sort of deep meditation for a few days. See you on the other side.",
-        "Don't miss the http://www.human-time-machine.com  - #APAP showcase @barbestweets w/ special guest #Jesseneuman! #artspresenters #worldbeat #humantimemachine",
-        "Another tweet",        
-        "And Another tweet",        
-        "And Yet Another tweet",        
-      ]
+      def initialize
+        @cl = OSC::Client.new(ISADORA_IP, ISADORA_PORT)
+      end
+
+      def send(msg, *args)
+        @cl.send(OSC::Message.new(msg, *args))
+      end
+    end
+
+
+    class ProductLaunch
+
+      FIRST_SPECTATOR_ROW = 2
+
+# 2 - name
+# 3 - dob
+# 4 - hometown
+# 5 - creepy fact
+# 6 - fam member
+# 7 - workpace
+# 8 - school
+# 9, 10, 11 - "9", "10", "11"
 
       NUM_RAILS = 5
       FIRST_RAILS_CHANNEL = 2
@@ -54,16 +83,51 @@ module Lay
       @@tweets = []
 
       def self.load
-        session = GoogleDrive::Session.from_service_account_key("config/gdrive-api.json")
-        ws = session.spreadsheet_by_key(SPECTACTORS_SPREADSHEET).worksheets[0]
-        puts "loading worksheet"
+      end
+
+      def self.start
+        @@run = true
+      end
+
+      def self.stop
+        @@run = false
+      end
+
+      def initialize(channel)
+      end
+
+      def run
+      end
+    end
+
+
+    class OffTheRails
+      ISADORA_IP = '10.1.1.100'
+      ISADORA_PORT = 1234
+
+      FIRST_SPECTATOR_ROW = 2
+      TWEET1_COLUMN = 56
+      TWEET2_COLUMN = 57
+
+      NUM_RAILS = 5
+      FIRST_RAILS_CHANNEL = 2
+      FIRST_RAILS_DURATION = 8
+
+      @@run = false
+      @@tweets = []
+
+      def self.load
+        db = SpectatorsDB.new
+        ws = db.ws
+        tweet1 = db.col["Tweet 1"]
+        tweet2 = db.col["Tweet 2"]
         @@tweets = []
         (FIRST_SPECTATOR_ROW .. ws.num_rows).each do |r|
-          if ws[r, TWEET1_COLUMN] != ""
-            @@tweets.push(ws[r, TWEET1_COLUMN])
+          if ws[r, tweet1] != ""
+            @@tweets.push(ws[r, tweet1])
           end
-          if ws[r, TWEET2_COLUMN] != ""
-            @@tweets.push(ws[r, TWEET2_COLUMN])
+          if ws[r, tweet2] != ""
+            @@tweets.push(ws[r, tweet2])
           end
         end
         puts "got #{@@tweets.length} tweets"
@@ -88,7 +152,7 @@ module Lay
       def initialize(channel)
         @channel_base = channel - FIRST_RAILS_CHANNEL
         @channel = "/channel/#{channel}"
-        @c = OSC::Client.new(ISADORA_IP, ISADORA_PORT)
+        @is = Isadora.new
         @state = :idle
         @time = nil
       end
@@ -101,7 +165,7 @@ module Lay
           @state = :pre
         when :pre
           if Time.now >= @time
-            @c.send(OSC::Message.new(@channel, @text))
+            @is.send(@channel, @text)
             @state = :anim
             @time = Time.now + (@channel_base * 2) + FIRST_RAILS_DURATION
           end
@@ -200,11 +264,23 @@ module Lay
       @server.add_method('/offtherails') do |message|
         puts "offtherails #{message}"
         if message.to_a[0] == "start"
-          Rail.start
+          OffTheRails.start
         elsif message.to_a[0] == "stop"
-          Rail.stop
+          OffTheRails.stop
         elsif message.to_a[0] == "load"
-          Rail.load
+          OffTheRails.load
+        end
+      end
+
+      # /productlaunch
+      @server.add_method('/productlaunch') do |message|
+        puts "offtherails #{message}"
+        if message.to_a[0] == "start"
+          ProductLaunch.start
+        elsif message.to_a[0] == "stop"
+          ProductLaunch.stop
+        elsif message.to_a[0] == "load"
+          ProductLaunch.load
         end
       end
 
@@ -215,6 +291,16 @@ module Lay
           Testem.start
         elsif message.to_a[0] == "stop"
           Testem.stop
+        end
+      end
+
+      # /debug
+      @server.add_method('/debug') do |message|
+        puts "debug #{message}"
+        if message.to_a[0] == "on"
+          TablettesController.debug = true
+        elsif message.to_a[0] == "off"
+          TablettesController.debug = false
         end
       end
 
