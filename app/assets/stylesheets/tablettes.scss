@@ -6,6 +6,14 @@ body.tablet {
     background: transparent;
 }
 
+#tablettes-debug {
+    display: none;
+}
+
+#tablettes-debug.visible {
+    display: block;
+}
+
 #tablettes-video {
     width: 100%;
     height: auto;

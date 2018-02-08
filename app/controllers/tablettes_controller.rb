@@ -3,6 +3,8 @@ class TablettesController < ApplicationController
     TABLET_BASE_IP_NUM = 200
     NUM_TABLETS = 11
 
+    @debug = false
+
     @@last_ping_stats = Time.now
     @@ping_stats = []
     @@now_playing_paths = []
@@ -90,6 +92,7 @@ class TablettesController < ApplicationController
             :next_cue_file => cue[:file],
             :next_cue_time => (cue[:time] * 1000).round,
             :next_seek_time => (cue[:seek] * 1000).round,
+            :debug => self.class.debug,
         }
     end
 
@@ -129,6 +132,14 @@ class TablettesController < ApplicationController
             @preload[t] = []
             @cues[t] = nil
         end
+    end
+
+    def self.debug
+        return @debug
+    end
+
+    def self.debug=(debug)
+        @debug = debug
     end
 
     def self.cues

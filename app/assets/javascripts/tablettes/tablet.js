@@ -115,8 +115,9 @@ function sendPing() {
         }
 
         document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " — " + json.tablet_ip;
-        pingBusy = false;
+        document.getElementById('tablettes-debug').classList.toggle('visible', json.debug);
 
+        pingBusy = false;
         // setTimeout(sendPing, PING_INTERVAL);
     })
     .catch(error => {
