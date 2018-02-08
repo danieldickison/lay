@@ -14,6 +14,14 @@ body.tablet {
     display: block;
 }
 
+#tablettes-pre-show {
+    display: none;
+}
+
+#tablettes-pre-show.visible {
+    display: block;
+}
+
 #tablettes-video {
     width: 100%;
     height: auto;
