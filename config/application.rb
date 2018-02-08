@@ -47,7 +47,7 @@ module Lay
 
       NUM_RAILS = 5
       FIRST_RAILS_CHANNEL = 2
-      FIRST_RAILS_DURATION = 4
+      FIRST_RAILS_DURATION = 8
 
       @@run = false
 
@@ -103,7 +103,7 @@ module Lay
           if Time.now >= @time
             @c.send(OSC::Message.new(@channel, @text))
             @state = :anim
-            @time = Time.now + @channel_base + FIRST_RAILS_DURATION
+            @time = Time.now + (@channel_base * 2) + FIRST_RAILS_DURATION
           end
         when :anim
           if Time.now > @time
