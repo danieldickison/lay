@@ -96,17 +96,17 @@ function sendPing() {
         }
 
         if (!arraysEqual(json.preload_files, currentPreload)) {
-            if (json.preload_files == null) {
+            currentPreload = json.preload_files;
+            if (currentPreload == null) {
                 log("Ignoring uninitialized preload");
-            } else if (json.preload_files.length === 0) {
+            } else if (currentPreload.length === 0) {
                 log("Clearing preload cache");
                 layNativeInterface.setPreloadFiles(null);
             } else {
-                log("Received new preload files", json.preload_files);
-                let paths = currentPreload && currentPreload.map(p => uriEscapePath(p));
+                log("Received new preload files", currentPreload);
+                let paths = currentPreload.map(p => uriEscapePath(p));
                 layNativeInterface.setPreloadFiles(paths);
             }
-            currentPreload = json.preload_files;
         }
 
         document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " — " + json.tablet_ip;
