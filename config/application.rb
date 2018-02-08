@@ -1,6 +1,7 @@
 require_relative 'boot'
 
 require 'rails/all'
+require 'google_drive'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -28,6 +29,14 @@ module Lay
   class OSCApplication < Rails::Application
 
     class Rail
+      ISADORA_IP = '10.1.1.100'
+      ISADORA_PORT = 1234
+
+      SPECTACTORS_SPREADSHEET = '1HSgh8-6KQGOKPjB_XRUbLAskCWgM5CpFFiospjn5Iq4'
+      FIRST_SPECTATOR_ROW = 2
+      TWEET1_COLUMN = 56
+      TWEET2_COLUMN = 57
+
       WORDS = [
         "Going into a sort of deep meditation for a few days. See you on the other side.",
         "Don't miss the http://www.human-time-machine.com  - #APAP showcase @barbestweets w/ special guest #Jesseneuman! #artspresenters #worldbeat #humantimemachine",
@@ -37,12 +46,33 @@ module Lay
       ]
 
       NUM_RAILS = 5
+      FIRST_RAILS_CHANNEL = 2
+      FIRST_RAILS_DURATION = 4
+
       @@run = false
+
+      @@tweets = []
+
+      def self.load
+        session = GoogleDrive::Session.from_service_account_key("config/gdrive-api.json")
+        ws = session.spreadsheet_by_key(SPECTACTORS_SPREADSHEET).worksheets[0]
+        puts "loading worksheet"
+        @@tweets = []
+        (FIRST_SPECTATOR_ROW .. ws.num_rows).each do |r|
+          if ws[r, TWEET1_COLUMN] != ""
+            @@tweets.push(ws[r, TWEET1_COLUMN])
+          end
+          if ws[r, TWEET2_COLUMN] != ""
+            @@tweets.push(ws[r, TWEET2_COLUMN])
+          end
+        end
+        puts "got #{@@tweets.length} tweets"
+      end
 
       def self.start
         @@run = true
         Thread.new do
-          rails = NUM_RAILS.times.collect {|i| new(i + 2)}
+          rails = NUM_RAILS.times.collect {|i| new(i + FIRST_RAILS_CHANNEL)}
           while true
             NUM_RAILS.times {|i| rails[i].run}
             break if !@@run
@@ -56,9 +86,9 @@ module Lay
       end
 
       def initialize(channel)
-        @channel_base = channel - 2
+        @channel_base = channel - FIRST_RAILS_CHANNEL
         @channel = "/channel/#{channel}"
-        @c = OSC::Client.new('10.1.1.100', 1234)  # Isadora
+        @c = OSC::Client.new(ISADORA_IP, ISADORA_PORT)
         @state = :idle
         @time = nil
       end
@@ -67,19 +97,54 @@ module Lay
         case @state
         when :idle
           @time = Time.now + rand * 2
-          @text = WORDS[rand(WORDS.length)]
+          @text = @@tweets[rand(@@tweets.length)]
           @state = :pre
         when :pre
           if Time.now >= @time
             @c.send(OSC::Message.new(@channel, @text))
             @state = :anim
-            @time = Time.now + @channel_base + 4
+            @time = Time.now + @channel_base + FIRST_RAILS_DURATION
           end
         when :anim
           if Time.now > @time
             @state = :idle
           end
         end
+      end
+    end
+
+
+    class Testem
+      @@run = false
+
+      def self.start
+        @@run = true
+        Thread.new do
+          @c = OSC::Client.new('localhost', 53000)
+          @c.send(OSC::Message.new("/stop"))
+          @c.send(OSC::Message.new("/load", "/lay/tc.mp4"))
+          10.times {sleep(1); return if !@@run}
+
+          @c.send(OSC::Message.new("/start", "/lay/tc.mp4"))
+          10.times {sleep(1); return if !@@run}
+          @c.send(OSC::Message.new("/stop"))
+          2.times {sleep(1); return if !@@run}
+
+          10.times do |i|
+            @c.send(OSC::Message.new("/start", "/lay/tc.mp4", i + 1))
+            3.times {sleep(1); return if !@@run}
+            @c.send(OSC::Message.new("/stop"))
+          end
+
+          @c.send(OSC::Message.new("/start", "/lay/tc.mp4"))
+          10.times {sleep(1); return if !@@run}
+          @c.send(OSC::Message.new("/stop"))
+          2.times {sleep(1); return if !@@run}
+        end
+      end
+
+      def self.stop
+        @@run = false
       end
     end
 
@@ -138,8 +203,21 @@ module Lay
           Rail.start
         elsif message.to_a[0] == "stop"
           Rail.stop
+        elsif message.to_a[0] == "load"
+          Rail.load
         end
       end
+
+      # /testem
+      @server.add_method('/testem') do |message|
+        puts "testem #{message}"
+        if message.to_a[0] == "start"
+          Testem.start
+        elsif message.to_a[0] == "stop"
+          Testem.stop
+        end
+      end
+
       # @server.add_method('*') do |message|
       #   puts "UNRECOGNIZED OSC COMMAND #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
       # end
