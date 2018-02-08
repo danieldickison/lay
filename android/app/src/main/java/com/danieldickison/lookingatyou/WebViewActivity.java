@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -62,8 +63,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         public void onPageFinished(WebView view, String url) {
             mSpinny.setVisibility(View.GONE);
             hideChrome();
-            mClockOffset = 0;
             mNtpSync.start();
+            mWebView.setBackgroundColor(Color.TRANSPARENT);
         }
 
         @Override

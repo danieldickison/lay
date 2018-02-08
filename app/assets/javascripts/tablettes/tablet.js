@@ -19,12 +19,15 @@ window.setClockOffsets = function (offsets, lastSuccess) {
 };
 
 window.setNowPlaying = function (np) {
+    console.log("set now playing: " + np.path);
     nowPlaying = np;
+    fadeLogo(false);
 };
 
 window.clearNowPlaying = function (np) {
     if (nowPlaying.path == np.path) {
         nowPlaying = {};
+        fadeLogo(true);
     }
 };
 
@@ -45,6 +48,8 @@ var currentLogoBgIndex = 0;
 document.addEventListener("DOMContentLoaded", event => {
     let isIndexPage = document.getElementById('tablettes-index');
     if (!isIndexPage) return;
+
+    document.body.classList.add('tablet');
 
     document.getElementById('reload-button').addEventListener('click', function () {
         location.reload();
@@ -170,6 +175,12 @@ function cycleLogoBg() {
     list.forEach((el, i) => {
         el.classList.toggle('logo-bg-active', i === currentLogoBgIndex);
     });
+}
+
+function fadeLogo(visible) {
+    console.log("fadeLogo: " + visible);
+    let list = document.querySelectorAll('#logo-bg > li');
+    list.item(0).classList.toggle('logo-bg-active', visible);
 }
 
 function arraysEqual(a1, a2) {

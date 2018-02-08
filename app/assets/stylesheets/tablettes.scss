@@ -2,6 +2,10 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
+body.tablet {
+    background: transparent;
+}
+
 #tablettes-video {
     width: 100%;
     height: auto;
@@ -26,7 +30,7 @@
     background-size: cover;
     background-position: center;
     opacity: 0;
-    transition: opacity 8s;
+    transition: opacity 1s;
 }
 #logo-bg > li.logo-bg-active {
     opacity: 1;
