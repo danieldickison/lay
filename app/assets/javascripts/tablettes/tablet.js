@@ -32,7 +32,8 @@ window.clearNowPlaying = function (np) {
 };
 
 let PING_INTERVAL = 100;
-var pingBusy = false;
+let PING_TIMEOUT = 3000;
+var pingStartTime = null;
 var clockOffset = 0;
 var clockInfo = null;
 var lastNtpSuccess = 0;
@@ -81,28 +82,38 @@ document.addEventListener("DOMContentLoaded", event => {
 });
 
 function sendPing() {
-    if (pingBusy) {
-        log("Skipping ping while another one is in flight");
-        return;
+    if (pingStartTime) {
+        let timeSincePing = Date.now() - pingStartTime;
+        if (timeSincePing > PING_TIMEOUT) {
+            log("Forcing ping request; previous one stuck for " + timeSincePing + "ms");
+        } else {
+            log("Skipping ping while another one is in flight for " + timeSincePing + "ms");
+            return;
+        }
     }
 
-    pingBusy = true;
     let body = new URLSearchParams();
     body.append('now_playing_path', nowPlaying.path);
     body.append('clock_info', clockInfo + " timeSince=" + (Date.now() - lastNtpSuccess));
     body.append('cache_info', layNativeInterface.getCacheInfo());
     body.append('battery_percent', batteryPercent);
     let startTime = Date.now();
+    pingStartTime = startTime;
     var endTime;
     fetch('/tablettes/ping.json', {method: 'POST', body: body})
     .then(response => {
         endTime = Date.now();
-        if (endTime - startTime > 100) {
+        if (endTime - startTime > PING_TIMEOUT) {
+            log("Slow ping response beyond timeout: " + (endTime - startTime) + "ms; ignoring response");
+            return null;
+        } else if (endTime - startTime > 100) {
             log("Slow ping response: " + (endTime - startTime) + "ms");
         }
         return response.json();
     })
     .then(json => {
+        if (!json) return;
+        
         let nextCueTime = json.next_cue_time;
         let nextCueFile = json.next_cue_file;
         let nextSeekTime = json.next_seek_time;
@@ -136,13 +147,13 @@ function sendPing() {
         document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " — " + json.tablet_ip;
         document.getElementById('tablettes-debug').classList.toggle('visible', json.debug);
 
-        pingBusy = false;
+        pingStartTime = null;
         // setTimeout(sendPing, PING_INTERVAL);
     })
     .catch(error => {
         log("ping failed", error);
         // setTimeout(sendPing, PING_INTERVAL);
-        pingBusy = false;
+        pingStartTime = null;
     });
 }
 
