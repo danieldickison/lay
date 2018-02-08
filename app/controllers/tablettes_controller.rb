@@ -3,7 +3,7 @@ class TablettesController < ApplicationController
     TABLET_BASE_IP_NUM = 200
     NUM_TABLETS = 11
 
-    @debug = true
+    @debug = false
 
     @@last_ping_stats = Time.now
     @@ping_stats = []
@@ -11,6 +11,7 @@ class TablettesController < ApplicationController
     @@clock_infos = []
     @@cache_infos = []
     @@battery_percents = []
+    @@dumping_stats = false
 
     skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :preload]
 
@@ -43,9 +44,11 @@ class TablettesController < ApplicationController
         @@clock_infos[tablet] = clock_info
         @@cache_infos[tablet] = cache_info
         @@battery_percents[tablet] = battery_percent
-        if (Time.now - @@last_ping_stats) >= 2
+        if (Time.now - @@last_ping_stats) >= 2 && !@@dumping_stats
+            @@dumping_stats = true
             puts "---"
             @@cache_infos.each_with_index do |info, t|
+                next if t != 4
                 next if !info
                 puts "tablet #{t} cache:"
                 info.split('|').each do |f|
@@ -54,11 +57,18 @@ class TablettesController < ApplicationController
                     start_time = nil if start_time == ''
                     end_time = nil if end_time == ''
                     status = case
-                    when error then "error: #{error}"
+                    when error
+                        if error.include?("java.io.FileNotFoundException")
+                            e = error.split(": ")
+                            "error: #{e[0]}"
+                        else
+                            "error: #{error}"
+                        end
                     when start_time && end_time then 'cached (%2.0fs)' % ((end_time.to_i - start_time.to_i) / 1000)
                     when start_time then 'downloading (%2.0fs)' % (Time.now.to_f - start_time.to_i / 1000)
                     else 'queued'
                     end
+                    path = path.split("/").last.gsub('%20', ' ')
                     puts "  #{status}: #{path}"
                 end
             end
@@ -80,8 +90,10 @@ class TablettesController < ApplicationController
                 else
                     battery = "???%"
                 end
-                puts "[#{'%2d' % t}] - #{ago} - #{battery} - #{clock} - #{@@now_playing_paths[t]}"
+                p = @@now_playing_paths[t] && @@now_playing_paths[t].split('/').last.gsub('%20', ' ')
+                puts "[#{'%2d' % t}] - #{ago} - #{battery} - #{p}"
             end
+            @@dumping_stats = false
         end
     end
 

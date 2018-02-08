@@ -57,57 +57,153 @@ module Lay
 
       def send(msg, *args)
         @cl.send(OSC::Message.new(msg, *args))
+        puts "IZ send #{msg} - #{args.inspect}"
       end
     end
 
 
     class ProductLaunch
+      CARE_ABOUT_IDD = false
+      CARE_ABOUT_DATE = true
+      CARE_ABOUT_OPT = false
 
-      FIRST_SPECTATOR_ROW = 2
+      FIRST_SPECTATOR_ROW = 3
 
-# 2 - name
-# 3 - dob
-# 4 - hometown
-# 5 - creepy fact
-# 6 - fam member
-# 7 - workpace
-# 8 - school
-# 9, 10, 11 - "9", "10", "11"
-
-      NUM_RAILS = 5
-      FIRST_RAILS_CHANNEL = 2
-      FIRST_RAILS_DURATION = 8
+# "Isadora OSC Channel 9"
 
       @@run = false
 
-      @@tweets = []
+      @@patrons = []
+      INTERESTING_COLUMNS = ["Patron ID", "Table (auto)", "Isadora OSC Channel 9", "Isadora OSC Channel 10", "Isadora OSC Channel 11", "Last Name", "First Name", "Family Member 1", "Hometown", "Education 1", "Current Occupation 1", "Uncommon Interest 1", "Uncommon Interest 2"]
+      ONE_OF_THESE_COLUMNS = ["Family Member 1", "Hometown", "Education 1", "Current Occupation 1", "Uncommon Interest 1", "Uncommon Interest 2",  "Isadora OSC Channel 9", "Isadora OSC Channel 10", "Isadora OSC Channel 11"]
 
       def self.load
+        db = SpectatorsDB.new
+        @@patrons = []
+
+        (FIRST_SPECTATOR_ROW .. db.ws.num_rows).each do |r|
+          if CARE_ABOUT_IDD  && db.ws[r, db.col["Positively ID'd? Y/N/M"]] == "N"
+            next
+          end
+
+          if CARE_ABOUT_DATE && db.ws[r, db.col["Performance Date"]] != "2/8/2018"
+            next
+          end
+
+          if CARE_ABOUT_OPT && db.ws[r, db.col["Accept Terms? Y/N (auto)"]] != "Y"
+            next
+          end
+
+          p = {}
+          INTERESTING_COLUMNS.each do |col_name|
+            col = db.col[col_name]
+            if db.ws[r, col] != ""
+              p[col_name] = db.ws[r, col]
+            end
+          end
+
+          if !(p.keys & ONE_OF_THESE_COLUMNS).empty?
+            patron = new(p)
+            @@patrons.push(patron)
+          end
+        end
+        puts "got #{@@patrons.length} patrons"
+        puts @@patrons.inspect
       end
 
       def self.start
+        puts "starting product launch"
         @@run = true
+        Thread.new do
+          @@patrons.each do |patron|
+            patron.run
+            break if !@@run
+          end
+        end
       end
 
       def self.stop
         @@run = false
       end
 
-      def initialize(channel)
+      NAME_CHANNEL = 2  # 10
+      FACT2_CHANNEL = 3  # 8
+      HOMETOWN_CHANNEL = 4  # 8
+      FACT1_CHANNEL = 5   # 12
+      FAMILY_CHANNEL = 6  # 8
+      OCCUPATION_CHANNEL = 7  # 4
+      EDUCATION_CHANNEL = 8  # 5
+      IMG1_CHANNEL = 9
+      IMG2_CHANNEL = 10
+      IMG3_CHANNEL = 11
+
+      TIMINGS = [0, 0, 10, 8, 8, 12, 8, 4, 5]
+
+      def initialize(p_data)
+        @id = p_data["Patron ID"]
+        @table = p_data["Table (auto)"]
+
+        @img1 = p_data["Isadora OSC Channel 9"]
+        @img2 = p_data["Isadora OSC Channel 10"]
+        @img3 = p_data["Isadora OSC Channel 11"]
+
+        @data = []
+        @data[NAME_CHANNEL] = p_data["First Name"] + " " + p_data["Last Name"]
+        # @data[DOB_CHANNEL] = 
+        @data[HOMETOWN_CHANNEL] = p_data["Hometown"]
+        @data[FACT1_CHANNEL] = p_data["Uncommon Interest 1"]
+        @data[FACT2_CHANNEL] = p_data["Uncommon Interest 2"]
+        @data[FAMILY_CHANNEL] = p_data["Family Member 1"]
+        @data[EDUCATION_CHANNEL] = p_data["Education 1"]
+        @data[OCCUPATION_CHANNEL] = p_data["Current Occupation 1"]
+
+        @disp = [NAME_CHANNEL, HOMETOWN_CHANNEL, FACT1_CHANNEL, FACT2_CHANNEL, FAMILY_CHANNEL, OCCUPATION_CHANNEL, EDUCATION_CHANNEL].shuffle
+
+        @is = Isadora.new
+        @state = :idle
+        @time = nil
+        @end_time = Time.now
       end
 
       def run
+        @is.send("/channel/9", @img1 || "")
+        @is.send("/channel/10", @img2 || "")
+        @is.send("/channel/11", @img3 || "")
+
+        while true
+          break if !@@run
+          case @state
+          when :idle
+            if @disp.empty?
+              if Time.now > (@end_time - 2)
+                return
+              end
+            else
+              ch = @disp.pop
+              @is.send("/channel/#{ch}", @data[ch] || "")
+              @end_time = [Time.now + TIMINGS[ch], @end_time].max
+              @time = Time.now + rand
+              @state = :disp
+            end
+          when :disp
+            if Time.now > @time
+              @state = :idle
+            end
+          end
+          sleep(0.1)
+        end
       end
     end
 
+    # --------------------------------------------
 
     class OffTheRails
       ISADORA_IP = '10.1.1.100'
       ISADORA_PORT = 1234
 
-      FIRST_SPECTATOR_ROW = 2
-      TWEET1_COLUMN = 56
-      TWEET2_COLUMN = 57
+      FIRST_SPECTATOR_ROW = 3
+
+      INTERESTING_COLUMNS = ["Tweet 1", "Tweet 2", "Tweet 3", "Tweet 4", "Tweet 5"]
 
       NUM_RAILS = 5
       FIRST_RAILS_CHANNEL = 2
@@ -115,25 +211,25 @@ module Lay
 
       @@run = false
       @@tweets = []
+      @@queue = []
+      @@mutex = Mutex.new
 
       def self.load
         db = SpectatorsDB.new
-        ws = db.ws
-        tweet1 = db.col["Tweet 1"]
-        tweet2 = db.col["Tweet 2"]
         @@tweets = []
-        (FIRST_SPECTATOR_ROW .. ws.num_rows).each do |r|
-          if ws[r, tweet1] != ""
-            @@tweets.push(ws[r, tweet1])
-          end
-          if ws[r, tweet2] != ""
-            @@tweets.push(ws[r, tweet2])
+        (FIRST_SPECTATOR_ROW .. db.ws.num_rows).each do |r|
+          INTERESTING_COLUMNS.each do |col_name|
+            col = db.col[col_name]
+            if db.ws[r, col] != ""
+              @@tweets.push(db.ws[r, col])
+            end
           end
         end
         puts "got #{@@tweets.length} tweets"
       end
 
       def self.start
+        @@queue = []
         @@run = true
         Thread.new do
           rails = NUM_RAILS.times.collect {|i| new(i + FIRST_RAILS_CHANNEL)}
@@ -160,8 +256,13 @@ module Lay
       def run
         case @state
         when :idle
-          @time = Time.now + rand * 2
-          @text = @@tweets[rand(@@tweets.length)]
+          @time = Time.now + rand
+          @text = @@mutex.synchronize do
+            if @@queue.empty?
+              @@queue = @@tweets.dup.shuffle
+            end
+            @@queue.pop
+          end
           @state = :pre
         when :pre
           if Time.now >= @time
