@@ -1,7 +1,7 @@
 class TablettesController < ApplicationController
 
     TABLET_BASE_IP_NUM = 200
-    NUM_TABLETS = 10
+    NUM_TABLETS = 11
 
     @@last_ping_stats = Time.now
     @@ping_stats = []
