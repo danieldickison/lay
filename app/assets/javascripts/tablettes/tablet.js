@@ -224,6 +224,9 @@ function sendPing() {
 
         document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " — " + json.tablet_ip;
         document.getElementById('tablettes-debug').classList.toggle('visible', json.debug);
+        if (json.show_time) {
+            document.getElementById('tablettes-pre-show').style.display = 'none';
+        }
 
         pingStartTime = null;
         // setTimeout(sendPing, PING_INTERVAL);

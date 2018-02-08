@@ -259,6 +259,10 @@ module Lay
         puts "A #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
       end
 
+      @server.add_method('/show_time') do |message|
+        TablettesController.show_time
+      end
+
       # /start <media> [<tablet#> ...]
       @server.add_method('/start') do |message|
         puts "#{message.inspect}"

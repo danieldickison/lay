@@ -26,6 +26,8 @@ class TablettesController < ApplicationController
     @@cache_infos = []
     @@battery_percents = []
 
+    @@show_time = false
+
     skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :preload, :update_patron]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
@@ -114,6 +116,7 @@ class TablettesController < ApplicationController
             :next_cue_time => (cue[:time] * 1000).round,
             :next_seek_time => (cue[:seek] * 1000).round,
             :debug => self.class.debug,
+            :show_time => @@show_time,
         }
     end
 
@@ -184,5 +187,9 @@ class TablettesController < ApplicationController
 
     def self.preload
         return @preload
+    end
+
+    def self.show_time
+        @@show_time = true
     end
 end
