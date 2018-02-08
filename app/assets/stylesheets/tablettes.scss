@@ -32,9 +32,17 @@ body.tablet {
     margin: 10px;
 }
 
-#intro-button {
+#intro-button-container {
     position: absolute;
+    left: 0;
     bottom: 100px;
+    width: 100%;
+    text-align: center;
+}
+
+#intro-button {
+    display: block;
+    margin: 0 auto !important;
 }
 
 #pre-show-data-entry {
