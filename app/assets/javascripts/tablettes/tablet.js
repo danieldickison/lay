@@ -31,7 +31,7 @@ window.clearNowPlaying = function (np) {
     }
 };
 
-let PING_INTERVAL = 200;
+let PING_INTERVAL = 100;
 var pingBusy = false;
 var clockOffset = 0;
 var clockInfo = null;
