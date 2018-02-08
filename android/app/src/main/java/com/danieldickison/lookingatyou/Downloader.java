@@ -46,6 +46,9 @@ public class Downloader {
 
     public Downloader(File downloadDirectory) {
         mDownloadDirectory = downloadDirectory;
+        synchronized (mCacheLock) {
+            initStateFromDirectory(mDownloadDirectory);
+        }
     }
 
     public void setHost(String host, int port) {
@@ -183,5 +186,20 @@ public class Downloader {
         //if (!dir.delete()) {
         //    Log.w(TAG, "rmDir: failed to delete dir " + dir);
         //}
+    }
+
+    private void initStateFromDirectory(File dir) {
+        if (!dir.exists()) return;
+        for (File f : dir.listFiles()) {
+            if (f.isDirectory()) {
+                initStateFromDirectory(f);
+            } else {
+                Log.d(TAG, "initStateFromDirectory: adding cached file " + f);
+                CacheInfo info = new CacheInfo(f.getName());
+                info.startTime = new Date();
+                info.endTime = new Date();
+                mCachedPaths.add(info);
+            }
+        }
     }
 }
