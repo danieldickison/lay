@@ -3,6 +3,7 @@ package com.danieldickison.lookingatyou;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -10,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
@@ -113,6 +115,15 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         @JavascriptInterface
         public String getBuildName() {
             return BuildConfig.VERSION_NAME;
+        }
+
+        @JavascriptInterface
+        public int getBatteryPercent() {
+            BatteryManager batt = (BatteryManager) getSystemService(Context.BATTERY_SERVICE);
+            if (batt == null) {
+                return -1;
+            }
+            return batt.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
         }
     };
 

@@ -45,6 +45,9 @@ var nowPlaying = {};
 let LOGO_BG_INTERVAL = 20000;
 var currentLogoBgIndex = 0;
 
+let BATTERY_INTERVAL = 60000;
+var batteryPercent = -2;
+
 document.addEventListener("DOMContentLoaded", event => {
     let isIndexPage = document.getElementById('tablettes-index');
     if (!isIndexPage) return;
@@ -71,8 +74,10 @@ document.addEventListener("DOMContentLoaded", event => {
     //setInterval(cycleLogoBg, LOGO_BG_INTERVAL);
     setInterval(sendPing, PING_INTERVAL);
     setInterval(cueTick, 100);
+    setInterval(updateBatteryStatus, BATTERY_INTERVAL);
 
     sendPing();
+    updateBatteryStatus();
 });
 
 function sendPing() {
@@ -86,6 +91,7 @@ function sendPing() {
     body.append('now_playing_path', nowPlaying.path);
     body.append('clock_info', clockInfo + " timeSince=" + (Date.now() - lastNtpSuccess));
     body.append('cache_info', layNativeInterface.getCacheInfo());
+    body.append('battery_percent', batteryPercent);
     let startTime = Date.now();
     var endTime;
     fetch('/tablettes/ping.json', {method: 'POST', body: body})
@@ -224,5 +230,10 @@ function triggerTextFeed(strings) {
     });
 }
 window.triggerTextFeed = triggerTextFeed; // for testing in console
+
+function updateBatteryStatus() {
+    batteryPercent = layNativeInterface.getBatteryPercent();
+    log('batteryPercent updated to ' + batteryPercent);
+}
 
 })();

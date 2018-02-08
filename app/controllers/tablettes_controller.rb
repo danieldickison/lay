@@ -10,6 +10,7 @@ class TablettesController < ApplicationController
     @@now_playing_paths = []
     @@clock_infos = []
     @@cache_infos = []
+    @@battery_percents = []
 
     skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :preload]
 
@@ -36,11 +37,12 @@ class TablettesController < ApplicationController
         end
     end
 
-    def ping_stats(tablet, now_playing_path, clock_info, cache_info)
+    def ping_stats(tablet, now_playing_path, clock_info, cache_info, battery_percent)
         @@ping_stats[tablet] = Time.now
         @@now_playing_paths[tablet] = now_playing_path
         @@clock_infos[tablet] = clock_info
         @@cache_infos[tablet] = cache_info
+        @@battery_percents[tablet] = battery_percent
         if (Time.now - @@last_ping_stats) >= 2
             puts "---"
             @@cache_infos.each_with_index do |info, t|
@@ -73,7 +75,12 @@ class TablettesController < ApplicationController
                 else
                     clock = "  ???"
                 end
-                puts "[#{'%2d' % t}] - #{ago} - #{clock} - #{@@now_playing_paths[t]}"
+                if @@battery_percents[t]
+                    battery = "%3.0f%%" % @@battery_percents[t].to_f
+                else
+                    battery = "???%"
+                end
+                puts "[#{'%2d' % t}] - #{ago} - #{battery} - #{clock} - #{@@now_playing_paths[t]}"
             end
         end
     end
@@ -81,7 +88,7 @@ class TablettesController < ApplicationController
     def ping
         ip = request.headers['X-Forwarded-For'].split(',').first
         tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
-        ping_stats(tablet, params[:now_playing_path], params[:clock_info], params[:cache_info])
+        ping_stats(tablet, params[:now_playing_path], params[:clock_info], params[:cache_info], params[:battery_percent])
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
         preload = self.class.preload[tablet]
         # puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue} preload: #{preload && preload.join(', ')}"
