@@ -29,6 +29,7 @@ window.clearNowPlaying = function (np) {
 };
 
 let PING_INTERVAL = 100;
+var pingBusy = false;
 var clockOffset = 0;
 var clockInfo = null;
 var lastNtpSuccess = 0;
@@ -49,6 +50,16 @@ document.addEventListener("DOMContentLoaded", event => {
         location.reload();
     });
 
+    // Help local debugging in chrome
+    if (!window.layNativeInterface) {
+        window.layNativeInterface = {
+            getBuildName: function () { return 'fake native interface'; },
+            getCacheInfo: function () { return ''; },
+            setVideoCue: function () {},
+            setPreloadFiles: function () {},
+        };
+    }
+
     let version = document.getElementById('version');
     version.innerText = "Build: " + layNativeInterface.getBuildName();
 
@@ -60,6 +71,9 @@ document.addEventListener("DOMContentLoaded", event => {
 });
 
 function sendPing() {
+    if (pingBusy) return;
+
+    pingBusy = true;
     let body = new URLSearchParams();
     body.append('now_playing_path', nowPlaying.path);
     body.append('clock_info', clockInfo + " timeSince=" + (Date.now() - lastNtpSuccess));
@@ -82,23 +96,28 @@ function sendPing() {
         }
 
         if (!arraysEqual(json.preload_files, currentPreload)) {
-            if (json.preload_files) {
-                log("Received new preload files", json.preload_files);
-            } else {
+            if (json.preload_files == null) {
+                log("Ignoring uninitialized preload");
+            } else if (json.preload_files.length === 0) {
                 log("Clearing preload cache");
+                layNativeInterface.setPreloadFiles(null);
+            } else {
+                log("Received new preload files", json.preload_files);
+                let paths = currentPreload && currentPreload.map(p => uriEscapePath(p));
+                layNativeInterface.setPreloadFiles(paths);
             }
             currentPreload = json.preload_files;
-            let paths = currentPreload && currentPreload.map(p => uriEscapePath(p));
-            layNativeInterface.setPreloadFiles(paths);
         }
 
         document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " — " + json.tablet_ip;
+        pingBusy = false;
 
         // setTimeout(sendPing, PING_INTERVAL);
     })
     .catch(error => {
         log("ping failed", error);
         // setTimeout(sendPing, PING_INTERVAL);
+        pingBusy = false;
     });
 }
 

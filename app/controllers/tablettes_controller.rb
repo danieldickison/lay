@@ -126,7 +126,7 @@ class TablettesController < ApplicationController
     def self.reset_cue(tablet)
         tablet_enum(tablet).each do |t|
             puts "reset[#{t}]"
-            @preload[t] = nil
+            @preload[t] = []
             @cues[t] = nil
         end
     end
