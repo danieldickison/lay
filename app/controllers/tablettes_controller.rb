@@ -114,7 +114,7 @@ class TablettesController < ApplicationController
 
     def self.start_cue(tablet, file, time, seek: 0)
         tablet_enum(tablet).each do |t|
-            @cues[t] = {:file => file, :time => time.to_f, :seek => seek.to_f}
+            @cues[t] = {:file => "downloads:#{file}", :time => time.to_f, :seek => seek.to_f}
             puts "start[#{t}] - #{@cues[t].inspect}"
         end
     end
