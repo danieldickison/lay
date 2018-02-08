@@ -30,6 +30,7 @@ module Lay
 
     class SpectatorsDB
       SPECTACTORS_SPREADSHEET = '1HSgh8-6KQGOKPjB_XRUbLAskCWgM5CpFFiospjn5Iq4'
+      #SPECTACTORS_SPREADSHEET = '1ij3yi9tyUhFjgBbicODBe-kTNh43Z20ygPkS0XddwRY' # "Copy of Spectators" for testing
 
       attr_accessor(:session, :ws, :col, :patrons)
 
@@ -40,7 +41,10 @@ module Lay
         @ws.num_cols.times do |c|
           @col[ws[2, c+1]] = c+1  # column numbers by name
         end
-        @patrons = (2 .. @ws.num_rows)
+        @patrons = []
+        (2 .. @ws.num_rows).collect do |row|
+          @patrons[@ws[row, 1].to_i] = row
+        end
       end
     end
 
@@ -278,6 +282,34 @@ module Lay
       end
     end
 
+    class Patrons
+      def self.update(patron_id, table, drink, opt_in)
+        db = SpectatorsDB.new
+        ws = db.ws
+        table_col = db.col["Table (auto)"]
+        drink_col = db.col["Drink (auto)"]
+        opt_col = db.col["Accept Terms? Y/N (auto)"]
+        if !table_col || !drink_col || !opt_col
+            puts '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            puts "Patron columns not found table_col=#{table_col.inspect}  drink_col=#{drink_col.inspect} opt_col=#{opt_col.inspect}"
+            puts '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            raise "Patron columns not found table_col=#{table_col.inspect}  drink_col=#{drink_col.inspect} opt_col=#{opt_col.inspect}"
+        end
+        row = db.patrons[patron_id]
+        if !row
+            puts '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            puts "Patron ID #{patron_id} not found in worksheet"
+            puts '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+            raise "Patron ID #{patron_id} not found in worksheet"
+        end
+        puts "row=#{row.inspect} table_col=#{table_col.inspect}  drink_col=#{drink_col.inspect} opt_col=#{opt_col.inspect}"
+        ws[row, table_col] = table
+        ws[row, drink_col] = drink
+        ws[row, opt_col] = opt_in
+        ws.save
+      end
+    end
+
 
     class Testem
       @@run = false
@@ -326,6 +358,10 @@ module Lay
       # That regex fails to match a trailing * if it's the last character of the string. So that's problematic, but maybe we can just use /cue as the address and get all the args via the arguments.
       @server.add_method('/cue/*') do |message|
         puts "A #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
+      end
+
+      @server.add_method('/show_time') do |message|
+        TablettesController.show_time(message.to_a[0])
       end
 
       # /start <media> [<tablet#> ...]

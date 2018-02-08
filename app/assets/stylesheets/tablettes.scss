@@ -15,12 +15,78 @@ body.tablet {
 }
 
 #tablettes-pre-show {
-    display: none;
+    background-image: url(/lay/Tablet/RixLogo/RixLogo_Black.png);
+    background-size: cover;
+    background-position: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    text-align: center;
 }
 
-#tablettes-pre-show.visible {
-    display: block;
+#tablettes-pre-show button {
+    font-size: 20px;
+    padding: 5px 20px;
+    margin: 10px;
 }
+
+#intro-button-container {
+    position: absolute;
+    left: 0;
+    bottom: 100px;
+    width: 100%;
+    text-align: center;
+}
+
+#intro-button {
+    display: block;
+    margin: 0 auto !important;
+}
+
+#pre-show-data-entry {
+    padding-top: 20px;
+}
+
+#program-number-input {
+    font-size: 20px;
+    text-align: center;
+}
+
+#drink-menu {
+    list-style: none;
+}
+
+#drink-menu > li {
+    display: inline-block;
+    padding: 0;
+}
+
+#consent-popup {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+}
+
+#consent-popup-box {
+    width: 90%;
+    height: 100%;
+    margin: auto;
+    padding: 20px 5px;
+    overflow: scroll;
+    box-sizing: border-box;
+}
+
+#consent-text {
+    text-align: left;
+    white-space: pre-wrap;
+}
+
+
 
 #tablettes-video {
     width: 100%;
