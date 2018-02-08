@@ -114,6 +114,10 @@ function sendPing() {
             }
         }
 
+        if (json.text_feed) {
+            triggerTextFeed(json.text_feed);
+        }
+
         document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " — " + json.tablet_ip;
         document.getElementById('tablettes-debug').classList.toggle('visible', json.debug);
 
@@ -197,5 +201,19 @@ function arraysEqual(a1, a2) {
 function uriEscapePath(path) {
     return path && path.replace(/([\/:]?)([^\/:]+)([\/:]?)/g, (m, p1, p2, p3) => p1 + encodeURIComponent(p2) + p3);
 }
+
+function triggerTextFeed(strings) {
+    let container = document.getElementById('tablettes-text-feed');
+    container.innerHTML = '';
+    var depth = 0;
+    strings.forEach(str => {
+        let p = document.createElement('p');
+        p.innerText = str;
+        p.classList.add('depth-' + depth);
+        container.appendChild(p);
+        depth = (depth + 1) % 3;
+    });
+}
+window.triggerTextFeed = triggerTextFeed; // for testing in console
 
 })();

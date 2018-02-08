@@ -20,7 +20,7 @@ body.tablet {
 }
 
 #logo-bg {
-    z-index: -1;
+    z-index: -10;
     position: fixed;
     top: 0;
     left: 0;
@@ -59,4 +59,95 @@ body.tablet {
 .director-form label {
     display: block;
     margin-bottom: 5px;
+}
+
+#tablettes-text-feed {
+    z-index: -1;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+}
+
+#tablettes-text-feed > p {
+    position: absolute;
+    top: 100%;
+    width: 80%;
+    margin: 0;
+    padding: 0;
+}
+
+#tablettes-text-feed > p.depth-0 {
+    font-size: 80px;
+    animation-name: text-feed-translate, text-feed-fade-1;
+    animation-duration: 6s;
+    animation-delay: 4s;
+    z-index: 10;
+}
+
+#tablettes-text-feed > p.depth-1 {
+    font-size: 60px;
+    animation-name: text-feed-translate, text-feed-fade-2;
+    animation-duration: 8s;
+    animation-delay: 0s;
+    z-index: 9;
+}
+
+#tablettes-text-feed > p.depth-2 {
+    font-size: 40px;
+    animation-name: text-feed-translate, text-feed-fade-3;
+    animation-duration: 10s;
+    animation-delay: 2s;
+    z-index: 8;
+}
+
+@keyframes text-feed-translate {
+    from {
+        transform: translateY(0) scale(.75);
+        animation-timing-function: linear;
+    }
+    to {
+        transform: translateY(-700px) scale(1);
+    }
+}
+
+@keyframes text-feed-fade-1 {
+    from {
+        opacity: 1;
+    }
+    50% {
+        opacity: 1;
+        animation-timing-function: ease-out;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes text-feed-fade-2 {
+    from {
+        opacity: 0.75;
+    }
+    50% {
+        opacity: 0.75;
+        animation-timing-function: ease-out;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes text-feed-fade-3 {
+    from {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 0.5;
+        animation-timing-function: ease-out;
+    }
+    to {
+        opacity: 0;
+    }
 }
