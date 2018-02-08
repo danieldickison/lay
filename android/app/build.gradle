@@ -7,7 +7,7 @@ android {
         minSdkVersion 22
         targetSdkVersion 27
         versionCode 6
-        versionName "Roundabout Brewery"
+        versionName "Drai Laag"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [HOCKEYAPP_APP_ID: "c18ec27b26df41fb9f93f23b38df95c6"]
     }
@@ -27,6 +27,4 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-
-    implementation 'net.hockeyapp.android:HockeySDK:5.1.0'
 }

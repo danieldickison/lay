@@ -27,9 +27,6 @@ import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 
-import net.hockeyapp.android.CrashManager;
-import net.hockeyapp.android.UpdateManager;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -206,7 +203,6 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         if (mNtpSync != null) {
             mNtpSync.stop();
         }
-        unregisterManagers();
     }
 
     @Override
@@ -215,18 +211,10 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         if (mNtpSync != null) {
             mNtpSync.start();
         }
-        checkForCrashes();
-        checkForUpdates();
 
         if (mHost != null) {
             startLockTask();
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        unregisterManagers();
     }
 
     private void connectToHost(String host) {
@@ -332,19 +320,6 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private long getServerNow() {
         return System.currentTimeMillis() + mClockOffset;
-    }
-
-    private void checkForCrashes() {
-        CrashManager.register(this);
-    }
-
-    private void checkForUpdates() {
-        // Remove this for store builds!
-        UpdateManager.register(this);
-    }
-
-    private void unregisterManagers() {
-        UpdateManager.unregister();
     }
 
     private class VideoViewHolder implements TextureView.SurfaceTextureListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener {
