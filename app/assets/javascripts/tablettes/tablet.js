@@ -76,15 +76,24 @@ document.addEventListener("DOMContentLoaded", event => {
 });
 
 function sendPing() {
-    if (pingBusy) return;
+    if (pingBusy) {
+        log("Skipping ping while another one is in flight");
+        return;
+    }
 
     pingBusy = true;
     let body = new URLSearchParams();
     body.append('now_playing_path', nowPlaying.path);
     body.append('clock_info', clockInfo + " timeSince=" + (Date.now() - lastNtpSuccess));
     body.append('cache_info', layNativeInterface.getCacheInfo());
+    let startTime = Date.now();
+    var endTime;
     fetch('/tablettes/ping.json', {method: 'POST', body: body})
     .then(response => {
+        endTime = Date.now();
+        if (endTime - startTime > 100) {
+            log("Slow ping response: " + (endTime - startTime) + "ms");
+        }
         return response.json();
     })
     .then(json => {
