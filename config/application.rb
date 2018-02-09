@@ -411,7 +411,7 @@ module Lay
 
       # /productlaunch
       @server.add_method('/productlaunch') do |message|
-        puts "offtherails #{message}"
+        puts "productlaunch #{message}"
         if message.to_a[0] == "start"
           ProductLaunch.start
         elsif message.to_a[0] == "stop"
@@ -419,6 +419,13 @@ module Lay
         elsif message.to_a[0] == "load"
           ProductLaunch.load
         end
+      end
+
+      # For testing the tablet text feed. We'll probably trigger this via productlaunch
+      # /textfeed <tablet#> <str1> <str2> ...
+      @server.add_method('/textfeed') do |message|
+        args = message.to_a
+        TablettesController.trigger_text_feed(args[0], args[1..-1])
       end
 
       # /testem

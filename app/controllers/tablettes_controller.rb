@@ -33,6 +33,7 @@ class TablettesController < ApplicationController
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
     @preload = {} # {int => [file1, file2, ...]}
+    @text_feed = {} # {int => [str1, str2, ...]}
 
     def index
     end
@@ -118,6 +119,7 @@ class TablettesController < ApplicationController
         ping_stats(tablet, params[:now_playing_path], params[:clock_info], params[:cache_info], params[:battery_percent])
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
         preload = self.class.preload[tablet]
+        text_feed = self.class.text_feed.delete(tablet)
         # puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue} preload: #{preload && preload.join(', ')}"
         render json: {
             :tablet_ip => ip,
@@ -128,6 +130,7 @@ class TablettesController < ApplicationController
             :next_seek_time => (cue[:seek] * 1000).round,
             :debug => self.class.debug,
             :show_time => @@show_time,
+            :text_feed => text_feed,
         }
     end
 
@@ -182,6 +185,15 @@ class TablettesController < ApplicationController
             @preload[t] = []
             @cues[t] = nil
         end
+    end
+
+    def self.text_feed
+        return @text_feed
+    end
+
+    def self.trigger_text_feed(tablet, strs)
+        puts "text_feed[#{tablet}] = #{strs.inspect}"
+        @text_feed[tablet] = strs
     end
 
     def self.debug
