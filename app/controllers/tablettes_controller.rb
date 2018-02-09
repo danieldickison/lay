@@ -84,7 +84,8 @@ class TablettesController < ApplicationController
                     when start_time then 'downloading (%2.0fs)' % (Time.now.to_f - start_time.to_i / 1000)
                     else 'queued'
                     end
-                    path = path.split("/").last.gsub('%20', ' ')
+                    #path = path.split("/").last.gsub('%20', ' ')
+                    path.gsub('%20', ' ')
                     puts "  #{status}: #{path}"
                 end
             end

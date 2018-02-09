@@ -25,6 +25,7 @@ window.setNowPlaying = function (np) {
 };
 
 window.clearNowPlaying = function (np) {
+    console.log("clear now playing: " + np.path + "; currently: " + nowPlaying.path);
     if (nowPlaying.path == np.path) {
         nowPlaying = {};
         fadeLogo(true);
