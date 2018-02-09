@@ -42,7 +42,7 @@ import java.util.Date;
 public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private final static String HOST_KEY = "com.danieldickison.lay.host";
-    private final static String DEFAULT_HOST = "192.168.1.160";
+    private final static String DEFAULT_HOST = "10.1.1.200";
     private final static int PORT = 3000;
     private final static String PAGE_PATH = "/tablettes/index";
     private final static long FADE_DURATION = 1000;
