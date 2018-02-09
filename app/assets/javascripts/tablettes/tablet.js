@@ -322,13 +322,16 @@ function uriEscapePath(path) {
 function triggerTextFeed(strings) {
     let container = document.getElementById('tablettes-text-feed');
     container.innerHTML = '';
-    var depth = 0;
-    strings.forEach(str => {
+    strings.forEach((str, i) => {
         let p = document.createElement('p');
         p.innerText = str;
-        p.classList.add('depth-' + depth);
+        p.classList.add('depth-' + (i % 3));
+        p.style.animationDelay = (7 * Math.floor(i / 3) + 3 * Math.random()) + 's';
+        p.style.left = Math.round(300 * Math.random()) + 'px';
         container.appendChild(p);
-        depth = (depth + 1) % 3;
+        p.addEventListener('animationend', () => {
+            if (p.parentNode === container) container.removeChild(p);
+        });
     });
 }
 window.triggerTextFeed = triggerTextFeed; // for testing in console
