@@ -212,7 +212,7 @@ function sendPing() {
             log('Last command: ' + cmd.join('; '));
             switch (cmd[0]) {
                 case 'load':
-                    layNativeInterface.downloadFile(cmd[1]);
+                    layNativeInterface.downloadFile(uriEscapePath(cmd[1]));
                     break;
                 case 'reload':
                     location.reload();
