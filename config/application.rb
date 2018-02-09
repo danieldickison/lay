@@ -118,9 +118,11 @@ module Lay
         puts "starting product launch"
         @@run = true
         Thread.new do
-          @@patrons.each do |patron|
-            patron.run
-            break if !@@run
+          while true
+            @@patrons.each do |patron|
+              patron.run
+              return if !@@run
+            end
           end
         end
       end
@@ -140,7 +142,7 @@ module Lay
       IMG2_CHANNEL = 10
       IMG3_CHANNEL = 11
 
-      TIMINGS = [0, 0, 10, 8, 8, 12, 8, 4, 5]
+      TIMINGS = [nil, nil, 10, 8, 8, 12, 8, 4, 5]
 
       def initialize(p_data)
         @id = p_data["Patron ID"]
