@@ -232,6 +232,7 @@ function sendPing() {
             preShow.style.display = 'none';
         } else {
             preShow.style.display = 'block';
+            preShow.style.backgroundImage = 'url(' + json.preshow_bg + ')';
         }
 
         pingStartTime = null;

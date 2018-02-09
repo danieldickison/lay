@@ -5,18 +5,22 @@ class TablettesController < ApplicationController
 
     @debug = false
     TABLET_TO_TABLE = {
-        1 => 'X',
-        2 => 'A',
-        3 => 'B',
-        4 => 'C',
-        5 => 'D',
-        6 => 'E',
-        7 => 'F',
-        8 => 'G',
-        9 => 'H',
+        1 => 'A',
+        2 => 'B',
+        3 => 'C',
+        4 => 'D',
+        5 => 'E',
+        6 => 'F',
+        7 => 'G',
+        8 => 'H',
+        9 => 'I',
         10 => 'J',
-        11 => 'Y',
+        11 => 'XX',
     }
+
+    PRESHOW_BG = (1..10).collect {|t| '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % t}
+    PRESHOW_BG[11] = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 3
+    DEFAULT_PRESHOW_BG = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 0
 
     @@last_ping_stats = Time.now
     @@ping_stats = []
@@ -125,6 +129,7 @@ class TablettesController < ApplicationController
         render json: {
             :tablet_ip => ip,
             :tablet_number => tablet,
+            :preshow_bg => PRESHOW_BG[tablet] || DEFAULT_PRESHOW_BG,
             :commands => commands,
             :next_cue_file => cue[:file],
             :next_cue_time => (cue[:time] * 1000).round,
@@ -139,7 +144,9 @@ class TablettesController < ApplicationController
         ip = request.headers['X-Forwarded-For'].split(',').first
         tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
         begin
-            Lay::OSCApplication::Patrons.update(params[:patron_id].to_i, TABLET_TO_TABLE[tablet] || tablet, params[:drink], params[:opt])
+            drink = params[:drink]
+            drink = 'none' if !drink || drink == ''
+            Lay::OSCApplication::Patrons.update(params[:patron_id].to_i, TABLET_TO_TABLE[tablet] || tablet, drink, params[:opt])
             render json: {
                 :error => false
             }
