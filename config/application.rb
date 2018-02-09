@@ -67,18 +67,17 @@ module Lay
 
 
     class ProductLaunch
-      CARE_ABOUT_IDD = false
+      SHOW_DATE = "2/9/2018"
+      CARE_ABOUT_IDD = true
       CARE_ABOUT_DATE = true
-      CARE_ABOUT_OPT = false
+      CARE_ABOUT_OPT = true
 
       FIRST_SPECTATOR_ROW = 3
-
-# "Isadora OSC Channel 9"
 
       @@run = false
 
       @@patrons = []
-      INTERESTING_COLUMNS = ["Patron ID", "Table (auto)", "Isadora OSC Channel 9", "Isadora OSC Channel 10", "Isadora OSC Channel 11", "Last Name", "First Name", "Family Member 1", "Hometown", "Education 1", "Current Occupation 1", "Uncommon Interest 1", "Uncommon Interest 2"]
+      INTERESTING_COLUMNS = ["Patron ID", "Table (auto)", "Isadora OSC Channel 9", "Isadora OSC Channel 10", "Isadora OSC Channel 11", "First Name", "Family Member 1", "Hometown", "Education 1", "Current Occupation 1", "Uncommon Interest 1", "Uncommon Interest 2"]
       ONE_OF_THESE_COLUMNS = ["Family Member 1", "Hometown", "Education 1", "Current Occupation 1", "Uncommon Interest 1", "Uncommon Interest 2",  "Isadora OSC Channel 9", "Isadora OSC Channel 10", "Isadora OSC Channel 11"]
 
       def self.load
@@ -86,11 +85,11 @@ module Lay
         @@patrons = []
 
         (FIRST_SPECTATOR_ROW .. db.ws.num_rows).each do |r|
-          if CARE_ABOUT_IDD  && db.ws[r, db.col["Positively ID'd? Y/N/M"]] == "N"
+          if CARE_ABOUT_IDD && db.ws[r, db.col["Positively ID'd? Y/N/M"]] == "N"
             next
           end
 
-          if CARE_ABOUT_DATE && db.ws[r, db.col["Performance Date"]] != "2/8/2018"
+          if CARE_ABOUT_DATE && db.ws[r, db.col["Performance Date"]] != SHOW_DATE
             next
           end
 
@@ -152,8 +151,7 @@ module Lay
         @img3 = p_data["Isadora OSC Channel 11"]
 
         @data = []
-        @data[NAME_CHANNEL] = p_data["First Name"] + " " + p_data["Last Name"]
-        # @data[DOB_CHANNEL] = 
+        @data[NAME_CHANNEL] = p_data["First Name"]
         @data[HOMETOWN_CHANNEL] = p_data["Hometown"]
         @data[FACT1_CHANNEL] = p_data["Uncommon Interest 1"]
         @data[FACT2_CHANNEL] = p_data["Uncommon Interest 2"]
@@ -202,6 +200,10 @@ module Lay
     # --------------------------------------------
 
     class OffTheRails
+      SHOW_DATE = "2/9/2018"
+      CARE_ABOUT_DATE = true
+      CARE_ABOUT_OPT = true
+
       ISADORA_IP = '10.1.1.100'
       ISADORA_PORT = 1234
 
@@ -223,6 +225,14 @@ module Lay
         @@tweets = []
         (FIRST_SPECTATOR_ROW .. db.ws.num_rows).each do |r|
           INTERESTING_COLUMNS.each do |col_name|
+            if CARE_ABOUT_DATE && db.ws[r, db.col["Performance Date"]] != SHOW_DATE
+              next
+            end
+
+            if CARE_ABOUT_OPT && db.ws[r, db.col["Accept Terms? Y/N (auto)"]] != "Y"
+              next
+            end
+
             col = db.col[col_name]
             if db.ws[r, col] != ""
               @@tweets.push(db.ws[r, col])
