@@ -167,8 +167,7 @@ class TablettesController < ApplicationController
 
     def self.load_cue(tablet, file)
         tablet_enum(tablet).each do |t|
-            cmds = @commands[t] ||= []
-            cmds << ['load', file]
+            queue_command(t, 'load', file)
             puts "load[#{t}] - #{file}"
         end
     end
@@ -195,8 +194,21 @@ class TablettesController < ApplicationController
         end
     end
 
+    def self.reload_js
+        puts "reload_js"
+        tablet_enum(nil).each do |t|
+            queue_command(t, 'reload')
+        end
+    end
+
     def self.commands
         return @commands
+    end
+
+    def self.queue_command(tablet, *cmd)
+        puts "queue_command #{tablet} #{cmd.inspect}"
+        cmds = @commands[tablet] ||= []
+        cmds << cmd
     end
 
     def self.text_feed

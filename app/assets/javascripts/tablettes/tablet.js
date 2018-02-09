@@ -214,6 +214,9 @@ function sendPing() {
                 case 'load':
                     layNativeInterface.downloadFile(cmd[1]);
                     break;
+                case 'reload':
+                    location.reload();
+                    break;
             }
         });
 
