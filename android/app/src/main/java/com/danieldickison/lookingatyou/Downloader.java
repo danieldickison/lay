@@ -42,6 +42,16 @@ public class Downloader {
             // path;startTime;endTime;error
             return path + ";" + (startTime != null ? startTime.getTime() : "") + ";" + (endTime != null ? endTime.getTime() : "") + ";" + (error != null ? error.toString() : "");
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof CacheInfo && ((CacheInfo) obj).path.equalsIgnoreCase(path);
+        }
+
+        @Override
+        public int hashCode() {
+            return path.hashCode();
+        }
     }
 
     public Downloader(File downloadDirectory) {
@@ -103,64 +113,67 @@ public class Downloader {
         public void run() {
             String path = info.path;
             File file = new File(mDownloadDirectory, path);
-            if (!file.getParentFile().mkdirs()) {
-                Log.d(TAG, "downloader: failed to create dir for " + file);
-            }
+
+            //noinspection ResultOfMethodCallIgnored
+            file.getParentFile().mkdirs();
+
             if (file.exists()) {
                 Log.d(TAG, "downloader: already exists: " + file);
-            } else {
-                Log.d(TAG, "downloader: starting download of " + serverURL(path) + " to " + file);
+                rmFile(file);
+            }
+
+            Log.d(TAG, "downloader: starting download of " + serverURL(path) + " to " + file);
+            synchronized (mCacheLock) {
+                info.startTime = new Date();
+            }
+            try {
+                File temp = File.createTempFile("download", null, mDownloadDirectory);
+                URL url = new URL(serverURL(path));
+                URLConnection conn = url.openConnection();
+                InputStream stream = conn.getInputStream();
+                try (FileOutputStream out = new FileOutputStream(temp)) {
+                    byte[] buffer = new byte[10240];
+                    int len;
+                    while ((len = stream.read(buffer)) > 0) {
+                        out.write(buffer, 0, len);
+                    }
+                }
+                Log.d(TAG, "setPreloadFiles: rename " + temp + " to " + file);
+                if (!temp.renameTo(file)) {
+                    Log.w(TAG, "setPreloadFiles: failed to rename temp file");
+                    //noinspection ResultOfMethodCallIgnored
+                    temp.delete();
+                }
                 synchronized (mCacheLock) {
-                    info.startTime = new Date();
+                    info.endTime = new Date();
                 }
-                try {
-                    File temp = File.createTempFile("download", null, mDownloadDirectory);
-                    URL url = new URL(serverURL(path));
-                    URLConnection conn = url.openConnection();
-                    InputStream stream = conn.getInputStream();
-                    try (FileOutputStream out = new FileOutputStream(temp)) {
-                        byte[] buffer = new byte[10240];
-                        int len;
-                        while ((len = stream.read(buffer)) > 0) {
-                            out.write(buffer, 0, len);
-                        }
-                    }
-                    Log.d(TAG, "setPreloadFiles: rename " + temp + " to " + file);
-                    if (!temp.renameTo(file)) {
-                        Log.w(TAG, "setPreloadFiles: failed to rename temp file");
-                        //noinspection ResultOfMethodCallIgnored
-                        temp.delete();
-                    }
-                    synchronized (mCacheLock) {
-                        info.endTime = new Date();
-                    }
-                    Log.d(TAG, "setPreloadFiles: finished download to " + file);
-                } catch (IOException e) {
-                    synchronized (mCacheLock) {
-                        info.error = e;
-                    }
-                    Log.e(TAG, "setPreloadFiles: failed to download file", e);
+                Log.d(TAG, "setPreloadFiles: finished download to " + file);
+            } catch (IOException e) {
+                synchronized (mCacheLock) {
+                    info.error = e;
                 }
+                Log.e(TAG, "setPreloadFiles: failed to download file", e);
             }
         }
     }
 
-    public void setPreloadFiles(final String[] paths) {
-        if (paths == null) {
-            mExecutorService.submit(clearCacheRunnable);
-            return;
+    public void downloadFile(final String path) {
+        Log.i(TAG, "downloadFile: " + path);
+        CacheInfo info = new CacheInfo(path);
+        synchronized (mCacheLock) {
+            mCachedPaths.remove(info);
+            mCachedPaths.add(info);
         }
+        mExecutorService.submit(new DownloadRunnable(info));
+    }
 
-        Log.d(TAG, "setPreloadFiles: " + Arrays.toString(paths));
-        for (String path : paths) {
-            File file = new File(mDownloadDirectory, path);
-            if (!file.exists()) {
-                CacheInfo info = new CacheInfo(path);
-                synchronized (mCacheLock) {
-                    mCachedPaths.add(info);
-                }
-                mExecutorService.submit(new DownloadRunnable(info));
-            }
+    private void rmFile(File f) {
+        Log.d(TAG, "rmFile: " + f);
+        File to = new File(f.getAbsolutePath() + System.currentTimeMillis());
+        if (!f.renameTo(to)) {
+            Log.w(TAG, "rmDir: failed to rename " + f + " to " + to);
+        } else if (!to.delete()) {
+            Log.w(TAG, "rmDir: failed to delete " + f);
         }
     }
 
@@ -183,9 +196,6 @@ public class Downloader {
                 }
             }
         }
-        //if (!dir.delete()) {
-        //    Log.w(TAG, "rmDir: failed to delete dir " + dir);
-        //}
     }
 
     private void initStateFromDirectory(File dir) {
@@ -195,7 +205,8 @@ public class Downloader {
                 initStateFromDirectory(f);
             } else {
                 Log.d(TAG, "initStateFromDirectory: adding cached file " + f);
-                CacheInfo info = new CacheInfo(f.getName());
+                String path = f.getAbsolutePath().substring(mDownloadDirectory.getAbsolutePath().length());
+                CacheInfo info = new CacheInfo(path);
                 info.startTime = new Date();
                 info.endTime = new Date();
                 mCachedPaths.add(info);

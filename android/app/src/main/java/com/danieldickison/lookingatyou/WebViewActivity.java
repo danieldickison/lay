@@ -42,7 +42,7 @@ import java.util.Date;
 public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private final static String HOST_KEY = "com.danieldickison.lay.host";
-    private final static String DEFAULT_HOST = "192.168.1.160";
+    private final static String DEFAULT_HOST = "10.1.1.200";
     private final static int PORT = 3000;
     private final static String PAGE_PATH = "/tablettes/index";
     private final static long FADE_DURATION = 1000;
@@ -104,8 +104,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         @JavascriptInterface
-        public void setPreloadFiles(final String[] paths) {
-            mDownloader.setPreloadFiles(paths);
+        public void downloadFile(String path) {
+            mDownloader.downloadFile(path);
         }
 
         @JavascriptInterface
@@ -333,9 +333,10 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         return "http://" + mHost + ":" + PORT + path;
     }
 
-    private void stopInactiveVideo() {
+    // Returns true if other video view was currently playing.
+    private boolean stopInactiveVideo() {
         int index = (mVideoViewIndex + 1) % 2;
-        mVideoHolders[index].fadeOut();
+        return mVideoHolders[index].hardStop();
     }
 
     private long getServerNow() {
@@ -409,9 +410,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         private final Runnable startVideoRunnable = new Runnable() {
             @Override
             public void run() {
-                textureView.animate().setDuration(FADE_DURATION).alpha(1);
+                if (stopInactiveVideo()) {
+                    textureView.setAlpha(1);
+                } else {
+                    textureView.animate().setDuration(FADE_DURATION).alpha(1);
+                }
                 mediaPlayer.start();
-                stopInactiveVideo();
                 setNowPlaying(url);
             }
         };
@@ -419,11 +423,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         private final Runnable stopVideoRunnable = new Runnable() {
             @Override
             public void run() {
-                if (mediaPlayer.isPlaying()) {
-                    mediaPlayer.stop();
-                }
                 clearNowPlaying(url);
-                url = null;
+                hardStop();
             }
         };
 
@@ -438,6 +439,17 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                     .setDuration(FADE_DURATION)
                     .alpha(0)
                     .withEndAction(stopVideoRunnable);
+        }
+
+        private boolean hardStop() {
+            textureView.setAlpha(0);
+            textureView.removeCallbacks(startVideoRunnable);
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+            }
+            boolean wasPlaying = url != null;
+            url = null;
+            return wasPlaying;
         }
     }
 }

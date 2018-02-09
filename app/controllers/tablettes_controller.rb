@@ -5,18 +5,22 @@ class TablettesController < ApplicationController
 
     @debug = false
     TABLET_TO_TABLE = {
-        1 => 'X',
-        2 => 'A',
-        3 => 'B',
-        4 => 'C',
-        5 => 'D',
-        6 => 'E',
-        7 => 'F',
-        8 => 'G',
-        9 => 'H',
+        1 => 'A',
+        2 => 'B',
+        3 => 'C',
+        4 => 'D',
+        5 => 'E',
+        6 => 'F',
+        7 => 'G',
+        8 => 'H',
+        9 => 'I',
         10 => 'J',
-        11 => 'Y',
+        11 => 'XX',
     }
+
+    PRESHOW_BG = (1..10).collect {|t| '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % t}
+    PRESHOW_BG[11] = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 3
+    DEFAULT_PRESHOW_BG = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 0
 
     @@last_ping_stats = Time.now
     @@ping_stats = []
@@ -32,8 +36,8 @@ class TablettesController < ApplicationController
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
-    @preload = {} # {int => [file1, file2, ...]}
     @text_feed = {} # {int => [str1, str2, ...]}
+    @commands = {} # {int => [[cmd1, arg1-1, arg1-2], [cmd2, arg2-1, ...], ...]}
 
     def index
     end
@@ -64,7 +68,7 @@ class TablettesController < ApplicationController
             @@dumping_stats = true
             puts "---"
             @@cache_infos.each_with_index do |info, t|
-                next if t != 4
+                next if t != 11
                 next if !info
                 puts "tablet #{t} cache:"
                 info.split('|').each do |f|
@@ -84,7 +88,8 @@ class TablettesController < ApplicationController
                     when start_time then 'downloading (%2.0fs)' % (Time.now.to_f - start_time.to_i / 1000)
                     else 'queued'
                     end
-                    path = path.split("/").last.gsub('%20', ' ')
+                    #path = path.split("/").last.gsub('%20', ' ')
+                    path.gsub('%20', ' ')
                     puts "  #{status}: #{path}"
                 end
             end
@@ -118,13 +123,14 @@ class TablettesController < ApplicationController
         tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
         ping_stats(tablet, params[:now_playing_path], params[:clock_info], params[:cache_info], params[:battery_percent])
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
-        preload = self.class.preload[tablet]
+        commands = self.class.commands.delete(tablet) || []
         text_feed = self.class.text_feed.delete(tablet)
         # puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue} preload: #{preload && preload.join(', ')}"
         render json: {
             :tablet_ip => ip,
             :tablet_number => tablet,
-            :preload_files => preload,
+            :preshow_bg => PRESHOW_BG[tablet] || DEFAULT_PRESHOW_BG,
+            :commands => commands,
             :next_cue_file => cue[:file],
             :next_cue_time => (cue[:time] * 1000).round,
             :next_seek_time => (cue[:seek] * 1000).round,
@@ -138,7 +144,9 @@ class TablettesController < ApplicationController
         ip = request.headers['X-Forwarded-For'].split(',').first
         tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
         begin
-            Lay::OSCApplication::Patrons.update(params[:patron_id].to_i, TABLET_TO_TABLE[tablet] || tablet, params[:drink], params[:opt])
+            drink = params[:drink]
+            drink = 'none' if !drink || drink == ''
+            Lay::OSCApplication::Patrons.update(params[:patron_id].to_i, TABLET_TO_TABLE[tablet] || tablet, drink, params[:opt])
             render json: {
                 :error => false
             }
@@ -157,11 +165,11 @@ class TablettesController < ApplicationController
         end
     end
 
-    def self.load_cue(tablet, files)
-        files = [files] if !files.is_a?(Array)
+    def self.load_cue(tablet, file)
         tablet_enum(tablet).each do |t|
-            @preload[t] = files
-            puts "load[#{t}] - #{files.join(', ')}"
+            cmds = @commands[t] ||= []
+            cmds << ['load', file]
+            puts "load[#{t}] - #{file}"
         end
     end
 
@@ -182,9 +190,13 @@ class TablettesController < ApplicationController
     def self.reset_cue(tablet)
         tablet_enum(tablet).each do |t|
             puts "reset[#{t}]"
-            @preload[t] = []
+            @commands[t] = []
             @cues[t] = nil
         end
+    end
+
+    def self.commands
+        return @commands
     end
 
     def self.text_feed
@@ -206,10 +218,6 @@ class TablettesController < ApplicationController
 
     def self.cues
         return @cues
-    end
-
-    def self.preload
-        return @preload
     end
 
     def self.show_time(bool)
