@@ -402,6 +402,10 @@ module Lay
         TablettesController.load_cue(tablets, file)
       end
 
+      @server.add_method('/reloadjs') do |message|
+        TablettesController.reload_js
+      end
+
       # /clear [<tablet#> ...]
       @server.add_method('/reset') do |message|
         puts "#{message.inspect}"
