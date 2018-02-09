@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", event => {
             getCacheInfo: function () { return ''; },
             getBatteryPercent: function () { return -1; },
             setVideoCue: function () {},
-            setPreloadFiles: function () {},
+            downloadFile: function () {},
             hideChrome: function () {},
         };
     }
@@ -207,19 +207,14 @@ function sendPing() {
             layNativeInterface.setVideoCue(path, nextCueTime, nextSeekTime);
         }
 
-        if (!arraysEqual(json.preload_files, currentPreload)) {
-            currentPreload = json.preload_files;
-            if (currentPreload == null) {
-                log("Ignoring uninitialized preload");
-            } else if (currentPreload.length === 0) {
-                log("Clearing preload cache");
-                layNativeInterface.setPreloadFiles(null);
-            } else {
-                log("Received new preload files", currentPreload);
-                let paths = currentPreload.map(p => uriEscapePath(p));
-                layNativeInterface.setPreloadFiles(paths);
+        (json.commands || []).forEach((cmd) => {
+            log('Last command: ' + cmd.join('; '));
+            switch (cmd[0]) {
+                case 'load':
+                    layNativeInterface.downloadFile(cmd[1]);
+                    break;
             }
-        }
+        });
 
         if (json.text_feed) {
             triggerTextFeed(json.text_feed);
