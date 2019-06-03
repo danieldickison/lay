@@ -60,6 +60,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private Downloader mDownloader;
 
+    private Dispatcher dispatcher;
+
     private final WebViewClient mWebClient = new WebViewClient() {
         @Override
         public void onPageFinished(WebView view, String url) {
@@ -156,6 +158,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mWebView.setWebViewClient(mWebClient);
 
         mDownloader = new Downloader(getExternalFilesDir(null));
+
+        dispatcher = new Dispatcher(mDownloader);
 
         promptForServerHost();
 
