@@ -3,7 +3,7 @@ class TablettesController < ApplicationController
     TABLET_BASE_IP_NUM = 200
     NUM_TABLETS = 11
 
-    @debug = false
+    @debug = true
     TABLET_TO_TABLE = {
         1 => 'A',
         2 => 'B',

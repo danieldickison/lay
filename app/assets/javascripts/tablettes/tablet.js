@@ -32,7 +32,7 @@ window.clearNowPlaying = function (np) {
     }
 };
 
-let PING_INTERVAL = 100;
+let PING_INTERVAL = 500;
 let PING_TIMEOUT = 3000;
 var pingStartTime = null;
 var clockOffset = 0;
