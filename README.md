@@ -1,5 +1,11 @@
 Looking at you.
 
+Install rails gems locally, using brew-install openssl for mysql native gem compilation:
+```
+lay$ ./bin/bundle config --local build.mysql2 "--with-ldflags=-L/usr/local/opt/openssl/lib --with-cppflags=-I/usr/local/opt/openssl/include"
+lay$ ./bin/bundle install --path vendor/cache
+```
+
 Run rails:
 ```
 lay/config$ gpg gdrive-api.json.gpg (passphrase hint: Wickenburg pie)
