@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require 'osc-ruby'
+@c = OSC::Client.new('localhost', 53000)
+@c.send(OSC::Message.new(*ARGV))
