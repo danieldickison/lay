@@ -4,6 +4,8 @@
 (() => {
 'use strict';
 
+let STATS_INTERVAL = 1000;
+
 document.addEventListener("DOMContentLoaded", event => {
     let cueForm = document.getElementById('cue-form');
     if (!cueForm) return;
@@ -32,5 +34,44 @@ document.addEventListener("DOMContentLoaded", event => {
         body.append('files', files);
         fetch('/tablettes/preload.json', {method: 'POST', body: body});
     });
+
+    setInterval(fetchStats, STATS_INTERVAL);
 });
+
+function fetchStats() {
+    fetch('/tablettes/stats.json', {method: 'POST'})
+    .then(response => {
+        return response.json();
+    })
+    .then(json => {
+        if (!json) return;
+        if (!json.tablets) return;
+
+        let table = document.getElementById('tablet-stats');
+        let oldTbody = document.getElementById('tablet-stats-body');
+        if (oldTbody) table.removeChild(oldTbody);
+
+        let tbody = document.createElement('tbody');
+        tbody.setAttribute('id', 'tablet-stats-body');
+        json.tablets.forEach(tablet => {
+            let tr = document.createElement('tr');
+            tr.appendChild(td(tablet.tablet));
+            tr.appendChild(td(tablet.ping + ' ms'));
+            tr.appendChild(td(tablet.battery + '%'));
+            tr.appendChild(td(tablet.clock && tablet.clock.median + ' ms'));
+            tr.appendChild(td(tablet.clock && tablet.clock.latest + ' ms'));
+            tr.appendChild(td(tablet.clock && tablet.clock.timeSince + ' ms'));
+            tr.appendChild(td(tablet.cache && tablet.cache.length));
+            tr.appendChild(td(tablet.playing));
+            tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+    });
+
+    function td(text) {
+        let td = document.createElement('td');
+        td.append(text);
+        return td;
+    }
+}
 })();

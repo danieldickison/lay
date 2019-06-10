@@ -32,7 +32,7 @@ class TablettesController < ApplicationController
 
     @@show_time = true
 
-    skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :preload, :update_patron]
+    skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :preload, :update_patron, :stats]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
@@ -58,64 +58,80 @@ class TablettesController < ApplicationController
         end
     end
 
+    def stats
+        now = Time.now.utc
+        render json: {
+            tablets: (1..NUM_TABLETS).zip(@@ping_stats, @@now_playing_paths, @@clock_infos, @@cache_infos, @@battery_percents).collect do |arr|
+                {
+                    tablet: arr[0],
+                    ping: arr[1] ? ((now - arr[1]) * 1000).round : nil,
+                    playing: arr[2] && arr[2].split('/').last.gsub('%20', ' '),
+                    clock: arr[3] && arr[3].split(' ').collect {|c| c.split('=')}.to_h,
+                    cache: arr[4] && arr[4].split(';'),
+                    battery: arr[5],
+                }
+            end
+        }
+    end
+
     def ping_stats(tablet, now_playing_path, clock_info, cache_info, battery_percent)
         @@ping_stats[tablet] = Time.now
         @@now_playing_paths[tablet] = now_playing_path
         @@clock_infos[tablet] = clock_info
         @@cache_infos[tablet] = cache_info
         @@battery_percents[tablet] = battery_percent
-        if (Time.now - @@last_ping_stats) >= 2 && !@@dumping_stats
-            @@dumping_stats = true
-            puts "---"
-            @@cache_infos.each_with_index do |info, t|
-                next if t != 11
-                next if !info
-                puts "tablet #{t} cache:"
-                info.split('|').each do |f|
-                    path, start_time, end_time, error = f.split(';')
-                    error = nil if error == ''
-                    start_time = nil if start_time == ''
-                    end_time = nil if end_time == ''
-                    status = case
-                    when error
-                        if error.include?("java.io.FileNotFoundException")
-                            e = error.split(": ")
-                            "error: #{e[0]}"
-                        else
-                            "error: #{error}"
-                        end
-                    when start_time && end_time then 'cached (%2.0fs)' % ((end_time.to_i - start_time.to_i) / 1000)
-                    when start_time then 'downloading (%2.0fs)' % (Time.now.to_f - start_time.to_i / 1000)
-                    else 'queued'
-                    end
-                    #path = path.split("/").last.gsub('%20', ' ')
-                    path.gsub('%20', ' ')
-                    puts "  #{status}: #{path}"
-                end
-            end
-            puts
-            @@last_ping_stats = Time.now
-            (1 .. NUM_TABLETS).each do |t|
-                if @@ping_stats[t]
-                    ago = "%3.0fms" % ((Time.now - @@ping_stats[t]) * 1000)
-                else
-                    ago = "  ???"
-                end
-                if @@clock_infos[t]
-                    clock = @@clock_infos[t]
-                else
-                    clock = "  ???"
-                end
-                if @@battery_percents[t]
-                    battery = "%3.0f%%" % @@battery_percents[t].to_f
-                else
-                    battery = "???%"
-                end
-                p = @@now_playing_paths[t] && @@now_playing_paths[t].split('/').last.gsub('%20', ' ')
-                puts "[#{'%2d' % t}] - #{ago} - #{battery} - #{p}"
-            end
-            @@dumping_stats = false
-        end
+        # if (Time.now - @@last_ping_stats) >= 2 && !@@dumping_stats
+        #     @@dumping_stats = true
+        #     puts "---"
+        #     @@cache_infos.each_with_index do |info, t|
+        #         next if t != 11
+        #         next if !info
+        #         puts "tablet #{t} cache:"
+        #         info.split('|').each do |f|
+        #             path, start_time, end_time, error = f.split(';')
+        #             error = nil if error == ''
+        #             start_time = nil if start_time == ''
+        #             end_time = nil if end_time == ''
+        #             status = case
+        #             when error
+        #                 if error.include?("java.io.FileNotFoundException")
+        #                     e = error.split(": ")
+        #                     "error: #{e[0]}"
+        #                 else
+        #                     "error: #{error}"
+        #                 end
+        #             when start_time && end_time then 'cached (%2.0fs)' % ((end_time.to_i - start_time.to_i) / 1000)
+        #             when start_time then 'downloading (%2.0fs)' % (Time.now.to_f - start_time.to_i / 1000)
+        #             else 'queued'
+        #             end
+        #             #path = path.split("/").last.gsub('%20', ' ')
+        #             path.gsub('%20', ' ')
+        #             puts "  #{status}: #{path}"
+        #         end
+        #     end
+        #     puts
+        #     @@last_ping_stats = Time.now
+        #     (1 .. NUM_TABLETS).each do |t|
+        #         if @@ping_stats[t]
+        #             ago = "%3.0fms" % ((Time.now - @@ping_stats[t]) * 1000)
+        #         else
+        #             ago = "  ???"
+        #         end
+        #         if @@clock_infos[t]
+        #             clock = @@clock_infos[t]
+        #         else
+        #             clock = "  ???"
+        #         end
+        #         if @@battery_percents[t]
+        #             battery = "%3.0f%%" % @@battery_percents[t].to_f
+        #         else
+        #             battery = "???%"
+        #         end
+        #         p = @@now_playing_paths[t] && @@now_playing_paths[t].split('/').last.gsub('%20', ' ')
+        #         puts "[#{'%2d' % t}] - #{ago} - #{battery} - #{p}"
+        #     end
+        #     @@dumping_stats = false
+        # end
     end
 
     def ping
