@@ -1,7 +1,7 @@
 class TablettesController < ApplicationController
 
     TABLET_BASE_IP_NUM = 200
-    NUM_TABLETS = 11
+    NUM_TABLETS = 20
 
     @debug = true
     TABLET_TO_TABLE = {

@@ -286,9 +286,10 @@ function serverNow() {
 }
 
 function log() {
-    console.log.apply(console, arguments);
+    let text = Array.prototype.join.call(arguments, ' ');
+    console.log(text);
     let status = document.getElementById('status');
-    status.innerText = Array.prototype.join.call(arguments, ' ');
+    status.innerText = text;
 }
 
 function cycleLogoBg() {
