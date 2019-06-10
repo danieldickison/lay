@@ -23,7 +23,9 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -91,6 +93,15 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
     };
 
+    private final WebChromeClient mWebChromeClient = new WebChromeClient() {
+        @Override
+        public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+            Log.d(TAG, consoleMessage.message());
+            return true;
+        }
+    };
+
+    @SuppressWarnings("unused")
     private final Object mJSInterface = new Object() {
         @JavascriptInterface
         public void setVideoCue(final String path, final long timestamp, final int seekTime) {
@@ -154,6 +165,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mWebView.addJavascriptInterface(mJSInterface, "layNativeInterface");
 
         mWebView.setWebViewClient(mWebClient);
+        mWebView.setWebChromeClient(mWebChromeClient);
 
         mDownloader = new Downloader(getExternalFilesDir(null));
 
