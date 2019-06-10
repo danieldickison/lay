@@ -11,9 +11,11 @@ import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -53,6 +55,9 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     private View mContentView;
     private WebView mWebView;
     private ProgressBar mSpinny;
+
+    private PowerManager.WakeLock mWakeLock;
+    private WifiManager.WifiLock mWifiLock;
 
     private VideoViewHolder[] mVideoHolders = new VideoViewHolder[2];
     private int mVideoViewIndex = 0;
@@ -169,6 +174,14 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         mDownloader = new Downloader(getExternalFilesDir(null));
 
+        PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
+        assert pm != null;
+        mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "lay:webview");
+
+        WifiManager wm = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        assert wm != null;
+        mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "lay:webview");
+
         promptForServerHost();
 
         if (checkPermission()) {
@@ -232,9 +245,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         super.onPause();
         if (mNtpSync != null) {
             mNtpSync.stop();
+            mWakeLock.release();
+            mWifiLock.release();
         }
     }
 
+    @SuppressLint("WakelockTimeout")
     @Override
     protected void onResume() {
         super.onResume();
@@ -244,6 +260,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         if (mHost != null) {
             startLockTask();
+            mWakeLock.acquire();
+            mWifiLock.acquire();
         }
     }
 
