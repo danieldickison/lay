@@ -188,7 +188,7 @@ function sendPing() {
         if (endTime - startTime > PING_TIMEOUT) {
             log("Slow ping response beyond timeout: " + (endTime - startTime) + "ms; ignoring response");
             return null;
-        } else if (endTime - startTime > 100) {
+        } else if (endTime - startTime > 500) {
             log("Slow ping response: " + (endTime - startTime) + "ms");
         }
         return response.json();
@@ -206,6 +206,9 @@ function sendPing() {
             // scheduleCueTick();
             let path = uriEscapePath(nextCueFile);
             layNativeInterface.setVideoCue(path, nextCueTime, nextSeekTime);
+            if (layNativeInterface.setAudioCue) {
+                layNativeInterface.setAudioCue(path && path.replace('.mp4', '.wav'), nextCueTime);
+            }
         }
 
         (json.commands || []).forEach((cmd) => {
@@ -321,6 +324,7 @@ function uriEscapePath(path) {
 }
 
 function triggerTextFeed(strings) {
+    log("triggering text feed with " + strings.length + " strings");
     let container = document.getElementById('tablettes-text-feed');
     container.innerHTML = '';
     strings.forEach((str, i) => {

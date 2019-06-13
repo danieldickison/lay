@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.InputType;
@@ -61,6 +62,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private VideoViewHolder[] mVideoHolders = new VideoViewHolder[2];
     private int mVideoViewIndex = 0;
+
+    private AudioPlayer audioPlayer = new AudioPlayer();
 
     private String mHost;
     private volatile long mClockOffset;
@@ -115,6 +118,17 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 @Override
                 public void run() {
                     setNextVideoCue(path, timestamp, seekTime);
+                }
+            });
+        }
+
+        @JavascriptInterface
+        public void setAudioCue(final String path, final long timestamp) {
+            Log.d(TAG, "setAudioCue: " + path + " at " + timestamp);
+            mContentView.post(new Runnable() {
+                @Override
+                public void run() {
+                    setNextAudioCue(path, timestamp);
                 }
             });
         }
@@ -353,9 +367,32 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mVideoHolders[0].fadeOut();
             mVideoHolders[1].fadeOut();
         } else {
+            VideoViewHolder precedingVideoHolder = mVideoHolders[mVideoViewIndex];
+            if (!precedingVideoHolder.isPlaying()) {
+                precedingVideoHolder = null;
+            }
+
             mVideoViewIndex = (mVideoViewIndex + 1) % 2;
             String url = mDownloader.getVideoURL(path);
-            mVideoHolders[mVideoViewIndex].cueNext(url, timestamp, seekTime);
+            boolean loop = path.contains("loop");
+            VideoViewHolder holder = mVideoHolders[mVideoViewIndex];
+
+            holder.prepareCue(url, seekTime, loop, precedingVideoHolder);
+            if (precedingVideoHolder == null) {
+                holder.startCueAt(timestamp);
+            }
+        }
+    }
+
+    @MainThread
+    private void setNextAudioCue(String path, long timestamp) {
+        if (path == null) {
+            audioPlayer.stopAudio();
+        } else {
+            String url = mDownloader.getVideoURL(path);
+            boolean loop = path.contains("loop");
+            audioPlayer.prepareAudio(url, loop);
+            audioPlayer.startAudio(timestamp);
         }
     }
 
@@ -378,6 +415,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         private final TextureView textureView;
         private int seekTime;
         private String url;
+        private VideoViewHolder precedingVideoHolder;
+        private VideoViewHolder subsequentVideoHolder;
 
         private VideoViewHolder(TextureView textureView) {
             this.textureView = textureView;
@@ -404,18 +443,28 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {}
 
-        private void cueNext(String url, long timestamp, int seekTime) {
-            Log.i(TAG, "cueNext: " + url + " at " + timestamp);
+        private void prepareCue(String url, int seekTime, boolean loop, @Nullable VideoViewHolder precedingVideoHolder) {
             this.url = url;
             this.seekTime = seekTime;
+
+            this.precedingVideoHolder = precedingVideoHolder;
+            this.subsequentVideoHolder = null;
+            if (precedingVideoHolder != null) {
+                precedingVideoHolder.subsequentVideoHolder = this;
+            }
+
             mediaPlayer.reset();
             try {
                 mediaPlayer.setDataSource(url);
+                mediaPlayer.setLooping(loop);
                 mediaPlayer.prepareAsync();
             } catch (IOException e) {
                 Log.w(TAG, "Error setting video URL", e);
             }
+        }
 
+        private void startCueAt(long timestamp) {
+            Log.i(TAG, "cueNext: " + url + " at " + timestamp);
             long now = getServerNow();
             if (timestamp < now) {
                 Log.w(TAG, "setNextVideoCue called for timestamp in the past");
@@ -435,6 +484,10 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mediaPlayer.start();
             mediaPlayer.pause();
             Log.d(TAG, "onSeekComplete to " + mediaPlayer.getCurrentPosition() + "ms; doing a start/pause to prime video");
+            if (precedingVideoHolder != null) {
+                Log.d(TAG, "calling setNextMediaPlayer for seamless playback");
+                precedingVideoHolder.mediaPlayer.setNextMediaPlayer(mediaPlayer);
+            }
         }
 
         private final Runnable startVideoRunnable = new Runnable() {
@@ -460,7 +513,14 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
-            fadeOut();
+            if (subsequentVideoHolder == null) {
+                fadeOut();
+            } else {
+                textureView.setAlpha(0);
+                url = null;
+                subsequentVideoHolder.textureView.setAlpha(1);
+                setNowPlaying(subsequentVideoHolder.url);
+            }
         }
 
         private void fadeOut() {
@@ -480,6 +540,71 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             boolean wasPlaying = url != null;
             url = null;
             return wasPlaying;
+        }
+
+        private boolean isPlaying() {
+            return mediaPlayer.isPlaying();
+        }
+    }
+
+    private class AudioPlayer implements MediaPlayer.OnPreparedListener, MediaPlayer.OnSeekCompleteListener, MediaPlayer.OnCompletionListener {
+        private MediaPlayer mediaPlayer = new MediaPlayer();
+        private String url;
+
+        AudioPlayer() {
+            mediaPlayer.setOnPreparedListener(this);
+            mediaPlayer.setOnSeekCompleteListener(this);
+            mediaPlayer.setOnCompletionListener(this);
+        }
+
+        @Override
+        public void onPrepared(MediaPlayer mediaPlayer) {
+
+        }
+
+        @Override
+        public void onSeekComplete(MediaPlayer mediaPlayer) {
+
+        }
+
+        @Override
+        public void onCompletion(MediaPlayer mediaPlayer) {
+
+        }
+        private void prepareAudio(String url, boolean loop) {
+            this.url = url;
+
+            mediaPlayer.reset();
+            try {
+                mediaPlayer.setDataSource(url);
+                mediaPlayer.setLooping(loop);
+                mediaPlayer.prepareAsync();
+            } catch (IOException e) {
+                Log.w(TAG, "Error setting audio URL", e);
+            }
+        }
+
+        private void startAudio(long timestamp) {
+            Log.i(TAG, "startAudio " + url + " at " + timestamp);
+            long now = getServerNow();
+            if (timestamp < now) {
+                Log.w(TAG, "startAudio called for timestamp in the past");
+                return;
+            }
+            mContentView.postDelayed(startAudioRunnable, timestamp - now);
+        }
+
+        private final Runnable startAudioRunnable = new Runnable() {
+            @Override
+            public void run() {
+                mediaPlayer.start();
+            }
+        };
+
+        private void stopAudio() {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+            }
         }
     }
 }
