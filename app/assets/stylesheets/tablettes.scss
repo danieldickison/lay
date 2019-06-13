@@ -135,6 +135,19 @@ body.tablet {
     margin-bottom: 5px;
 }
 
+#tablet-stats {
+    border-spacing: 0;
+    border-collapse: collapse;
+}
+
+#tablet-stats td,
+#tablet-stats th {
+    text-align: right;
+    margin-right: 10px;
+    padding: 0 3px;
+    border: solid 1px rgba(0,255,0, 0.125);
+}
+
 #tablettes-text-feed {
     z-index: -1;
     position: fixed;

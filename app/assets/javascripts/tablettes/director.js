@@ -54,9 +54,13 @@ function fetchStats() {
         let tbody = document.createElement('tbody');
         tbody.setAttribute('id', 'tablet-stats-body');
         json.tablets.forEach(tablet => {
+            let isLagging = parseInt(tablet.ping) > 1000;
+            if (isLagging) {
+                console.log("tablet " + tablet.tablet + " is lagging by " + tablet.ping + " ms", tablet);
+            }
             let tr = document.createElement('tr');
             tr.appendChild(td(tablet.tablet));
-            tr.appendChild(td(tablet.ping + ' ms'));
+            tr.appendChild(td(tablet.ping + ' ms', isLagging ? 'red' : null));
             tr.appendChild(td(tablet.battery + '%'));
             tr.appendChild(td(tablet.clock && tablet.clock.median + ' ms'));
             tr.appendChild(td(tablet.clock && tablet.clock.latest + ' ms'));
@@ -68,9 +72,12 @@ function fetchStats() {
         table.appendChild(tbody);
     });
 
-    function td(text) {
+    function td(text, color) {
         let td = document.createElement('td');
         td.append(text);
+        if (color) {
+            td.style.color = color;
+        }
         return td;
     }
 }
