@@ -174,7 +174,11 @@ class TablettesController < ApplicationController
     end
 
     def self.tablet_enum(tablet)
-        if !tablet || tablet.empty?
+        if tablet.is_a?(Integer)
+            return [tablet]
+        elsif tablet.is_a?(String)
+            return [tablet.to_i]
+        elsif !tablet || tablet.empty?
             return 1 .. NUM_TABLETS
         else
             return tablet
@@ -232,8 +236,10 @@ class TablettesController < ApplicationController
     end
 
     def self.trigger_text_feed(tablet, strs)
-        puts "text_feed[#{tablet}] = #{strs.inspect}"
-        @text_feed[tablet] = strs
+        tablet_enum(tablet).each do |t|
+            puts "text_feed[#{t}] = #{strs.inspect}"
+            @text_feed[tablet] = strs
+        end
     end
 
     def self.debug

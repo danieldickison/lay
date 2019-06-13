@@ -379,7 +379,7 @@ module Lay
       # /start <media> [<tablet#> ...]
       @server.add_method('/start') do |message|
         puts "#{message.inspect}"
-        time = Time.now + 1
+        time = Time.now + 5
         args = message.to_a
         file = args[0]
         tablets = args[1 .. -1].collect {|t| t.to_i}
@@ -441,7 +441,11 @@ module Lay
       # /textfeed <tablet#> <str1> <str2> ...
       @server.add_method('/textfeed') do |message|
         args = message.to_a
-        TablettesController.trigger_text_feed(args[0], args[1..-1])
+        tablet = nil
+        if !args[0].empty?
+            tablet = args[0].to_i
+        end
+        TablettesController.trigger_text_feed(tablet, args[1..-1])
       end
 
       # /testem
