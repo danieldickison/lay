@@ -61,7 +61,7 @@ class TablettesController < ApplicationController
     def stats
         now = Time.now.utc
         render json: {
-            tablets: (1..NUM_TABLETS).zip(@@ping_stats, @@now_playing_paths, @@clock_infos, @@cache_infos, @@battery_percents).collect do |arr|
+            tablets: (0...NUM_TABLETS).zip(@@ping_stats, @@now_playing_paths, @@clock_infos, @@cache_infos, @@battery_percents).collect do |arr|
                 {
                     tablet: arr[0],
                     ping: arr[1] ? ((now - arr[1]) * 1000).round : nil,
