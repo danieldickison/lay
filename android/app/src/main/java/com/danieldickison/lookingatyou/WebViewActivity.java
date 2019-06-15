@@ -119,7 +119,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mContentView.post(new Runnable() {
                 @Override
                 public void run() {
-                    setNextVideoCue(path, timestamp, seekTime);
+                    prepareNextVideoCue(path, seekTime, timestamp);
                 }
             });
         }
@@ -190,7 +190,27 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         mDownloader = new Downloader(getExternalFilesDir(null));
 
-        dispatcher = new Dispatcher(mDownloader);
+        dispatcher = new Dispatcher(new Dispatcher.Handler() {
+            @Override
+            public void download(String path) {
+                mDownloader.downloadFile(path);
+            }
+
+            @Override
+            public void prepareVideo(String path) {
+                prepareNextVideoCue(path, 0, -1);
+            }
+
+            @Override
+            public void playVideo() {
+                mVideoHolders[mVideoViewIndex].startCueNow();
+            }
+
+            @Override
+            public void stopVideo() {
+                prepareNextVideoCue(null, 0, 0);
+            }
+        });
 
         PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
         assert pm != null;
@@ -374,7 +394,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     @MainThread
-    private void setNextVideoCue(String path, long timestamp, int seekTime) {
+    private void prepareNextVideoCue(String path, int seekTime, long startTimestamp) {
         if (path == null) {
             mVideoHolders[0].fadeOut();
             mVideoHolders[1].fadeOut();
@@ -390,8 +410,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             VideoViewHolder holder = mVideoHolders[mVideoViewIndex];
 
             holder.prepareCue(url, seekTime, loop, precedingVideoHolder);
-            if (precedingVideoHolder == null) {
-                holder.startCueAt(timestamp);
+            if (precedingVideoHolder == null && startTimestamp > 0) {
+                holder.startCueAt(startTimestamp);
             }
         }
     }
@@ -483,6 +503,10 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 return;
             }
             textureView.postDelayed(startVideoRunnable, timestamp - now);
+        }
+
+        private void startCueNow() {
+            startVideoRunnable.run();
         }
 
         @Override

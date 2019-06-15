@@ -17,15 +17,21 @@ import java.io.IOException;
 @SuppressWarnings("FieldCanBeLocal")
 public class Dispatcher {
 
+    public interface Handler {
+        void download(String path);
+        void prepareVideo(String path);
+        void playVideo();
+        void stopVideo();
+    }
+
     private static final int OSC_PORT = 53000;
     private static final String ADDRESS_CONTAINER = "/tablet";
-    private static final MessageSelector DOWNLOAD_ADDRESS = new OSCPatternAddressMessageSelector(ADDRESS_CONTAINER + "/download");
-    private static final MessageSelector CUE_ADDRESS = new OSCPatternAddressMessageSelector(ADDRESS_CONTAINER + "/cue");
 
     private final OSCPortIn portIn;
-    private final Downloader downloader;
+    private final Handler handler;
 
-    public Dispatcher(Downloader downloader) {
+    public Dispatcher(Handler theHandler) {
+        this.handler = theHandler;
         try {
             portIn = new OSCPortInBuilder()
                     .setPort(OSC_PORT)
@@ -40,13 +46,40 @@ public class Dispatcher {
                             Log.w("lay-osc", "handleBadData: " + oscBadDataEvent);
                         }
                     })
-                    .addMessageListener(DOWNLOAD_ADDRESS, downloadListener)
-                    .addMessageListener(CUE_ADDRESS, cueListener)
+                    .addMessageListener(addr("/download"), new OSCMessageListener() {
+                        @Override
+                        public void acceptMessage(OSCMessageEvent event) {
+                            String path = (String) event.getMessage().getArguments().get(0);
+                            handler.download(path);
+                        }
+                    })
+                    .addMessageListener(addr("/prepare"), new OSCMessageListener() {
+                        @Override
+                        public void acceptMessage(OSCMessageEvent event) {
+                            String path = (String) event.getMessage().getArguments().get(0);
+                            handler.prepareVideo(path);
+                        }
+                    })
+                    .addMessageListener(addr("/play"), new OSCMessageListener() {
+                        @Override
+                        public void acceptMessage(OSCMessageEvent event) {
+                            handler.playVideo();
+                        }
+                    })
+                    .addMessageListener(addr("/stop"), new OSCMessageListener() {
+                        @Override
+                        public void acceptMessage(OSCMessageEvent event) {
+                            handler.stopVideo();
+                        }
+                    })
                     .build();
         } catch (IOException e) {
             throw new RuntimeException("Failed to create OSC listen port", e);
         }
-        this.downloader = downloader;
+    }
+
+    private MessageSelector addr(String subpath) {
+        return new OSCPatternAddressMessageSelector(ADDRESS_CONTAINER + subpath);
     }
 
     public void startListening() {
@@ -61,19 +94,4 @@ public class Dispatcher {
     public void stopListening() {
         portIn.stopListening();
     }
-
-    private final OSCMessageListener downloadListener = new OSCMessageListener() {
-        @Override
-        public void acceptMessage(OSCMessageEvent event) {
-            String path = (String) event.getMessage().getArguments().get(0);
-            downloader.downloadFile(path);
-        }
-    };
-
-    private final OSCMessageListener cueListener = new OSCMessageListener() {
-        @Override
-        public void acceptMessage(OSCMessageEvent event) {
-            Log.d("lay-osc", "receive message at " + event.getMessage().getAddress());
-        }
-    };
 }
