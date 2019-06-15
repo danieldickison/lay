@@ -70,6 +70,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private Downloader mDownloader;
 
+    private Dispatcher dispatcher;
+
     private final WebViewClient mWebClient = new WebViewClient() {
         @Override
         public void onPageFinished(WebView view, String url) {
@@ -188,6 +190,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         mDownloader = new Downloader(getExternalFilesDir(null));
 
+        dispatcher = new Dispatcher(mDownloader);
         PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
         assert pm != null;
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "lay:webview");
