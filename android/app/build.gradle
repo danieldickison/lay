@@ -33,5 +33,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     // Use my java7 backwards compatibility and bugfix branch.
-    implementation 'com.github.danieldickison:JavaOSC:897d9509463fa3b3a9ec5b1822ad545a090d4bb5'
+    implementation 'com.github.danieldickison:JavaOSC:08b68acb459c26629dcfa0a83c72921499785035'
 }

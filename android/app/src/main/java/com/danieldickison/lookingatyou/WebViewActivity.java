@@ -59,6 +59,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private PowerManager.WakeLock mWakeLock;
     private WifiManager.WifiLock mWifiLock;
+    private WifiManager.MulticastLock mMulticastLock;
 
     private VideoViewHolder[] mVideoHolders = new VideoViewHolder[2];
     private int mVideoViewIndex = 0;
@@ -77,8 +78,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         public void onPageFinished(WebView view, String url) {
             mSpinny.setVisibility(View.GONE);
             hideChrome();
-            startLockTask();
-            mNtpSync.start();
+            onWebviewStart();
             mWebView.setBackgroundColor(Color.TRANSPARENT);
         }
 
@@ -191,6 +191,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mDownloader = new Downloader(getExternalFilesDir(null));
 
         dispatcher = new Dispatcher(mDownloader);
+
         PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
         assert pm != null;
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "lay:webview");
@@ -198,6 +199,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         WifiManager wm = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         assert wm != null;
         mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "lay:webview");
+        mMulticastLock = wm.createMulticastLock("lay:webview");
 
         promptForServerHost();
 
@@ -227,6 +229,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        //noinspection SwitchStatementWithTooFewBranches
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE:
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -262,24 +265,30 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         super.onPause();
         if (mNtpSync != null) {
             mNtpSync.stop();
-            mWakeLock.release();
-            mWifiLock.release();
+        }
+        mWakeLock.release();
+        mWifiLock.release();
+        mMulticastLock.release();
+        dispatcher.stopListening();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mHost != null) {
+            onWebviewStart();
         }
     }
 
     @SuppressLint("WakelockTimeout")
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (mNtpSync != null) {
-            mNtpSync.start();
-        }
-
-        if (mHost != null) {
-            startLockTask();
-            mWakeLock.acquire();
-            mWifiLock.acquire();
-        }
+    private void onWebviewStart() {
+        Log.d(TAG, "onWebviewStart");
+        startLockTask();
+        mWakeLock.acquire();
+        mWifiLock.acquire();
+        mMulticastLock.acquire();
+        mNtpSync.start();
+        dispatcher.startListening();
     }
 
     private void connectToHost(String host) {
@@ -399,7 +408,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
     }
 
-    private String serverURL(String path) {
+    private String serverURL(@SuppressWarnings("SameParameterValue") String path) {
         return "http://" + mHost + ":" + PORT + path;
     }
 
