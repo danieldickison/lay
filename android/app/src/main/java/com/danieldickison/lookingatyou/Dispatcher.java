@@ -29,8 +29,10 @@ public class Dispatcher {
 
     private final OSCPortIn portIn;
     private final Handler handler;
+    private final int tabletNumber;
 
-    public Dispatcher(Handler theHandler) {
+    public Dispatcher(int tabletNumber, Handler theHandler) {
+        this.tabletNumber = tabletNumber;
         this.handler = theHandler;
         try {
             portIn = new OSCPortInBuilder()
@@ -46,40 +48,29 @@ public class Dispatcher {
                             Log.w("lay-osc", "handleBadData: " + oscBadDataEvent);
                         }
                     })
-                    .addMessageListener(addr("/download"), new OSCMessageListener() {
-                        @Override
-                        public void acceptMessage(OSCMessageEvent event) {
-                            String path = (String) event.getMessage().getArguments().get(0);
-                            handler.download(path);
-                        }
-                    })
-                    .addMessageListener(addr("/prepare"), new OSCMessageListener() {
-                        @Override
-                        public void acceptMessage(OSCMessageEvent event) {
-                            String path = (String) event.getMessage().getArguments().get(0);
-                            handler.prepareVideo(path);
-                        }
-                    })
-                    .addMessageListener(addr("/play"), new OSCMessageListener() {
-                        @Override
-                        public void acceptMessage(OSCMessageEvent event) {
-                            handler.playVideo();
-                        }
-                    })
-                    .addMessageListener(addr("/stop"), new OSCMessageListener() {
-                        @Override
-                        public void acceptMessage(OSCMessageEvent event) {
-                            handler.stopVideo();
-                        }
-                    })
+                    .addMessageListener(wildcardAddr("download"), downloadListener)
+                    .addMessageListener(tabletAddr("download"), downloadListener)
+
+                    .addMessageListener(wildcardAddr("prepare"), prepareListener)
+                    .addMessageListener(tabletAddr("prepare"), prepareListener)
+
+                    .addMessageListener(wildcardAddr("play"), playListener)
+                    .addMessageListener(tabletAddr("play"), playListener)
+
+                    .addMessageListener(wildcardAddr("stop"), stopListener)
+                    .addMessageListener(tabletAddr("stop"), stopListener)
                     .build();
         } catch (IOException e) {
             throw new RuntimeException("Failed to create OSC listen port", e);
         }
     }
 
-    private MessageSelector addr(String subpath) {
-        return new OSCPatternAddressMessageSelector(ADDRESS_CONTAINER + subpath);
+    private MessageSelector wildcardAddr(String subpath) {
+        return new OSCPatternAddressMessageSelector(ADDRESS_CONTAINER + "/" + subpath);
+    }
+
+    private MessageSelector tabletAddr(String subpath) {
+        return new OSCPatternAddressMessageSelector(ADDRESS_CONTAINER + "/" + tabletNumber + "/" + subpath);
     }
 
     public void startListening() {
@@ -94,4 +85,38 @@ public class Dispatcher {
     public void stopListening() {
         portIn.stopListening();
     }
+
+    public int getTabletNumber() {
+        return tabletNumber;
+    }
+
+    private final OSCMessageListener downloadListener = new OSCMessageListener() {
+        @Override
+        public void acceptMessage(OSCMessageEvent event) {
+            String path = (String) event.getMessage().getArguments().get(0);
+            handler.download(path);
+        }
+    };
+
+    private final OSCMessageListener prepareListener = new OSCMessageListener() {
+        @Override
+        public void acceptMessage(OSCMessageEvent event) {
+            String path = (String) event.getMessage().getArguments().get(0);
+            handler.prepareVideo(path);
+        }
+    };
+
+    private final OSCMessageListener playListener = new OSCMessageListener() {
+        @Override
+        public void acceptMessage(OSCMessageEvent event) {
+            handler.playVideo();
+        }
+    };
+
+    private final OSCMessageListener stopListener = new OSCMessageListener() {
+        @Override
+        public void acceptMessage(OSCMessageEvent event) {
+            handler.stopVideo();
+        }
+    };
 }

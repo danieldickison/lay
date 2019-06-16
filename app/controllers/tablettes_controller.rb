@@ -136,7 +136,8 @@ class TablettesController < ApplicationController
 
     def ping
         ip = request.headers['X-Forwarded-For'].split(',').first
-        tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
+        #tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
+        tablet = params[:tablet_number].to_i
         ping_stats(tablet, params[:now_playing_path], params[:clock_info], params[:cache_info], params[:battery_percent])
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
         commands = self.class.commands.delete(tablet) || []

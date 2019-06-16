@@ -4,6 +4,19 @@
 (() => {
 'use strict';
 
+// Help local debugging in chrome
+if (!window.layNativeInterface) {
+    window.layNativeInterface = {
+        getTabletNumber: function () { return 0; },
+        getBuildName: function () { return 'fake native interface'; },
+        getCacheInfo: function () { return ''; },
+        getBatteryPercent: function () { return -1; },
+        setVideoCue: function () {},
+        downloadFile: function () {},
+        hideChrome: function () {},
+    };
+}
+
 window.setClockOffsets = function (offsets, lastSuccess) {
     let latest = offsets[0];
     let len = offsets.length;
@@ -32,6 +45,8 @@ window.clearNowPlaying = function (np) {
     }
 };
 
+let TABLET_NUMBER = layNativeInterface.getTabletNumber();
+
 let PING_INTERVAL = 500;
 let PING_TIMEOUT = 3000;
 var pingStartTime = null;
@@ -59,18 +74,6 @@ document.addEventListener("DOMContentLoaded", event => {
     document.getElementById('reload-button').addEventListener('click', function () {
         location.reload();
     });
-
-    // Help local debugging in chrome
-    if (!window.layNativeInterface) {
-        window.layNativeInterface = {
-            getBuildName: function () { return 'fake native interface'; },
-            getCacheInfo: function () { return ''; },
-            getBatteryPercent: function () { return -1; },
-            setVideoCue: function () {},
-            downloadFile: function () {},
-            hideChrome: function () {},
-        };
-    }
 
     let version = document.getElementById('version');
     version.innerText = "Build: " + layNativeInterface.getBuildName();
@@ -175,6 +178,7 @@ function sendPing() {
     }
 
     let body = new URLSearchParams();
+    body.append('tablet_number', TABLET_NUMBER);
     body.append('now_playing_path', nowPlaying.path);
     body.append('clock_info', clockInfo + " timeSince=" + (Date.now() - lastNtpSuccess));
     body.append('cache_info', layNativeInterface.getCacheInfo());

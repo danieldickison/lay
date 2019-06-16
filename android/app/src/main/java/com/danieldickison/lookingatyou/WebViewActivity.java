@@ -2,9 +2,7 @@ package com.danieldickison.lookingatyou;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -21,7 +19,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.text.InputType;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
@@ -32,7 +29,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.EditText;
 import android.widget.ProgressBar;
 
 import org.json.JSONArray;
@@ -46,8 +42,9 @@ import java.util.Date;
 
 public class WebViewActivity extends Activity implements NtpSync.Callback {
 
-    private final static String HOST_KEY = "com.danieldickison.lay.host";
-    private final static String DEFAULT_HOST = "10.1.1.200";
+    public final static String HOST_EXTRA = "com.danieldicksion.lay.host";
+    public final static String TABLET_NUMBER_EXTRA = "com.danieldickison.lay.tablet_number";
+
     private final static int PORT = 3000;
     private final static String PAGE_PATH = "/tablettes/index";
     private final static long FADE_DURATION = 1000;
@@ -86,7 +83,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
             super.onReceivedError(view, errorCode, description, failingUrl);
             if (failingUrl.endsWith(PAGE_PATH)) {
-                promptForServerHost();
+                finish();
             }
         }
 
@@ -141,6 +138,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         @JavascriptInterface
+        public int getTabletNumber() {
+            return dispatcher.getTabletNumber();
+        }
+
+        @JavascriptInterface
         public String getCacheInfo() {
             return mDownloader.getCacheInfo();
         }
@@ -190,7 +192,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         mDownloader = new Downloader(getExternalFilesDir(null));
 
-        dispatcher = new Dispatcher(new Dispatcher.Handler() {
+        dispatcher = new Dispatcher(getIntent().getIntExtra(TABLET_NUMBER_EXTRA, 0), new Dispatcher.Handler() {
             @Override
             public void download(String path) {
                 mDownloader.downloadFile(path);
@@ -221,13 +223,13 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "lay:webview");
         mMulticastLock = wm.createMulticastLock("lay:webview");
 
-        promptForServerHost();
-
         if (checkPermission()) {
             Log.d(TAG, "already have necessary permissions");
         } else {
             Log.d(TAG, "requesting for permissions");
         }
+
+        connectToHost(getIntent().getStringExtra(HOST_EXTRA));
     }
 
     public static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
@@ -259,25 +261,6 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 }
                 break;
         }
-    }
-
-    private void promptForServerHost() {
-        String host = getPreferences(0).getString(HOST_KEY, DEFAULT_HOST);
-        final EditText editText = new EditText(this);
-        editText.setHint("Server hostname or IP");
-        editText.setText(host);
-        editText.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
-        new AlertDialog.Builder(this)
-                .setTitle("Server")
-                .setView(editText)
-                .setPositiveButton("Connect", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        connectToHost(editText.getText().toString());
-                    }
-                })
-                .setCancelable(false)
-                .show();
     }
 
     @Override
@@ -326,7 +309,6 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
         mDownloader.setHost(host, PORT);
         mWebView.loadUrl(serverURL(PAGE_PATH));
-        getPreferences(0).edit().putString(HOST_KEY, host).apply();
     }
 
     @Override
