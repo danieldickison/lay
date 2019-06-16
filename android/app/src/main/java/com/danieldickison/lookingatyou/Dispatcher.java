@@ -13,13 +13,14 @@ import com.illposed.osc.transport.udp.OSCPortIn;
 import com.illposed.osc.transport.udp.OSCPortInBuilder;
 
 import java.io.IOException;
+import java.util.List;
 
 @SuppressWarnings("FieldCanBeLocal")
 public class Dispatcher {
 
     public interface Handler {
         void download(String path);
-        void prepareVideo(String path);
+        void prepareVideo(String path, int fadeInDuration, int fadeOutDuration);
         void playVideo();
         void stopVideo();
     }
@@ -101,8 +102,11 @@ public class Dispatcher {
     private final OSCMessageListener prepareListener = new OSCMessageListener() {
         @Override
         public void acceptMessage(OSCMessageEvent event) {
-            String path = (String) event.getMessage().getArguments().get(0);
-            handler.prepareVideo(path);
+            ArgParser args = new ArgParser(event.getMessage().getArguments());
+            String path = args.popString();
+            int fadeIn = args.popInt(0);
+            int fadeOut = args.popInt(0);
+            handler.prepareVideo(path, fadeIn, fadeOut);
         }
     };
 
@@ -119,4 +123,28 @@ public class Dispatcher {
             handler.stopVideo();
         }
     };
+
+    private static final class ArgParser {
+        private final List<Object> args;
+        private int pos = 0;
+
+        private ArgParser(List<Object> args) {
+            this.args = args;
+        }
+
+        public int popInt(int defaultValue) {
+            if (pos >= args.size()) return defaultValue;
+            Object val = args.get(pos);
+            if (val instanceof Integer) return (Integer)val;
+            if (val instanceof String) return Integer.parseInt((String)val);
+            return defaultValue;
+        }
+
+        public String popString() {
+            if (pos >= args.size()) return null;
+            Object val = args.get(pos);
+            if (val instanceof String) return (String)val;
+            return null;
+        }
+    }
 }

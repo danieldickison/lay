@@ -47,7 +47,6 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private final static int PORT = 3000;
     private final static String PAGE_PATH = "/tablettes/index";
-    private final static long FADE_DURATION = 1000;
     private final static String TAG = "lay";
 
     private View mContentView;
@@ -116,7 +115,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mContentView.post(new Runnable() {
                 @Override
                 public void run() {
-                    prepareNextVideoCue(path, seekTime, timestamp);
+                    prepareNextVideoCue(path, seekTime, 0, 0, timestamp);
                 }
             });
         }
@@ -199,8 +198,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             }
 
             @Override
-            public void prepareVideo(String path) {
-                prepareNextVideoCue(path, 0, -1);
+            public void prepareVideo(String path, int fadeInDuration, int fadeOutDuration) {
+                prepareNextVideoCue(path, 0, fadeInDuration, fadeOutDuration, -1);
             }
 
             @Override
@@ -210,7 +209,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
             @Override
             public void stopVideo() {
-                prepareNextVideoCue(null, 0, 0);
+                prepareNextVideoCue(null, 0, 0, 0, 0);
             }
         });
 
@@ -376,7 +375,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     @MainThread
-    private void prepareNextVideoCue(String path, int seekTime, long startTimestamp) {
+    private void prepareNextVideoCue(String path, int seekTime, int fadeInDuration, int fadeOutDuration, long startTimestamp) {
         if (path == null) {
             mVideoHolders[0].fadeOut();
             mVideoHolders[1].fadeOut();
@@ -391,7 +390,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             boolean loop = path.contains("loop");
             VideoViewHolder holder = mVideoHolders[mVideoViewIndex];
 
-            holder.prepareCue(url, seekTime, loop, precedingVideoHolder);
+            holder.prepareCue(url, seekTime, fadeInDuration, fadeOutDuration, loop, precedingVideoHolder);
             if (precedingVideoHolder == null && startTimestamp > 0) {
                 holder.startCueAt(startTimestamp);
             }
@@ -428,6 +427,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         private final MediaPlayer mediaPlayer = new MediaPlayer();
         private final TextureView textureView;
         private int seekTime;
+        private int fadeInDuration;
+        private int fadeOutDuration;
         private String url;
         private VideoViewHolder precedingVideoHolder;
         private VideoViewHolder subsequentVideoHolder;
@@ -457,9 +458,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {}
 
-        private void prepareCue(String url, int seekTime, boolean loop, @Nullable VideoViewHolder precedingVideoHolder) {
+        private void prepareCue(String url, int seekTime, int fadeInDuration, int fadeOutDuration, boolean loop, @Nullable VideoViewHolder precedingVideoHolder) {
             this.url = url;
             this.seekTime = seekTime;
+            this.fadeInDuration = fadeInDuration;
+            this.fadeOutDuration = fadeOutDuration;
 
             this.precedingVideoHolder = precedingVideoHolder;
             this.subsequentVideoHolder = null;
@@ -511,10 +514,10 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         private final Runnable startVideoRunnable = new Runnable() {
             @Override
             public void run() {
-                if (stopInactiveVideo()) {
+                if (stopInactiveVideo() || fadeInDuration == 0) {
                     textureView.setAlpha(1);
                 } else {
-                    textureView.animate().setDuration(FADE_DURATION).alpha(1);
+                    textureView.animate().setDuration(fadeInDuration).alpha(1);
                 }
                 mediaPlayer.start();
                 setNowPlaying(url);
@@ -544,7 +547,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         private void fadeOut() {
             textureView.removeCallbacks(startVideoRunnable);
             textureView.animate()
-                    .setDuration(FADE_DURATION)
+                    .setDuration(fadeOutDuration)
                     .alpha(0)
                     .withEndAction(stopVideoRunnable);
         }
