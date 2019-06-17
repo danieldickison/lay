@@ -580,18 +580,19 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         @Override
         public void onPrepared(MediaPlayer mediaPlayer) {
-
+            mediaPlayer.seekTo(0);
         }
 
         @Override
         public void onSeekComplete(MediaPlayer mediaPlayer) {
-
+            mediaPlayer.start();
+            mediaPlayer.pause();
         }
 
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
-
         }
+
         private void prepareAudio(String url, boolean loop) {
             this.url = url;
 
