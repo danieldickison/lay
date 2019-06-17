@@ -134,7 +134,7 @@ public class Dispatcher {
 
         public int popInt(int defaultValue) {
             if (pos >= args.size()) return defaultValue;
-            Object val = args.get(pos);
+            Object val = args.get(pos++);
             if (val instanceof Integer) return (Integer)val;
             if (val instanceof String) return Integer.parseInt((String)val);
             return defaultValue;
@@ -142,7 +142,7 @@ public class Dispatcher {
 
         public String popString() {
             if (pos >= args.size()) return null;
-            Object val = args.get(pos);
+            Object val = args.get(pos++);
             if (val instanceof String) return (String)val;
             return null;
         }
