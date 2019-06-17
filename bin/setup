@@ -15,7 +15,7 @@ chdir APP_ROOT do
   # Add necessary setup steps to this file.
 
   puts '== Installing dependencies =='
-  system! 'gem install bundler --conservative '
+  #system! 'gem install bundler --conservative '
   if !system('bin/bundle check')
     system!('bin/bundle config --local build.mysql2 "--with-ldflags=-L/usr/local/opt/openssl/lib --with-cppflags=-I/usr/local/opt/openssl/include"')
     system!('bin/bundle install --path vendor/cache')
