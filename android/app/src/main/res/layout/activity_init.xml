@@ -5,24 +5,53 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="#000066"
     tools:context=".InitActivity">
 
-    <EditText
-        android:id="@+id/server_ip"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/server_ip"
-        android:inputType="number|numberDecimal"
-        android:digits="0123456789." />
+        android:orientation="horizontal">
 
-    <EditText
-        android:id="@+id/tablet_number"
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.4"
+            android:text="@string/server_ip" />
+
+        <EditText
+            android:id="@+id/server_ip"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".6"
+            android:digits="0123456789."
+            android:ems="10"
+            android:hint="@string/server_ip"
+            android:inputType="number|numberDecimal" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="@string/tablet_number"
-        android:inputType="number" />
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".4"
+            android:text="@string/tablet_number" />
+
+        <EditText
+            android:id="@+id/tablet_number"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight=".6"
+            android:ems="10"
+            android:hint="@string/tablet_number"
+            android:inputType="number" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/connect_button"
