@@ -16,9 +16,9 @@ chdir APP_ROOT do
 
   puts '== Installing dependencies =='
   system! 'gem install bundler --conservative '
-  if !system('bundle check')
-    system!('bundle config --local build.mysql2 "--with-ldflags=-L/usr/local/opt/openssl/lib --with-cppflags=-I/usr/local/opt/openssl/include"')
-    system!('bundle install --path vendor/cache')
+  if !system('bin/bundle check')
+    system!('bin/bundle config --local build.mysql2 "--with-ldflags=-L/usr/local/opt/openssl/lib --with-cppflags=-I/usr/local/opt/openssl/include"')
+    system!('bin/bundle install --path vendor/cache')
   end
 
   # Install JavaScript dependencies if using Yarn
