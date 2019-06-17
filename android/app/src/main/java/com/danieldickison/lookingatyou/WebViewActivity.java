@@ -23,6 +23,7 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -221,6 +222,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         assert wm != null;
         mWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "lay:webview");
         mMulticastLock = wm.createMulticastLock("lay:webview");
+
+        // Set max brightness
+        WindowManager.LayoutParams layout = getWindow().getAttributes();
+        layout.screenBrightness = 1F;
+        getWindow().setAttributes(layout);
 
         if (checkPermission()) {
             Log.d(TAG, "already have necessary permissions");
