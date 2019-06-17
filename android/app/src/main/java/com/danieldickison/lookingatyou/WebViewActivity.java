@@ -122,17 +122,6 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         @JavascriptInterface
-        public void setAudioCue(final String path, final long timestamp) {
-            Log.d(TAG, "setAudioCue: " + path + " at " + timestamp);
-            mContentView.post(new Runnable() {
-                @Override
-                public void run() {
-                    setNextAudioCue(path, timestamp);
-                }
-            });
-        }
-
-        @JavascriptInterface
         public void downloadFile(String path) {
             mDownloader.downloadFile(path);
         }
@@ -206,6 +195,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             @Override
             public void playVideo() {
                 mVideoHolders[mVideoViewIndex].startCueNow();
+                audioPlayer.startAudioNow();
             }
 
             @Override
@@ -385,6 +375,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         if (path == null) {
             mVideoHolders[0].fadeOut();
             mVideoHolders[1].fadeOut();
+            audioPlayer.stopAudio();
         } else {
             VideoViewHolder precedingVideoHolder = mVideoHolders[mVideoViewIndex];
             if (!precedingVideoHolder.isPlaying()) {
@@ -392,26 +383,38 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             }
 
             mVideoViewIndex = (mVideoViewIndex + 1) % 2;
-            String url = mDownloader.getVideoURL(path);
+            String filePath = mDownloader.getCachedFilePath(path);
+            if (filePath == null) return;
+
             boolean loop = path.contains("loop");
             VideoViewHolder holder = mVideoHolders[mVideoViewIndex];
 
-            holder.prepareCue(url, seekTime, fadeInDuration, fadeOutDuration, loop, precedingVideoHolder);
-            if (precedingVideoHolder == null && startTimestamp > 0) {
+            holder.prepareCue(filePath, seekTime, fadeInDuration, fadeOutDuration, loop, precedingVideoHolder);
+
+            String audioPath = path.replace(".mp4", ".wav");
+            prepareNextAudioCue(audioPath, startTimestamp);
+
+            if (precedingVideoHolder == null && startTimestamp >= 0) {
                 holder.startCueAt(startTimestamp);
             }
+
         }
     }
 
     @MainThread
-    private void setNextAudioCue(String path, long timestamp) {
+    private void prepareNextAudioCue(String path, long startTimestamp) {
         if (path == null) {
             audioPlayer.stopAudio();
         } else {
-            String url = mDownloader.getVideoURL(path);
+            String filePath = mDownloader.getCachedFilePath(path);
+            if (filePath == null) return;
+
             boolean loop = path.contains("loop");
-            audioPlayer.prepareAudio(url, loop);
-            audioPlayer.startAudio(timestamp);
+            audioPlayer.prepareAudio(filePath, loop);
+
+            if (startTimestamp >= 0) {
+                audioPlayer.startAudio(startTimestamp);
+            }
         }
     }
 
@@ -620,6 +623,10 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 return;
             }
             mContentView.postDelayed(startAudioRunnable, timestamp - now);
+        }
+
+        private void startAudioNow() {
+            mediaPlayer.start();
         }
 
         private final Runnable startAudioRunnable = new Runnable() {

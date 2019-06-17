@@ -60,6 +60,7 @@ public class Dispatcher {
 
                     .addMessageListener(wildcardAddr("stop"), stopListener)
                     .addMessageListener(tabletAddr("stop"), stopListener)
+
                     .build();
         } catch (IOException e) {
             throw new RuntimeException("Failed to create OSC listen port", e);

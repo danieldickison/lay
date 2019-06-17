@@ -87,7 +87,7 @@ class TablettesController < ApplicationController
         #         next if t != 11
         #         next if !info
         #         puts "tablet #{t} cache:"
-        #         info.split('|').each do |f|
+        #         info.split("\n").each do |f|
         #             path, start_time, end_time, error = f.split(';')
         #             error = nil if error == ''
         #             start_time = nil if start_time == ''

@@ -1,5 +1,6 @@
 package com.danieldickison.lookingatyou;
 
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -58,6 +59,7 @@ public class Downloader {
         synchronized (mCacheLock) {
             initStateFromDirectory(mDownloadDirectory);
         }
+        Log.d(TAG, "Cache Info:\n" + getCacheInfo());
     }
 
     public void setHost(String host, int port) {
@@ -65,28 +67,23 @@ public class Downloader {
         mPort = port;
     }
 
-    public String getVideoURL(String path) {
+    @Nullable
+    public String getCachedFilePath(String path) {
         if (path.startsWith("downloads:")) {
-            Log.d(TAG, "getVideoURL: forcing local cache file for " + path);
             path = path.substring(10);
-            File file = new File(mDownloadDirectory, path);
-            if (!file.exists()) {
-                Log.w(TAG, "getVideoURL: file does not exist; returning its path anyways" + file.getAbsolutePath());
-            }
-            return file.getAbsolutePath();
         }
 
-        File cacheFile = new File(mDownloadDirectory, path);
-        if (cacheFile.exists()) {
-            return cacheFile.getAbsolutePath();
-        } else {
-            return serverURL(path);
+        File file = new File(mDownloadDirectory, path);
+        if (!file.exists()) {
+            Log.w(TAG, "getCacheURL file does not exist: " + file.getAbsolutePath());
+            return null;
         }
+        return file.getAbsolutePath();
     }
 
     public String getCacheInfo() {
         synchronized (mCacheLock) {
-            return TextUtils.join("|", mCachedPaths);
+            return TextUtils.join("\n", mCachedPaths);
         }
     }
 
@@ -202,6 +199,8 @@ public class Downloader {
         for (File f : dir.listFiles()) {
             if (f.isDirectory()) {
                 initStateFromDirectory(f);
+            } else if (f.getName().endsWith(".tmp")) {
+                rmFile(f);
             } else {
                 Log.d(TAG, "initStateFromDirectory: adding cached file " + f);
                 String path = f.getAbsolutePath().substring(mDownloadDirectory.getAbsolutePath().length());
