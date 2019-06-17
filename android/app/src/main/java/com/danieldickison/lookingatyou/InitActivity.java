@@ -1,5 +1,6 @@
 package com.danieldickison.lookingatyou;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,6 +18,7 @@ public class InitActivity extends Activity {
     private EditText serverIP;
     private EditText tabletNumber;
 
+    @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
