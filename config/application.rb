@@ -376,6 +376,18 @@ module Lay
         TablettesController.show_time(message.to_a[0])
       end
 
+      # TODO: maybe do tablet subset proxying here based on audience assignment, etc.
+      @server.add_method('/tablet_proxy') do |message|
+        new_msg = OSC::Message.new(*message.to_a)
+        clients = TablettesController.tablets.each_value.collect do |tablet|
+          OSC::Client.new(tablet[:ip], 53000)
+        end
+        puts "proxying #{new_msg} to #{clients.length} tablets"
+        clients.each do |c|
+          c.send(new_msg)
+        end
+      end
+
       # /start <media> [<tablet#> ...]
       @server.add_method('/start') do |message|
         puts "#{message.inspect}"
