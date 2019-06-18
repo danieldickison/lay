@@ -67,7 +67,7 @@ class TablettesController < ApplicationController
                     ping: arr[1] ? ((now - arr[1]) * 1000).round : nil,
                     playing: arr[2] && arr[2].split('/').last.gsub('%20', ' '),
                     clock: arr[3] && arr[3].split(' ').collect {|c| c.split('=')}.to_h,
-                    cache: arr[4] && arr[4].split(';'),
+                    cache: arr[4] && arr[4].split("\n").collect {|c| ['path', 'start', 'end', 'error'].zip(c.split(';')).to_h},
                     battery: arr[5],
                 }
             end

@@ -65,8 +65,15 @@ function fetchStats() {
             tr.appendChild(td(tablet.clock && tablet.clock.median + ' ms'));
             tr.appendChild(td(tablet.clock && tablet.clock.latest + ' ms'));
             tr.appendChild(td(tablet.clock && tablet.clock.timeSince + ' ms'));
-            tr.appendChild(td(tablet.cache && tablet.cache.length));
+
+            let cacheTD = td(tablet.cache && tablet.cache.length);
+            tr.appendChild(cacheTD);
+            if (tablet.cache) {
+                buildCacheHover(cacheTD, tablet.cache)
+            }
+
             tr.appendChild(td(tablet.playing));
+            
             tbody.appendChild(tr);
         });
         table.appendChild(tbody);
@@ -79,6 +86,19 @@ function fetchStats() {
             td.style.color = color;
         }
         return td;
+    }
+
+    function buildCacheHover(td, cache) {
+        if (!cache) return;
+
+        let ul = document.createElement('ul');
+        ul.classList.add('cache-info');
+        cache.forEach(function (c) {
+            let li = document.createElement('li');
+            li.innerText = c.path + (c.error ? " error: " + error : " (" + (c.end - c.start) + "s");
+            ul.appendChild(li);
+        });
+        td.appendChild(ul);
     }
 }
 })();
