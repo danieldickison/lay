@@ -105,7 +105,7 @@ function fetchStats() {
         cache.forEach(function (c) {
             let li = document.createElement('li');
             li.innerText = c.path +
-                (c.error ? " failed: " + c.error : c.end ? " (" + (c.end - c.start) + "s)" : " (…)");
+                (c.error ? " failed: " + c.error : c.end ? " (" + Math.round(0.001*(c.end - c.start)) + "s)" : " (…)");
             ul.appendChild(li);
         });
         td.appendChild(ul);
