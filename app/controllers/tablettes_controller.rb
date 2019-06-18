@@ -295,7 +295,8 @@ class TablettesController < ApplicationController
     end
 
     def self.volume=(vol)
-        puts "setting volume to #{vol}"
-        @volume = vol.to_i.clamp(0, 100)
+        vol = [0, [100, vol].min].max
+        puts "setting volume to #{vol}%"
+        @volume = vol.to_i
     end
 end
