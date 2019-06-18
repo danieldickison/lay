@@ -164,7 +164,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             AudioManager mgr = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
             assert mgr != null;
             int volume = Math.round(0.01f * percent * mgr.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
-            mgr.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_SHOW_UI | AudioManager.FLAG_PLAY_SOUND);
+            Log.d(TAG, "setting volume to " + volume);
+            mgr.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_SHOW_UI | AudioManager.FLAG_PLAY_SOUND);
         }
     };
 
