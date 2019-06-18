@@ -288,6 +288,14 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop destroying webview");
+        mWebView.destroy();
+        finish();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         if (mHost != null) {
