@@ -2,12 +2,18 @@
 
 require 'osc-ruby'
 
-if ARGV.first =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
+clients = []
+while ARGV.first =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
     ip = ARGV.shift
-    puts "ip: #{ip}"
-    @c = OSC::Client.new(ip, 53000)
-else
-    @c = OSC::BroadcastClient.new(53000)
+    clients.push(OSC::Client.new(ip, 53000))
 end
-puts "sending #{ARGV.join(' ')}"
-@c.send(OSC::Message.new(*ARGV))
+if clients.empty?
+    clients.push(OSC::BroadcastClient.new(53000))
+    puts "multicast mode"
+end
+puts "#{clients.length} clients; sending #{ARGV.join(' ')}"
+msg = OSC::Message.new(*ARGV)
+clients.each do |c|
+    c.send(msg)
+    #sleep(0.1)
+end
