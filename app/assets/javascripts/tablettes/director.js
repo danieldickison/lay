@@ -67,13 +67,14 @@ function fetchStats() {
             tr.appendChild(td(tablet.clock && tablet.clock.timeSince + ' ms'));
 
             let cacheTD = td(tablet.cache && tablet.cache.length);
+            cacheTD.classList.add('cache');
             tr.appendChild(cacheTD);
             if (tablet.cache) {
                 buildCacheHover(cacheTD, tablet.cache)
             }
 
             tr.appendChild(td(tablet.playing));
-            
+
             tbody.appendChild(tr);
         });
         table.appendChild(tbody);
