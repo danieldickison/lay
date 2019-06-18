@@ -39,6 +39,9 @@ class TablettesController < ApplicationController
     @text_feed = {} # {int => [str1, str2, ...]}
     @commands = {} # {int => [[cmd1, arg1-1, arg1-2], [cmd2, arg2-1, ...], ...]}
 
+    def install
+    end
+
     def index
     end
 
