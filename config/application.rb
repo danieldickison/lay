@@ -413,6 +413,11 @@ module Lay
         TablettesController.reset_cue(tablets)
       end
 
+      @server.add_method('/volume') do |message|
+        vol = message.to_a[0].to_i
+        TablettesController.volume = vol
+      end
+
       # /offtherails
       @server.add_method('/offtherails') do |message|
         puts "offtherails #{message}"

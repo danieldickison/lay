@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -156,6 +157,14 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         @JavascriptInterface
         public void hideChrome() {
             WebViewActivity.this.hideChrome();
+        }
+
+        @JavascriptInterface
+        public void setVolume(int percent) {
+            AudioManager mgr = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+            assert mgr != null;
+            int volume = Math.round(0.01f * percent * mgr.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
+            mgr.setStreamVolume(AudioManager.STREAM_MUSIC, 0, AudioManager.FLAG_SHOW_UI | AudioManager.FLAG_PLAY_SOUND);
         }
     };
 

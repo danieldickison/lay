@@ -12,6 +12,7 @@ if (!window.layNativeInterface) {
         getCacheInfo: function () { return ''; },
         getBatteryPercent: function () { return -1; },
         setVideoCue: function () {},
+        setVolume: function () {},
         downloadFile: function () {},
         hideChrome: function () {},
     };
@@ -61,6 +62,7 @@ var lastNtpSuccess = 0;
 var currentCueTime = null;
 var nextCueTimeout = null;
 var currentPreload = null;
+var currentVolume = -1;
 
 var nowPlaying = {};
 
@@ -232,6 +234,11 @@ function sendPing() {
                     break;
             }
         });
+
+        if (currentVolume !== json.volume) {
+            currentVolume = json.volume;
+            layNativeInterface.setVolume(json.volume);
+        }
 
         if (json.text_feed) {
             triggerTextFeed(json.text_feed);

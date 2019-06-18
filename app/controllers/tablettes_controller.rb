@@ -25,6 +25,7 @@ class TablettesController < ApplicationController
     @tablets = {}
     @tablets_mutex = Mutex.new
     @@dumping_stats = false
+    @volume = 50 # percent
 
     @@show_time = true
 
@@ -183,6 +184,7 @@ class TablettesController < ApplicationController
             :debug => self.class.debug,
             :show_time => @@show_time,
             :text_feed => text_feed,
+            :volume => self.class.volume,
         }
     end
 
@@ -286,5 +288,14 @@ class TablettesController < ApplicationController
 
     def self.show_time(bool)
         @@show_time = !!bool
+    end
+
+    def self.volume
+        returne @volume
+    end
+
+    def self.volume=(vol)
+        puts "setting volume to #{vol}"
+        @volume = vol.to_i.clamp(0, 100)
     end
 end
