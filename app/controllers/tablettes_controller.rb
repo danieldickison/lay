@@ -291,7 +291,7 @@ class TablettesController < ApplicationController
     end
 
     def self.volume
-        returne @volume
+        return @volume
     end
 
     def self.volume=(vol)
