@@ -582,9 +582,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
-            if (subsequentVideoHolder == null) {
-                fadeOut();
-            } else {
+            if (subsequentVideoHolder != null) {
                 textureView.setAlpha(0);
                 url = null;
                 subsequentVideoHolder.textureView.setAlpha(1);
