@@ -54,6 +54,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     private final static String PAGE_PATH = "/tablettes/index";
     private final static String TAG = "lay";
 
+    private final static int VIDEO_DELAY = 60; // ms to try and get audio and video more in sync; by default audio takes a bit longer to start than video.
+
     private View mContentView;
     private WebView mWebView;
     private ProgressBar mSpinny;
@@ -221,7 +223,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
             @Override
             public void playVideo() {
-                mVideoHolders[mVideoViewIndex].startCueNow();
+                mVideoHolders[mVideoViewIndex].startCueAt(getServerNow() + VIDEO_DELAY);
                 audioPlayer.startAudioNow();
             }
 
