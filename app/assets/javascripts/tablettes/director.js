@@ -96,7 +96,7 @@ function fetchStats() {
         ul.classList.add('cache-info');
         cache.forEach(function (c) {
             let li = document.createElement('li');
-            li.innerText = c.path + (c.error ? " error: " + error : '');
+            li.innerText = c.path + (c.error ? " error: " + c.error : '');
             ul.appendChild(li);
         });
         td.appendChild(ul);
