@@ -31,6 +31,11 @@ window.setClockOffsets = function (offsets, lastSuccess) {
     lastNtpSuccess = lastSuccess;
 };
 
+window.setLastOSCMessage(msg) {
+    let el = document.getElementById('last-osc-message');
+    el.innerText = msg;
+}
+
 window.setNowPlaying = function (np) {
     console.log("set now playing: " + np.path);
     nowPlaying = np;
@@ -76,7 +81,7 @@ document.addEventListener("DOMContentLoaded", event => {
     });
 
     let version = document.getElementById('version');
-    version.innerText = "Build: " + layNativeInterface.getBuildName();
+    version.innerText = layNativeInterface.getBuildName();
 
     //setInterval(cycleLogoBg, LOGO_BG_INTERVAL);
     setInterval(sendPing, PING_INTERVAL);

@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.illposed.osc.MessageSelector;
 import com.illposed.osc.OSCBadDataEvent;
+import com.illposed.osc.OSCMessage;
 import com.illposed.osc.OSCMessageEvent;
 import com.illposed.osc.OSCMessageListener;
 import com.illposed.osc.OSCPacketEvent;
@@ -19,6 +20,7 @@ import java.util.List;
 public class Dispatcher {
 
     public interface Handler {
+        void logMessage(OSCMessage message);
         void download(String path);
         void prepareVideo(String path, int fadeInDuration, int fadeOutDuration);
         void playVideo();
@@ -42,6 +44,11 @@ public class Dispatcher {
                         @Override
                         public void handlePacket(OSCPacketEvent oscPacketEvent) {
                             Log.d("lay-osc", "handlePacket: " + oscPacketEvent);
+                            if (oscPacketEvent.getPacket() instanceof OSCMessage) {
+                                handler.logMessage((OSCMessage) oscPacketEvent.getPacket());
+                            } else {
+                                Log.d("lay-osc", "received an OSC bundle: " + oscPacketEvent.getPacket());
+                            }
                         }
 
                         @Override

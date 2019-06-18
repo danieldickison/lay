@@ -19,6 +19,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
@@ -31,6 +32,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+
+import com.illposed.osc.OSCMessage;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -182,6 +185,21 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mDownloader = new Downloader(getExternalFilesDir(null));
 
         dispatcher = new Dispatcher(getIntent().getIntExtra(TABLET_NUMBER_EXTRA, 0), new Dispatcher.Handler() {
+            @Override
+            public void logMessage(OSCMessage message) {
+                StringBuilder str = new StringBuilder();
+                str.append(message.getAddress());
+                str.append(" ");
+                str.append(TextUtils.join(", ", message.getArguments()));
+                final String js = "setLastOSCMessage(\"" + str.toString().replaceAll("\"", "\\\"") + "\")";
+                mWebView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mWebView.evaluateJavascript(js, null);
+                    }
+                });
+            }
+
             @Override
             public void download(String path) {
                 mDownloader.downloadFile(path);
