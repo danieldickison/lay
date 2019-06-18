@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
@@ -324,6 +325,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mMulticastLock.acquire();
         mNtpSync.start();
         dispatcher.startListening();
+        audioPlayer.playSilence();
     }
 
     private void connectToHost(String host) {
@@ -617,6 +619,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     private class AudioPlayer implements MediaPlayer.OnPreparedListener, MediaPlayer.OnSeekCompleteListener, MediaPlayer.OnCompletionListener {
         private MediaPlayer mediaPlayer = new MediaPlayer();
         private String url;
+        private boolean playingSilence = false;
 
         AudioPlayer() {
             mediaPlayer.setOnPreparedListener(this);
@@ -626,7 +629,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         @Override
         public void onPrepared(MediaPlayer mediaPlayer) {
-            mediaPlayer.seekTo(0);
+            if (playingSilence) {
+                Log.d(TAG, "starting to play silence-loop.wav");
+                mediaPlayer.start();
+            } else {
+                mediaPlayer.seekTo(0);
+            }
         }
 
         @Override
@@ -637,12 +645,14 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
+            playSilence();
         }
 
         private void prepareAudio(String url, boolean loop) {
             this.url = url;
 
             mediaPlayer.reset();
+            playingSilence = false;
             try {
                 mediaPlayer.setDataSource(url);
                 mediaPlayer.setLooping(loop);
@@ -676,6 +686,27 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         private void stopAudio() {
             if (mediaPlayer.isPlaying()) {
                 mediaPlayer.stop();
+                playSilence();
+            }
+        }
+
+        // We play silence when nothing else is playing to keep the audio driver from going to sleep. Hopefully this will reduce latency when the next audio is cued.
+        private void playSilence() {
+            try {
+                AssetFileDescriptor fd = getAssets().openFd("silence-loop.wav");
+
+                mediaPlayer.reset();
+                playingSilence = true;
+                try {
+                    mediaPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
+                    fd.close();
+                    mediaPlayer.setLooping(true);
+                    mediaPlayer.prepareAsync();
+                } catch (IOException e) {
+                    Log.w(TAG, "Error preparing silence audio", e);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Error opening silence-loop.wav asset", e);
             }
         }
     }
