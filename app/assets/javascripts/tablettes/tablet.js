@@ -8,7 +8,7 @@
 if (!window.layNativeInterface) {
     window.layNativeInterface = {
         getTabletNumber: function () { return 0; },
-        getBuildName: function () { return 'fake native interface'; },
+        getBuildName: function () { return 'fake'; },
         getCacheInfo: function () { return ''; },
         getBatteryPercent: function () { return -1; },
         setVideoCue: function () {},
