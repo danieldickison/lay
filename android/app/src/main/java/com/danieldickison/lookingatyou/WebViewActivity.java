@@ -49,7 +49,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     public final static String HOST_EXTRA = "com.danieldicksion.lay.host";
     public final static String TABLET_NUMBER_EXTRA = "com.danieldickison.lay.tablet_number";
 
-    private final static int PORT = 3000;
+    private final static int PORT = 80;
     private final static String PAGE_PATH = "/tablettes/index";
     private final static String TAG = "lay";
 
