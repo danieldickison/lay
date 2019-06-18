@@ -28,6 +28,9 @@ module Lay
 
   class OSCApplication < Rails::Application
 
+    LAY_IP = ENV['LAY_IP'] || '172.16.1.2'
+    puts "LAY_IP=#{LAY_IP} for multicast sending. Set LAY_IP env var to customize the local IP of the ethernet interface the tablets are on"
+
     class SpectatorsDB
       SPECTACTORS_SPREADSHEET = '1HSgh8-6KQGOKPjB_XRUbLAskCWgM5CpFFiospjn5Iq4'
       #SPECTACTORS_SPREADSHEET = '1ij3yi9tyUhFjgBbicODBe-kTNh43Z20ygPkS0XddwRY' # "Copy of Spectators" for testing
@@ -377,6 +380,12 @@ module Lay
       end
 
       # TODO: maybe do tablet subset proxying here based on audience assignment, etc.
+      @server.add_method('/tablet_multicast') do |message|
+        client = OSC::BroadcastClient.new(53000, LAY_IP)
+        puts "multicasting #{message.to_a.join(' ')}"
+        client.send(OSC::Message.new(*message.to_a))
+      end
+
       @server.add_method('/tablet_proxy') do |message|
         clients = TablettesController.tablets.each_value.collect do |tablet|
           OSC::Client.new(tablet[:ip], 53000)
