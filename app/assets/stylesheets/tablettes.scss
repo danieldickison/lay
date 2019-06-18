@@ -156,12 +156,16 @@ a {
     position: relative;
 }
 
-#tablet-stats td > .cache-info {
+#tablet-stats td.cache > .cache-info {
     display: none;
     text-align: left;
     position: absolute;
     background: #333;
     border: solid 1px red;
+    margin: 0;
+}
+#tablet-stats td.cache:hover {
+    background: #333;
 }
 #tablet-stats td.cache:hover > .cache-info {
     display: block;

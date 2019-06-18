@@ -1,7 +1,6 @@
 class TablettesController < ApplicationController
 
     TABLET_BASE_IP_NUM = 200
-    NUM_TABLETS = 20
 
     @debug = true
     TABLET_TO_TABLE = {
@@ -23,11 +22,8 @@ class TablettesController < ApplicationController
     DEFAULT_PRESHOW_BG = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 0
 
     @@last_ping_stats = Time.now
-    @@ping_stats = []
-    @@now_playing_paths = []
-    @@clock_infos = []
-    @@cache_infos = []
-    @@battery_percents = []
+    @tablets = {}
+    @tablets_mutex = Mutex.new
     @@dumping_stats = false
 
     @@show_time = true
@@ -64,25 +60,54 @@ class TablettesController < ApplicationController
     def stats
         now = Time.now.utc
         render json: {
-            tablets: (0...NUM_TABLETS).zip(@@ping_stats, @@now_playing_paths, @@clock_infos, @@cache_infos, @@battery_percents).collect do |arr|
+            tablets: self.class.tablets.collect do |id, t|
                 {
-                    tablet: arr[0],
-                    ping: arr[1] ? ((now - arr[1]) * 1000).round : nil,
-                    playing: arr[2] && arr[2].split('/').last.gsub('%20', ' '),
-                    clock: arr[3] && arr[3].split(' ').collect {|c| c.split('=')}.to_h,
-                    cache: arr[4] && arr[4].split("\n").collect {|c| ['path', 'start', 'end', 'error'].zip(c.split(';')).to_h},
-                    battery: arr[5],
+                    id:         id,
+                    ip:         t[:ip],
+                    build:      t[:build],
+                    ping:       t[:ping] && ((now - t[:ping]) * 1000).round,
+                    playing:    t[:playing]&.split('/').last.gsub('%20', ' '),
+                    clock:      t[:clock]&.split(' ')&.collect {|c| c.split('=')}&.to_h,
+                    cache:      t[:cache]&.split("\n")&.collect do |c|
+                        cs = c.split(';')
+                        {
+                            path:   cs[0],
+                            start:  cs[1]&.to_i,
+                            end:    cs[2]&.to_i,
+                            error:  cs[3],
+                        }
+                    end,
+                    battery:    t[:battery]&.to_i,
                 }
-            end
+            end.sort_by {|s| s[:id]}
         }
     end
 
-    def ping_stats(tablet, now_playing_path, clock_info, cache_info, battery_percent)
-        @@ping_stats[tablet] = Time.now
-        @@now_playing_paths[tablet] = now_playing_path
-        @@clock_infos[tablet] = clock_info
-        @@cache_infos[tablet] = cache_info
-        @@battery_percents[tablet] = battery_percent
+    def self.tablets
+        return @tablets_mutex.synchronize {@tablets.dup}
+    end
+
+    def self.update_tablet(ip, params)
+        id = params[:tablet_number].to_i
+        @tablets_mutex.synchronize do
+            existing = @tablets[id]
+            if existing && existing[:ip] != ip
+                puts "dupe tablet id #{id}: #{existing[:ip]} and #{ip}"
+            end
+            @tablets[id] = {
+                id:         id,
+                ip:         ip,
+                ping:       Time.now.utc,
+                build:      params[:build],
+                playing:    params[:now_playing_path],
+                clock:      params[:clock_info],
+                cache:      params[:cache_info],
+                battery:    params[:battery_percent],
+            }
+        end
+    end
+
+    def ping_stats
         # if (Time.now - @@last_ping_stats) >= 2 && !@@dumping_stats
         #     @@dumping_stats = true
         #     puts "---"
@@ -139,9 +164,10 @@ class TablettesController < ApplicationController
 
     def ping
         ip = request.headers['X-Forwarded-For'].split(',').first
+        self.class.update_tablet(ip, params)
         #tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
         tablet = params[:tablet_number].to_i
-        ping_stats(tablet, params[:now_playing_path], params[:clock_info], params[:cache_info], params[:battery_percent])
+        ping_stats
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
         commands = self.class.commands.delete(tablet) || []
         text_feed = self.class.text_feed.delete(tablet)
@@ -183,7 +209,7 @@ class TablettesController < ApplicationController
         elsif tablet.is_a?(String)
             return [tablet.to_i]
         elsif !tablet || tablet.empty?
-            return 1 .. NUM_TABLETS
+            return @tablets.keys
         else
             return tablet
         end

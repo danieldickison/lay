@@ -52,7 +52,7 @@ window.clearNowPlaying = function (np) {
 
 let TABLET_NUMBER = layNativeInterface.getTabletNumber();
 
-let PING_INTERVAL = 500;
+let PING_INTERVAL = 1000;
 let PING_TIMEOUT = 3000;
 var pingStartTime = null;
 var clockOffset = 0;
@@ -184,8 +184,9 @@ function sendPing() {
 
     let body = new URLSearchParams();
     body.append('tablet_number', TABLET_NUMBER);
+    body.append('build', layNativeInterface.getBuildName());
     body.append('now_playing_path', nowPlaying.path);
-    body.append('clock_info', clockInfo + " timeSince=" + (Date.now() - lastNtpSuccess));
+    body.append('clock_info', (clockInfo || '') + " timeSince=" + (Date.now() - lastNtpSuccess));
     body.append('cache_info', layNativeInterface.getCacheInfo());
     body.append('battery_percent', batteryPercent);
     let startTime = Date.now();
