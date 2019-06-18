@@ -393,7 +393,11 @@ module Lay
         puts "proxying #{message.to_a.join(' ')} to #{clients.length} tablets"
         new_msg = OSC::Message.new(*message.to_a)
         clients.each do |c|
-          c.send(new_msg)
+          begin
+            c.send(new_msg)
+          rescue
+            puts "error sending OSC packet to #{c}: #{$!}"
+          end
         end
       end
 
