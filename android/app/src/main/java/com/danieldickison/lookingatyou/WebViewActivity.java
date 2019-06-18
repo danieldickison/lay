@@ -187,11 +187,10 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         dispatcher = new Dispatcher(getIntent().getIntExtra(TABLET_NUMBER_EXTRA, 0), new Dispatcher.Handler() {
             @Override
             public void logMessage(OSCMessage message) {
-                StringBuilder str = new StringBuilder();
-                str.append(message.getAddress());
-                str.append(" ");
-                str.append(TextUtils.join(", ", message.getArguments()));
-                final String js = "setLastOSCMessage(\"" + str.toString().replaceAll("\"", "\\\"") + "\")";
+                String str = message.getAddress() +
+                        " " +
+                        TextUtils.join(", ", message.getArguments());
+                final String js = "setLastOSCMessage(\"" + str.replaceAll("\"", "\\\"") + "\")";
                 mWebView.post(new Runnable() {
                     @Override
                     public void run() {

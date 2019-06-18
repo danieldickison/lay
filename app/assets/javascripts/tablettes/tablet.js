@@ -31,10 +31,10 @@ window.setClockOffsets = function (offsets, lastSuccess) {
     lastNtpSuccess = lastSuccess;
 };
 
-window.setLastOSCMessage(msg) {
+window.setLastOSCMessage = function (msg) {
     let el = document.getElementById('last-osc-message');
     el.innerText = msg;
-}
+};
 
 window.setNowPlaying = function (np) {
     console.log("set now playing: " + np.path);
