@@ -352,6 +352,6 @@ class TablettesController < ApplicationController
     # Returns an integer; either a tablet group number 1-8 or 0 meaning "all tablets"
     def self.asset_group(asset)
         match = ASSET_GROUP_REGEX.match(asset)
-        return (match && match[0]).to_i
+        return (match && match[1]).to_i
     end
 end

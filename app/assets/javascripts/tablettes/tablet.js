@@ -247,11 +247,11 @@ function sendPing() {
             layNativeInterface.setVolume(json.volume);
         }
 
-        let newAssetsStr = json.assets.map(a => a.path + '-' + a.mod_date).join("\n");
-        if (currentAssetsStr !== newAssetsStr) {
+        let newAssetsStr = json.assets.map(a => a.path + ';' + a.mod_date).join("\n");
+        if (newAssetsStr && currentAssetsStr !== newAssetsStr) {
             console.log("assets changed:\n" + newAssetsStr);
             currentAssetsStr = newAssetsStr;
-            layNativeInterface.setAssets(json.assets);
+            layNativeInterface.setAssets(newAssetsStr);
         }
 
         if (json.text_feed) {

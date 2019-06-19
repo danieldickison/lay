@@ -134,6 +134,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         @JavascriptInterface
+        public void setAssets(String assetsStr) {
+            mDownloader.setAssets(assetsStr.split("\n"));
+        }
+
+        @JavascriptInterface
         public int getTabletNumber() {
             return dispatcher.getTabletNumber();
         }
