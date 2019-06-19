@@ -251,7 +251,7 @@ module Lay
 
       # These are cues from QLab to fire off various scenes
       @server.add_method('/cue') do |message|
-        cue = messages.to_a[0].to_i
+        cue = message.to_a[0].to_i
         puts "received cue #{cue}; forwarding to isadora"
         Isadora.send('/isadora/1', cue.to_s)
         case cue
