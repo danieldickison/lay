@@ -1,7 +1,7 @@
 module Lay
     class Isadora
         ISADORA_IP = '172.16.1.117' #'172.16.1.251'
-        ISADORA_PORT = 5300 #1234
+        ISADORA_PORT = 53000 #1234
 
         attr_accessor(:cl)
 

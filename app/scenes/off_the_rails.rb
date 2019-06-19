@@ -13,7 +13,7 @@ module Lay
       FIRST_RAILS_DURATION = 8
 
       @@run = false
-      @@tweets = []
+      @@tweets = ['hi i ate a sandwich adn it was good', 'look im on social media', 'covfefe']
       @@queue = []
       @@mutex = Mutex.new
 
