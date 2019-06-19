@@ -280,7 +280,7 @@ a {
     transition: opacity ease-out 0.5s;
 
     &.ghosting-preroll {
-        opacity: 0;
+        opacity: .05;
         transition: opacity ease-out 0.5s;
     }
     
