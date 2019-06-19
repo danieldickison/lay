@@ -21,6 +21,8 @@ class TablettesController < ApplicationController
     PRESHOW_BG[11] = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 3
     DEFAULT_PRESHOW_BG = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 0
 
+    PUBLIC_DIR = File.expand_path('../../public', __dir__)
+
     @@last_ping_stats = Time.now
     @tablets = {}
     @tablets_mutex = Mutex.new
@@ -29,12 +31,14 @@ class TablettesController < ApplicationController
 
     @@show_time = true
 
-    skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :preload, :update_patron, :stats]
+    skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :assets, :update_patron, :stats]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
     @text_feed = {} # {int => [str1, str2, ...]}
     @commands = {} # {int => [[cmd1, arg1-1, arg1-2], [cmd2, arg2-1, ...], ...]}
+
+    @assets = []
 
     def install
     end
@@ -43,19 +47,17 @@ class TablettesController < ApplicationController
     end
 
     def director
+        @assets = self.class.assets.collect {|a| a[:path]}
     end
 
     def cue
         self.class.start_cue([params[:tablet].to_i], params[:file], params[:time].to_f / 1000, seek: params[:seek].to_f)
     end
 
-    def preload
-        if params[:files].empty?
-            self.class.reset_cue([params[:tablet].to_i])
-        else
-            files = params[:files].split("\n");
-            self.class.load_cue([params[:tablet].to_i], files)
-        end
+    def assets
+        paths = params[:assets].split("\n").collect(&:strip)
+        puts "setting assets to:\n#{paths.join("\n")}"
+        self.class.set_asset_paths(paths)
     end
 
     def stats
@@ -168,14 +170,17 @@ class TablettesController < ApplicationController
         self.class.update_tablet(ip, params)
         #tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
         tablet = params[:tablet_number].to_i
+        group = tablet_group(tablet)
         ping_stats
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
         commands = self.class.commands.delete(tablet) || []
         text_feed = self.class.text_feed.delete(tablet)
+        assets = self.class.assets_for_group(group)
         # puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue} preload: #{preload && preload.join(', ')}"
         render json: {
             :tablet_ip => ip,
             :tablet_number => tablet,
+            :tablet_group => group,
             :preshow_bg => PRESHOW_BG[tablet] || DEFAULT_PRESHOW_BG,
             :commands => commands,
             :next_cue_file => cue[:file],
@@ -185,6 +190,7 @@ class TablettesController < ApplicationController
             :show_time => @@show_time,
             :text_feed => text_feed,
             :volume => self.class.volume,
+            :assets => assets,
         }
     end
 
@@ -306,5 +312,46 @@ class TablettesController < ApplicationController
         vol = [0, [100, vol].min].max
         puts "setting volume to #{vol}%"
         @volume = vol.to_i
+    end
+
+    def self.assets
+        return @assets
+    end
+
+    def self.set_asset_paths(paths)
+        @assets = paths.collect do |p|
+            fpath = File.join(PUBLIC_DIR, p)
+            if File.exist?(fpath)
+                mtime = File.mtime(fpath)
+                {:path => p, :mod_date => mtime.to_i}
+            else
+                puts "asset file missing: #{fpath}"
+                nil
+            end
+        end.compact
+    end
+
+    def self.tablet_group(tablet)
+        return (tablet - 1) % 8 + 1
+    end
+
+    def tablet_group(tablet)
+        return self.class.tablet_group(tablet)
+    end
+
+    # Returns an array of {:path => <str>, :mod_date => <timestamp int>}
+    def self.assets_for_group(group)
+        return @assets.find_all do |a|
+            g = asset_group(a[:path])
+            g == 0 || g == group
+        end
+    end
+
+    ASSET_GROUP_REGEX = /-C6(\d)-/
+
+    # Returns an integer; either a tablet group number 1-8 or 0 meaning "all tablets"
+    def self.asset_group(asset)
+        match = ASSET_GROUP_REGEX.match(asset)
+        return (match && match[0]).to_i
     end
 end

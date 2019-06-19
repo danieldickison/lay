@@ -8,7 +8,7 @@ Rails.application.routes.draw do
   post 'tablettes/stats'
   post 'tablettes/ping'
   post 'tablettes/cue'
-  post 'tablettes/preload'
+  post 'tablettes/assets'
   post 'tablettes/update_patron'
 
   get 'secrets/index'

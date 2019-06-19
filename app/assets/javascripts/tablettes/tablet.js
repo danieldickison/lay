@@ -14,6 +14,7 @@ if (!window.layNativeInterface) {
         setVideoCue: function () {},
         setVolume: function () {},
         downloadFile: function () {},
+        setAssets: function () {},
         hideChrome: function () {},
     };
 }
@@ -63,6 +64,7 @@ var currentCueTime = null;
 var nextCueTimeout = null;
 var currentPreload = null;
 var currentVolume = -1;
+var currentAssetsStr = '';
 
 var nowPlaying = {};
 
@@ -235,7 +237,7 @@ function sendPing() {
                     location.reload();
                     break;
                 case 'ghosting':
-                    triggerGhosting(cmd[1], cmd[2], [cmd[3], cmd[4], cmd[5]]); // delay, img srcs
+                    triggerGhosting(cmd[1], cmd[2], [cmd[3], cmd[4], cmd[5]]); // delay, duration, img srcs
                     break;
             }
         });
@@ -245,11 +247,18 @@ function sendPing() {
             layNativeInterface.setVolume(json.volume);
         }
 
+        let newAssetsStr = json.assets.map(a => a.path + '-' + a.mod_date).join("\n");
+        if (currentAssetsStr !== newAssetsStr) {
+            console.log("assets changed:\n" + newAssetsStr);
+            currentAssetsStr = newAssetsStr;
+            layNativeInterface.setAssets(json.assets);
+        }
+
         if (json.text_feed) {
             triggerTextFeed(json.text_feed);
         }
 
-        document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " — " + json.tablet_ip;
+        document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " Group #" + json.tablet_group + " — " + json.tablet_ip;
         document.getElementById('tablettes-debug').classList.toggle('visible', json.debug);
         
         let preShow = document.getElementById('tablettes-pre-show');
