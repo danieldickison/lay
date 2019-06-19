@@ -256,8 +256,14 @@ module Lay
         Isadora.send('/isadora/1', cue.to_s)
         case cue
         when 500
+            g = Ghosting.new
+            g.go
         when 1200
+            # OffTheRails.load
+            # OffTheRails.start
         when 1300
+            # ProductLaunch.load
+            # ProductLaunch.start
         end
       end
 
