@@ -484,8 +484,8 @@ module Lay
         if args[0] && !args[0].empty?
             tablet = args[0].to_i
         end
-        delay = args[1].to_i || 67_000
-        duration = args[2].to_i || 20_000
+        delay = (args[1] || 67_400).to_i
+        duration = (args[2] || 18_300).to_i
         TablettesController.trigger_ghosting(tablet, delay, duration)
       end
 

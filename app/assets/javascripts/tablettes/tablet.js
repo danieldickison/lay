@@ -94,6 +94,8 @@ document.addEventListener("DOMContentLoaded", event => {
     updateBatteryStatus();
 
     preShowInit();
+
+    //triggerGhosting(Date.now() + 10000, 3000000, ['/lay/ghosting/profile-1.jpg', '/lay/ghosting/profile-1.jpg', '/lay/ghosting/profile-1.jpg']);
 });
 
 function preShowInit() {
@@ -374,17 +376,22 @@ function triggerGhosting(time, duration, srcs) {
     document.body.appendChild(div);
     setTimeout(() => {
             div.classList.remove('ghosting-preroll');
+            //let rect = div.getBoundingClientRect();
+            //log("ghosting rect " + rect.left + ", " + rect.top + ", " + rect.right + ", " + rect.bottom);
             setTimeout(() => {
                     div.classList.add('ghosting-fadeout');
-                    div.addEventListener('transitionend', () => {
-                        document.body.removeChild(div);
-                    });
+                    div.addEventListener('transitionend', removeDiv);
                 },
                 duration
             );
         },
         delay
     );
+
+    function removeDiv() {
+        document.body.removeChild(div);
+        div.removeEventListener('transitionend', removeDiv);
+    }
 }
 window.triggerGhosting = triggerGhosting;
 
