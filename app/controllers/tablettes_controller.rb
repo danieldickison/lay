@@ -99,6 +99,7 @@ class TablettesController < ApplicationController
             end
             @tablets[id] = {
                 id:         id,
+                group:      tablet_group(id),
                 ip:         ip,
                 ping:       Time.now.utc,
                 build:      params[:build],
@@ -269,14 +270,6 @@ class TablettesController < ApplicationController
         cmds << cmd
     end
 
-    def self.trigger_ghosting(tablet, delay_ms, duration_ms)
-        puts "triggering ghosting in #{delay_ms}ms"
-        time = (Time.now.to_f * 1000).round + delay_ms
-        tablet_enum(tablet).each do |t|
-            queue_command(t, 'ghosting', time, duration_ms, '/lay/ghosting/profile-1.jpg', '/lay/ghosting/profile-2.jpg', '/lay/ghosting/profile-3.jpg')
-        end
-    end
-
     def self.text_feed
         return @text_feed
     end
@@ -353,5 +346,37 @@ class TablettesController < ApplicationController
     def self.asset_group(asset)
         match = ASSET_GROUP_REGEX.match(asset)
         return (match && match[1]).to_i
+    end
+
+    def self.send_osc(addr, *args)
+        clients = @tablets.each_value.collect do |tablet|
+            begin
+                OSC::Client.new(tablet[:ip], 53000)
+            rescue
+                puts "error sending OSC packet to #{tablet[:ip]}: #{$!}"
+                nil
+            end
+        end.compact
+        puts "sending to #{clients.length} tablets: #{addr} #{args.join(' ')}"
+        new_msg = OSC::Message.new(addr, *args)
+        clients.each do |c|
+          begin
+            c.send(new_msg)
+          rescue
+            puts "error sending OSC packet to #{c}: #{$!}"
+          end
+        end
+    end
+
+    def self.send_osc_prepare(video_path)
+        @tablets.each_value do |tablet|
+            begin
+                c = OSC::Client.new(tablet[:ip], 53000)
+                path = video_path.sub('?', tablet[:group].to_s)
+                c.send(OSC::Message.new('/tablet/prepare', path))
+            rescue
+                puts "error sending OSC packet to #{tablet[:ip]}: #{$!}"
+            end
+        end
     end
 end

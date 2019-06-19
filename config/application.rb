@@ -7,6 +7,8 @@ require 'google_drive'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+require_relative '../app/scenes/ghosting'
+
 module Lay
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
@@ -379,7 +381,6 @@ module Lay
         TablettesController.show_time(message.to_a[0])
       end
 
-      # TODO: maybe do tablet subset proxying here based on audience assignment, etc.
       @server.add_method('/tablet_multicast') do |message|
         client = OSC::BroadcastClient.new(53000, LAY_IP)
         puts "multicasting #{message.to_a.join(' ')}"
@@ -387,18 +388,11 @@ module Lay
       end
 
       @server.add_method('/tablet_proxy') do |message|
-        clients = TablettesController.tablets.each_value.collect do |tablet|
-          OSC::Client.new(tablet[:ip], 53000)
-        end
-        puts "proxying #{message.to_a.join(' ')} to #{clients.length} tablets"
-        new_msg = OSC::Message.new(*message.to_a)
-        clients.each do |c|
-          begin
-            c.send(new_msg)
-          rescue
-            puts "error sending OSC packet to #{c}: #{$!}"
-          end
-        end
+        TablettesController.send_osc(*message.to_a)
+      end
+
+      @server.add_method('/prepare') do |message|
+        TablettesController.send_osc_prepare(message.to_a[0])
       end
 
       # /start <media> [<tablet#> ...]
@@ -484,9 +478,8 @@ module Lay
         if args[0] && !args[0].empty?
             tablet = args[0].to_i
         end
-        delay = (args[1] || 67_400).to_i
-        duration = (args[2] || 18_300).to_i
-        TablettesController.trigger_ghosting(tablet, delay, duration)
+        g = Lay::Ghosting.new
+        g.go
       end
 
       # /testem
