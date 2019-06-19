@@ -478,6 +478,17 @@ module Lay
         TablettesController.trigger_text_feed(tablet, args[1..-1])
       end
 
+      @server.add_method('/ghosting') do |message|
+        args = message.to_a
+        tablet = nil
+        if args[0] && !args[0].empty?
+            tablet = args[0].to_i
+        end
+        delay = args[1].to_i || 67_000
+        duration = args[2].to_i || 20_000
+        TablettesController.trigger_ghosting(tablet, delay, duration)
+      end
+
       # /testem
       @server.add_method('/testem') do |message|
         puts "testem #{message}"

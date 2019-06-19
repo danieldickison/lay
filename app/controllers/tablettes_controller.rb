@@ -263,6 +263,14 @@ class TablettesController < ApplicationController
         cmds << cmd
     end
 
+    def self.trigger_ghosting(tablet, delay_ms, duration_ms)
+        puts "triggering ghosting in #{delay_ms}ms"
+        time = (Time.now.to_f * 1000).round + delay_ms
+        tablet_enum(tablet).each do |t|
+            queue_command(t, 'ghosting', time, duration_ms, '/lay/ghosting/profile-1.jpg', '/lay/ghosting/profile-2.jpg', '/lay/ghosting/profile-3.jpg')
+        end
+    end
+
     def self.text_feed
         return @text_feed
     end

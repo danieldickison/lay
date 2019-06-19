@@ -270,3 +270,29 @@ a {
         opacity: 0;
     }
 }
+
+#ghosting {
+    position: absolute;
+    top: 50px;
+    left: 50px;
+    right: 50px;
+    height: 180px;
+    transition: opacity ease-out 0.5s;
+
+    &.ghosting-preroll {
+        opacity: 0;
+    }
+    
+    &.ghosting-fadeout {
+        transition: opacity ease-in 3s;
+        opacity: 0;
+    }
+
+    display: flex;
+    justify-content: space-between;
+    
+    > img {
+        border: none;
+        mix-blend-mode: lighten;
+    }
+}

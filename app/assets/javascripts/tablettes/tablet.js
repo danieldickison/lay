@@ -232,6 +232,9 @@ function sendPing() {
                 case 'reload':
                     location.reload();
                     break;
+                case 'ghosting':
+                    triggerGhosting(cmd[1], cmd[2], [cmd[3], cmd[4], cmd[5]]); // delay, img srcs
+                    break;
             }
         });
 
@@ -357,6 +360,30 @@ function triggerTextFeed(strings) {
     });
 }
 window.triggerTextFeed = triggerTextFeed; // for testing in console
+
+function triggerGhosting(time, duration, srcs) {
+    let delay = time - serverNow();
+    let div = document.createElement('div');
+    div.setAttribute('id', 'ghosting');
+    div.classList.add('ghosting-preroll');
+    srcs.forEach((src) => {
+        let i = new Image(180, 180);
+        i.src = src;
+        div.appendChild(i);
+    });
+    document.body.appendChild(div);
+    setTimeout(() => {
+            div.classList.remove('ghosting-preroll');
+            setTimeout(() => {
+                    div.classList.add('ghosting-fadeout');
+                },
+                duration
+            );
+        },
+        delay
+    );
+}
+window.triggerGhosting = triggerGhosting;
 
 function updateBatteryStatus() {
     batteryPercent = layNativeInterface.getBatteryPercent();
