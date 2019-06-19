@@ -8,7 +8,7 @@ module Lay
     505-002-R01-profile_ghosting.jpg  505-007-R01-profile_ghosting.jpg  505-012-R01-profile_ghosting.jpg  
     505-003-R01-profile_ghosting.jpg  505-008-R01-profile_ghosting.jpg  505-013-R01-profile_ghosting.jpg
     505-004-R01-profile_ghosting.jpg  505-009-R01-profile_ghosting.jpg  505-014-R01-profile_ghosting.jpg
-        ].collect {|n| "/playback/media_dynamic/505-profile_ghosting/#{n}"}
+        ].collect {|n| "/playback/media_dynamic/505-profile_ghosting/#{n}"}.freeze
 
         def initialize
             @profile_delay = 67_400 # ms
