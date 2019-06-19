@@ -281,6 +281,7 @@ a {
 
     &.ghosting-preroll {
         opacity: 0;
+        transition: opacity ease-out 0.5s;
     }
     
     &.ghosting-fadeout {

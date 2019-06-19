@@ -376,6 +376,9 @@ function triggerGhosting(time, duration, srcs) {
             div.classList.remove('ghosting-preroll');
             setTimeout(() => {
                     div.classList.add('ghosting-fadeout');
+                    div.addEventListener('transitionend', () => {
+                        document.body.removeChild(div);
+                    });
                 },
                 duration
             );
