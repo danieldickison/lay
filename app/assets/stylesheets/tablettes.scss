@@ -274,8 +274,8 @@ a {
 #ghosting {
     position: absolute;
     top: 50px;
-    left: 50px;
-    right: 50px;
+    left: 54px;
+    right: 54px;
     height: 180px;
     transition: opacity ease-out 0.5s;
 
@@ -294,6 +294,8 @@ a {
     
     > img {
         border: none;
-        mix-blend-mode: lighten;
+        width: 180px;
+        height: 180px;
+        /*mix-blend-mode: lighten;*/
     }
 }
