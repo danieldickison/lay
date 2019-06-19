@@ -190,6 +190,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setLoadWithOverviewMode(true);
+        settings.setUseWideViewPort(true);
         mWebView.addJavascriptInterface(mJSInterface, "layNativeInterface");
 
         mWebView.setWebViewClient(mWebClient);
