@@ -249,6 +249,18 @@ module Lay
         puts "A #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
       end
 
+      # These are cues from QLab to fire off various scenes
+      @server.add_method('/cue') do |message|
+        cue = messages.to_a[0].to_i
+        puts "received cue #{cue}; forwarding to isadora"
+        Isadora.send('/isadora/1', cue.to_s)
+        case cue
+        when 500
+        when 1200
+        when 1300
+        end
+      end
+
       @server.add_method('/show_time') do |message|
         TablettesController.show_time(message.to_a[0])
       end
