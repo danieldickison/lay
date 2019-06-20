@@ -238,14 +238,7 @@ class TablettesController < ApplicationController
     def self.stop_cue(tablet)
         tablet_enum(tablet).each do |t|
             puts "stop[#{t}]"
-            @cues[t] = nil
-        end
-    end
-
-    def self.reset_cue(tablet)
-        tablet_enum(tablet).each do |t|
-            puts "reset[#{t}]"
-            @commands[t] = []
+            queue_command(t, 'stop')
             @cues[t] = nil
         end
     end

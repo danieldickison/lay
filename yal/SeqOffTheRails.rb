@@ -65,6 +65,15 @@ class SeqOffTheRails
     FIRST_RAILS_CHANNEL = 2
     FIRST_RAILS_DURATION = 8
 
+    # TODO: get these from the db
+    TEST_ITEMS = [
+        {:tweet => 'hi i ate a sandwich adn it was good', :profile_img => SeqGhosting::PROFILE_PICS.sample(1)},
+        {:tweet => 'look at me im on social media', :profile_img => SeqGhosting::PROFILE_PICS.sample(1)},
+        {:tweet => 'covfefe', :profile_img => SeqGhosting::PROFILE_PICS.sample(1)},
+        {:tweet => 'oneuoloenthlonglonglongtextstringwhathappens', :profile_img => SeqGhosting::PROFILE_PICS.sample(1)},
+        {:tweet => 'ユニコード', :profile_img => SeqGhosting::PROFILE_PICS.sample(1)},
+    ]
+
     @run = false
     @tweets = []
     @queue = []
@@ -72,28 +81,33 @@ class SeqOffTheRails
 
     attr_accessor(:state)
 
-    def initialize
-      @is = Isadora.new
-      @state = :idle
-      @time = nil
-
+    def initialize(channel = 10) # channel??
         @channel_base = channel - FIRST_RAILS_CHANNEL
         @channel = "/channel/#{channel}"
         @is = Isadora.new
         @state = :idle
         @time = nil
+
+        @tablet_items = {}
+        # TODO: assign items to tablets from db based on which spectator is at which table
+        TablettesController.tablet_enum(nil).each do |t|
+            @tablet_items[t] = TEST_ITEMS.shuffle
+        end
     end
 
     def start
         @queue = []
         @run = true
         Thread.new do
-          rails = NUM_RAILS.times.collect {|i| new(i + FIRST_RAILS_CHANNEL)}
-          while true
-            NUM_RAILS.times {|i| rails[i].run}
-            break if !@run
-            sleep(0.1)
-          end
+            @tablet_items.each do |t, items|
+                TablettesController.queue_command(t, 'offtherails', items)
+            end
+
+            rails = NUM_RAILS.times.collect {|i| new(i + FIRST_RAILS_CHANNEL)}
+            while @run
+                NUM_RAILS.times {|i| rails[i].run}
+                sleep(0.1)
+            end
         end
     end
 

@@ -90,8 +90,8 @@ class SeqGhosting
 
             puts "triggering ghosting profiles in #{@profile_delay}ms"
             time = (Time.now.to_f * 1000).round + @profile_delay
-            TablettesController.tablet_enum(nil).each do |t|
-                TablettesController.queue_command(t, 'ghosting', time, @profile_duration, *@tablet_profile_images[t])
+            tablet_profile_images.each do |t, images|
+                TablettesController.queue_command(t, 'ghosting', time, @profile_duration, *images)
             end
 
             while @run

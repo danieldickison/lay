@@ -74,6 +74,8 @@ var currentLogoBgIndex = 0;
 let BATTERY_INTERVAL = 60000;
 var batteryPercent = -2;
 
+var currentSequence = null;
+
 document.addEventListener("DOMContentLoaded", event => {
     let isIndexPage = document.getElementById('tablettes-index');
     if (!isIndexPage) return;
@@ -96,8 +98,6 @@ document.addEventListener("DOMContentLoaded", event => {
     updateBatteryStatus();
 
     preShowInit();
-
-    //triggerGhosting(Date.now() + 10000, 3000000, ['/lay/ghosting/profile-1.jpg', '/lay/ghosting/profile-1.jpg', '/lay/ghosting/profile-1.jpg']);
 });
 
 function preShowInit() {
@@ -228,21 +228,7 @@ function sendPing() {
         }
 
         (json.commands || []).forEach((cmd) => {
-            log('Last command: ' + cmd.join('; '));
-            switch (cmd[0]) {
-                case 'load':
-                    layNativeInterface.downloadFile(uriEscapePath(cmd[1]));
-                    break;
-                case 'reload':
-                    location.reload();
-                    break;
-                case 'ghosting':
-                    triggerGhosting(cmd[1], cmd[2], [cmd[3], cmd[4], cmd[5]]); // delay, duration, img srcs
-                    break;
-                case 'offtherails':
-                    triggerOffTheRails(cmd[1]);
-                    break;
-            }
+            handleCommand(cmd[0], cmd.slice(1));
         });
 
         if (currentVolume !== json.volume) {
@@ -353,25 +339,17 @@ function uriEscapePath(path) {
     return path && path.replace(/([\/:]?)([^\/:]+)([\/:]?)/g, (m, p1, p2, p3) => p1 + encodeURIComponent(p2) + p3);
 }
 
-function triggerTextFeed(strings) {
-    log("triggering text feed with " + strings.length + " strings");
-    let container = document.getElementById('tablettes-text-feed');
-    container.innerHTML = '';
-    strings.forEach((str, i) => {
-        let p = document.createElement('p');
-        p.innerText = str;
-        p.classList.add('depth-' + (i % 3));
-        p.style.animationDelay = (7 * Math.floor(i / 3) + 3 * Math.random()) + 's';
-        p.style.left = Math.round(300 * Math.random()) + 'px';
-        container.appendChild(p);
-        p.addEventListener('animationend', () => {
-            if (p.parentNode === container) container.removeChild(p);
-        });
-    });
+function triggerSequence(constructor, args) {
+    stop();
+    args.unshift(constructor);
+    currentSequence = new (constructor.bind.apply(constructor, args));
 }
-window.triggerTextFeed = triggerTextFeed; // for testing in console
 
-function triggerGhosting(time, duration, srcs) {
+function stop() {
+    if (currentSequence) currentSequence.stop();
+}
+
+function Ghosting(time, duration, srcs) {
     let delay = time - serverNow();
     let div = document.createElement('div');
     div.setAttribute('id', 'ghosting');
@@ -382,7 +360,8 @@ function triggerGhosting(time, duration, srcs) {
         div.appendChild(i);
     });
     document.body.appendChild(div);
-    setTimeout(() => {
+
+    this.prerollTimeout = setTimeout(() => {
             div.classList.remove('ghosting-preroll');
             //let rect = div.getBoundingClientRect();
             //log("ghosting rect " + rect.left + ", " + rect.top + ", " + rect.right + ", " + rect.bottom);
@@ -396,22 +375,72 @@ function triggerGhosting(time, duration, srcs) {
         delay
     );
 
+    this.stop = function () {
+        clearTimeout(this.prerollTimeout);
+        removeDiv();
+    };
+
     function removeDiv() {
-        document.body.removeChild(div);
-        div.removeEventListener('transitionend', removeDiv);
+        if (div.parentNode === document.body) {
+            document.body.removeChild(div);
+            div.removeEventListener('transitionend', removeDiv);
+        }
     }
 }
-window.triggerGhosting = triggerGhosting;
 
-function triggerOffTheRails(items) {
-    log(JSON.stringify(items));
-    triggerTextFeed(items.map((item) => item.tweet));
+function OffTheRails(items) {
+    log("OffTheRails start with " + items.length + " feed items");
+
+    let div = document.createElement('div');
+    div.setAttribute('id', 'offtherails');
+    div.innerHTML = '';
+    items.forEach((item, i) => {
+        let p = document.createElement('p');
+        p.innerText = item.tweet;
+        p.classList.add('depth-' + (i % 3));
+        p.style.animationDelay = (7 * Math.floor(i / 3) + 3 * Math.random()) + 's';
+        p.style.left = Math.round(300 * Math.random()) + 'px';
+        div.appendChild(p);
+        p.addEventListener('animationend', () => {
+            if (p.parentNode === div) div.removeChild(p);
+        });
+    });
+    document.body.appendChild(div);
+
+    this.stop = function () {
+        if (div.parentNode === document.body) {
+            document.body.removeChild(div);
+        }
+    };
 }
-window.triggerOffTheRails = triggerOffTheRails;
 
 function updateBatteryStatus() {
     batteryPercent = layNativeInterface.getBatteryPercent();
     log('batteryPercent updated to ' + batteryPercent);
 }
+
+function handleCommand(cmd, args) {
+    log('Last command: ' + cmd + ' - ' + args.join(', '));
+    switch (cmd) {
+        case 'load':
+            layNativeInterface.downloadFile(uriEscapePath(args[0]));
+            break;
+        case 'reload':
+            location.reload();
+            break;
+        case 'stop':
+            stop();
+            break;
+        case 'ghosting':
+            triggerSequence(Ghosting, args);
+            break;
+        case 'offtherails':
+            triggerSequence(OffTheRails, args);
+            break;
+        default:
+            log('unknown command: ' + cmd);
+    }
+}
+window.handleCommand = handleCommand;
 
 })();

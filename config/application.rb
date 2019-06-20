@@ -10,6 +10,7 @@ Bundler.require(*Rails.groups)
 MAIN_DIR = File.expand_path('../yal', __dir__)
 $:.unshift(MAIN_DIR)
 require('SeqGhosting')
+require('SeqOffTheRails')
 
 module Lay
   class Application < Rails::Application
@@ -262,8 +263,7 @@ module Lay
         when 500
             @current_seq = SeqGhosting.new
         when 1200
-            # OffTheRails.load
-            # OffTheRails.start
+            @current_seq = SeqOffTheRails.new
         when 1300
             # ProductLaunch.load
             # ProductLaunch.start
