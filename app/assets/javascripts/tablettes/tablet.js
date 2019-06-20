@@ -395,14 +395,26 @@ function OffTheRails(items) {
     div.setAttribute('id', 'offtherails');
     div.innerHTML = '';
     items.forEach((item, i) => {
-        let p = document.createElement('p');
-        p.innerText = item.tweet;
-        p.classList.add('depth-' + (i % 3));
-        p.style.animationDelay = (7 * Math.floor(i / 3) + 3 * Math.random()) + 's';
-        p.style.left = Math.round(300 * Math.random()) + 'px';
-        div.appendChild(p);
-        p.addEventListener('animationend', () => {
-            if (p.parentNode === div) div.removeChild(p);
+        let container = document.createElement('div');
+        if (item.tweet) {
+            container.classList.add('tweet');
+            
+            let img = document.createElement('img');
+            img.src = item.profile_img;
+            container.appendChild(img);
+
+            let p = document.createElement('p');
+            p.innerText = item.tweet;
+            container.appendChild(p);
+        } else {
+            container.innerText = 'TODO: facebook/instagram photo posts go here'
+        }
+        container.classList.add('depth-' + (i % 3));
+        container.style.animationDelay = (7 * Math.floor(i / 3) + 3 * Math.random()) + 's';
+        container.style.left = Math.round(300 * Math.random()) + 'px';
+        div.appendChild(container);
+        container.addEventListener('animationend', () => {
+            if (container.parentNode === div) div.removeChild(container);
         });
     });
     document.body.appendChild(div);

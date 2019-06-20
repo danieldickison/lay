@@ -184,44 +184,80 @@ a {
     width: 100%;
     height: 100%;
     padding: 0;
+
+    > .tweet {
+        font-size: 60px;
+        display: flex;
+        color: #6699ff;
+
+        > img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50px;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+    }
+
+    p {
+        margin: 0;
+        font-size: inherit;
+    }
+
+    > div {
+        position: absolute;
+        top: 100%;
+        width: 80%;
+        margin: 0;
+        padding: 0;
+
+        &.depth-0 {
+            animation-name: text-feed-translate-1, text-feed-fade-1;
+            animation-duration: 10s;
+            z-index: 10;
+        }
+
+        &.depth-1 {
+            animation-name: text-feed-translate-2, text-feed-fade-2;
+            animation-duration: 13s;
+            z-index: 9;
+        }
+
+        &.depth-2 {
+            animation-name: text-feed-translate-3, text-feed-fade-3;
+            animation-duration: 17s;
+            z-index: 8;
+        }
+    }
 }
 
-#offtherails > p {
-    position: absolute;
-    top: 100%;
-    width: 80%;
-    margin: 0;
-    padding: 0;
-}
-
-#offtherails > p.depth-0 {
-    font-size: 80px;
-    animation-name: text-feed-translate, text-feed-fade-1;
-    animation-duration: 6s;
-    z-index: 10;
-}
-
-#offtherails > p.depth-1 {
-    font-size: 60px;
-    animation-name: text-feed-translate, text-feed-fade-2;
-    animation-duration: 8s;
-    z-index: 9;
-}
-
-#offtherails > p.depth-2 {
-    font-size: 40px;
-    animation-name: text-feed-translate, text-feed-fade-3;
-    animation-duration: 10s;
-    z-index: 8;
-}
-
-@keyframes text-feed-translate {
+@keyframes text-feed-translate-1 {
     from {
         transform: translateY(0) scale(.75);
         animation-timing-function: linear;
     }
     to {
-        transform: translateY(-700px) scale(1);
+        transform: translateY(-1600px) scale(1);
+    }
+}
+
+@keyframes text-feed-translate-2 {
+    from {
+        transform: translateY(0) scale(.50);
+        animation-timing-function: linear;
+    }
+    to {
+        transform: translateY(-1600px) scale(.75);
+    }
+}
+
+@keyframes text-feed-translate-3 {
+    from {
+        transform: translateY(0) scale(.25);
+        animation-timing-function: linear;
+    }
+    to {
+        transform: translateY(-1600px) scale(.5);
     }
 }
 
@@ -233,7 +269,7 @@ a {
     10% {
         opacity: 1;
     }
-    50% {
+    70% {
         opacity: 1;
         animation-timing-function: ease-out;
     }
@@ -250,7 +286,7 @@ a {
     10% {
         opacity: 0.75;
     }
-    50% {
+    70% {
         opacity: 0.75;
         animation-timing-function: ease-out;
     }
@@ -267,7 +303,7 @@ a {
     10% {
         opacity: 0.5;
     }
-    50% {
+    70% {
         opacity: 0.5;
         animation-timing-function: ease-out;
     }
