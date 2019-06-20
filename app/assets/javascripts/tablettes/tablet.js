@@ -444,7 +444,7 @@ function OffTheRails(items) {
         });
     }
 
-    this.stopTimeout = setTimeout(() => this.stop, 200000); // 3m20s
+    this.stopTimeout = setTimeout(() => this.stop(), 200000); // 3m20s
 
     this.stop = function () {
         if (div.parentNode === document.body) {
