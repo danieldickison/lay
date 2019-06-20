@@ -29,6 +29,7 @@ movies
 =end
 
 require('Isadora')
+require('Media')
 
 class SeqOffTheRails
     def self.import
@@ -65,13 +66,18 @@ class SeqOffTheRails
     FIRST_RAILS_CHANNEL = 2
     FIRST_RAILS_DURATION = 8
 
+
     # TODO: get these from the db
+    PROFILE_PICS = %w[505-005-R01-profile_ghosting.jpg  505-010-R01-profile_ghosting.jpg  505-015-R01-profile_ghosting.jpg  505-001-R01-profile_ghosting.jpg  505-006-R01-profile_ghosting.jpg  505-011-R01-profile_ghosting.jpg  505-016-R01-profile_ghosting.jpg  505-002-R01-profile_ghosting.jpg  505-007-R01-profile_ghosting.jpg  505-012-R01-profile_ghosting.jpg  505-003-R01-profile_ghosting.jpg  505-008-R01-profile_ghosting.jpg  505-013-R01-profile_ghosting.jpg  505-004-R01-profile_ghosting.jpg  505-009-R01-profile_ghosting.jpg  505-014-R01-profile_ghosting.jpg
+    ].collect {|n| "/playback/media_dynamic/505-profile_ghosting/#{n}"}.freeze
+
     TEST_ITEMS = [
-        {:tweet => 'hi i ate a sandwich adn it was good', :profile_img => SeqGhosting::PROFILE_PICS.sample(1)},
-        {:tweet => 'look at me im on social media', :profile_img => SeqGhosting::PROFILE_PICS.sample(1)},
-        {:tweet => 'covfefe', :profile_img => SeqGhosting::PROFILE_PICS.sample(1)},
-        {:tweet => 'oneuoloenthlonglonglongtextstringwhathappens', :profile_img => SeqGhosting::PROFILE_PICS.sample(1)},
-        {:tweet => 'ユニコード', :profile_img => SeqGhosting::PROFILE_PICS.sample(1)},
+        {:tweet => 'hi i ate a sandwich adn it was good', :profile_img => PROFILE_PICS.sample(1)},
+        {:tweet => 'look at me im on social media', :profile_img => PROFILE_PICS.sample(1)},
+        {:tweet => 'covfefe', :profile_img => PROFILE_PICS.sample(1)},
+        {:tweet => 'oneuoloenthlonglonglongtextstringwhathappens', :profile_img => PROFILE_PICS.sample(1)},
+        {:tweet => 'ユニコード', :profile_img => PROFILE_PICS.sample(1)},
+        {:photo => PROFILE_PICS.sample(1), :caption => 'this is a caption'},
     ]
 
     @run = false

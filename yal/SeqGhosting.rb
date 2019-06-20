@@ -11,6 +11,7 @@ table # = tablet #
 =end
 
 require('Isadora')
+require('Media')
 
 class SeqGhosting
     def self.import
@@ -68,12 +69,11 @@ class SeqGhosting
         @tablet_profile_images = {}
         # 1 => [img_base + profile_image_name, img_base + profile_image_name, img_base + profile_image_name]
         if defined?(TablettesController)
-            num = TablettesController.tablet_enum(nil).length
+            enum = TablettesController.tablet_enum(nil)
         else
-            num = 25
+            enum = 1..25
         end
-        num.times do |t|
-            t = t + 1
+        enum.each do |t|
             people = pbdata['people_at_tables'][t.to_s] || [1, 2, 3]  # default to first 3 people
             images = people.collect {|p| img_base + pbdata['profile_image_names'][p.to_s]}
             @tablet_profile_images[t] = images
@@ -90,8 +90,8 @@ class SeqGhosting
 
             puts "triggering ghosting profiles in #{@profile_delay}ms"
             time = (Time.now.to_f * 1000).round + @profile_delay
-            tablet_profile_images.each do |t, images|
-                TablettesController.queue_command(t, 'ghosting', time, @profile_duration, *images)
+            @tablet_profile_images.each do |t, images|
+                TablettesController.queue_command(t, 'ghosting', time, @profile_duration, images)
             end
 
             while @run
