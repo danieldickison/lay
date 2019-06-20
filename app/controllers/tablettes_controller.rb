@@ -78,6 +78,7 @@ class TablettesController < ApplicationController
                             start:  cs[1]&.to_i,
                             end:    cs[2]&.to_i,
                             error:  cs[3],
+                            size:   cs[4].to_i,
                         }
                     end,
                     battery:    t[:battery]&.to_i,
