@@ -67,7 +67,8 @@ function fetchStats() {
             tr.appendChild(td(tablet.clock && tablet.clock.latest + 'ms'));
             tr.appendChild(td(tablet.clock && tablet.clock.timeSince + 'ms'));
 
-            let cacheTD = td(tablet.cache && tablet.cache.length);
+            let cacheIncomplete = tablet.cache && tablet.cache.some(f => !f.end);
+            let cacheTD = td(tablet.cache && tablet.cache.length, cacheIncomplete ? 'orange' : null);
             cacheTD.classList.add('cache');
             tr.appendChild(cacheTD);
             buildCacheHover(cacheTD, tablet.cache)
@@ -98,12 +99,21 @@ function fetchStats() {
             ];
         }
 
+        cache.sort((a, b) => a.path.localeCompare(b.path));
+
         let ul = document.createElement('ul');
         ul.classList.add('cache-info');
         cache.forEach(function (c) {
             let li = document.createElement('li');
-            li.innerText = c.path +
-                (c.error ? " failed: " + c.error : c.end ? " (" + Math.round(0.001*(c.end - c.start)) + "s)" : " (…)");
+            var str = c.path + " " + Math.round(0.000001 * (c.size || 0)) + "MB";
+            if (c.error) {
+                str += " failed: " + c.error;
+            } else if (c.end && c.end !== c.start) {
+                str += " (" + Math.round(0.001*(c.end - c.start)) + "s)";
+            } else if (!c.end) {
+                str += " (…)";
+            }
+            li.innerText = str;
             ul.appendChild(li);
         });
         td.appendChild(ul);

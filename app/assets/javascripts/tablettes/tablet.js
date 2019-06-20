@@ -13,7 +13,6 @@ if (!window.layNativeInterface) {
         getBatteryPercent: function () { return -1; },
         setVideoCue: function () {},
         setVolume: function () {},
-        downloadFile: function () {},
         setAssets: function () {},
         hideChrome: function () {},
     };
@@ -393,24 +392,64 @@ function OffTheRails(items) {
 
     let div = document.createElement('div');
     div.setAttribute('id', 'offtherails');
-    div.innerHTML = '';
-    items.forEach((item, i) => {
-        let p = document.createElement('p');
-        p.innerText = item.tweet;
-        p.classList.add('depth-' + (i % 3));
-        p.style.animationDelay = (7 * Math.floor(i / 3) + 3 * Math.random()) + 's';
-        p.style.left = Math.round(300 * Math.random()) + 'px';
-        div.appendChild(p);
-        p.addEventListener('animationend', () => {
-            if (p.parentNode === div) div.removeChild(p);
-        });
-    });
     document.body.appendChild(div);
+
+    let count = 10; // on screen at a time
+    var i = 0;
+    for (var j = 0; j < count; j++) {
+        triggerOneItem(j * 3);
+    }
+
+    function triggerOneItem(delay) {
+        if (div.parentNode !== document.body) {
+            log("offtherails not in dom; skipping item");
+            return;
+        }
+
+        if (i >= items.length) i = 0;
+        let item = items[i++];
+
+        let container = document.createElement('div');
+        if (item.tweet) {
+            container.classList.add('tweet');
+
+            let img = document.createElement('img');
+            img.src = item.profile_img;
+            container.appendChild(img);
+
+            let p = document.createElement('p');
+            p.innerText = item.tweet;
+            container.appendChild(p);
+        } else if (item.photo) {
+            container.classList.add('photo');
+
+            let img = document.createElement('img');
+            img.src = item.photo;
+            container.appendChild(img);
+        } else {
+            log("unknown OTR item format");
+        }
+        let depth = Math.floor(3 * Math.random());
+        container.classList.add('depth-' + depth);
+        delay = delay || 0;
+        container.style.animationDelay = delay * 1000 + Math.floor(3000 * Math.random()) + 'ms';
+        container.style.left = Math.round(300 * Math.random() - 50) + 'px';
+        div.appendChild(container);
+        container.addEventListener('animationend', () => {
+            if (container.parentNode === div) {
+                div.removeChild(container);
+                triggerOneItem();
+            }
+        });
+    }
+
+    this.stopTimeout = setTimeout(() => this.stop(), 200000); // 3m20s
 
     this.stop = function () {
         if (div.parentNode === document.body) {
             document.body.removeChild(div);
         }
+        clearTimeout(this.stopTimeout);
     };
 }
 
@@ -422,8 +461,8 @@ function updateBatteryStatus() {
 function handleCommand(cmd, args) {
     log('Last command: ' + cmd + ' - ' + args.join(', '));
     switch (cmd) {
-        case 'load':
-            layNativeInterface.downloadFile(uriEscapePath(args[0]));
+        case 'clear_cache':
+            layNativeInterface.setAssets(null);
             break;
         case 'reload':
             location.reload();

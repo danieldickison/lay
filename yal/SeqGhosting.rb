@@ -53,7 +53,7 @@ class SeqGhosting
         PlaybackData.write(DATA_DYNAMIC, pbdata)
     end
 
-    attr_accessor(:state)
+    attr_accessor(:state, :start_time)
 
     def initialize
         @is = Isadora.new
@@ -62,8 +62,9 @@ class SeqGhosting
 
         @profile_delay = 67_400 # ms
         @profile_duration = 18_300 # ms
-        @video = '/playback/105-Ghosting/105-011-C6?-Ghosting_all.mp4' # '?' replaced by tablet group
+        @video = '/playback/media_tablets/105-Ghosting/105-011-C6?-Ghosting_all.mp4' # '?' replaced by tablet group
         @prepare_sleep = 1 # second
+        @isadora_delay = 2 # seconds
 
         pbdata = PlaybackData.read(DATA_DYNAMIC)
 
@@ -86,8 +87,10 @@ class SeqGhosting
         @run = true
         Thread.new do
             TablettesController.send_osc_prepare(@video)
-            sleep(@prepare_sleep)
+            sleep(@start_time + @prepare_sleep - Time.now)
             TablettesController.send_osc('/tablet/play')
+            sleep(@start_time + @prepare_sleep + @isadora_delay - Time.now)
+            @is.send('/isadora/1', '500')
 
             puts "triggering ghosting profiles in #{@profile_delay}ms"
             time = (Time.now.to_f * 1000).round + @profile_delay

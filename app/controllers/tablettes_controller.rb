@@ -22,6 +22,7 @@ class TablettesController < ApplicationController
     DEFAULT_PRESHOW_BG = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 0
 
     PUBLIC_DIR = File.expand_path('../../public', __dir__)
+    ASSETS_FILE = File.expand_path('../../tablet-assets.txt', __dir__)
 
     @@last_ping_stats = Time.now
     @tablets = {}
@@ -37,7 +38,7 @@ class TablettesController < ApplicationController
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
     @commands = {} # {int => [[cmd1, arg1-1, arg1-2], [cmd2, arg2-1, ...], ...]}
 
-    @assets = []
+    @assets = nil
 
     def install
     end
@@ -77,6 +78,7 @@ class TablettesController < ApplicationController
                             start:  cs[1]&.to_i,
                             end:    cs[2]&.to_i,
                             error:  cs[3],
+                            size:   cs[4].to_i,
                         }
                     end,
                     battery:    t[:battery]&.to_i,
@@ -221,11 +223,8 @@ class TablettesController < ApplicationController
         end
     end
 
-    def self.load_cue(tablet, file)
-        tablet_enum(tablet).each do |t|
-            queue_command(t, 'load', file)
-            puts "load[#{t}] - #{file}"
-        end
+    def self.clear_cache(tablet)
+        queue_command(tablet, 'load', file)
     end
 
     def self.start_cue(tablet, file, time, seek: 0)
@@ -240,13 +239,6 @@ class TablettesController < ApplicationController
             puts "stop[#{t}]"
             queue_command(t, 'stop')
             @cues[t] = nil
-        end
-    end
-
-    def self.reload_js
-        puts "reload_js"
-        tablet_enum(nil).each do |t|
-            queue_command(t, 'reload')
         end
     end
 
@@ -289,6 +281,11 @@ class TablettesController < ApplicationController
     end
 
     def self.assets
+        if !@assets
+            initial_paths = File.open(ASSETS_FILE) {|f| f.readlines}.collect(&:strip)
+            puts "initializing asset paths to:\n#{initial_paths.join("\n")}"
+            set_asset_paths(initial_paths)
+        end
         return @assets
     end
 
@@ -315,7 +312,7 @@ class TablettesController < ApplicationController
 
     # Returns an array of {:path => <str>, :mod_date => <timestamp int>}
     def self.assets_for_group(group)
-        return @assets.find_all do |a|
+        return assets.find_all do |a|
             g = asset_group(a[:path])
             g == 0 || g == group
         end

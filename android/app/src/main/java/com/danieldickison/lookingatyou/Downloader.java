@@ -11,7 +11,6 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,6 +43,7 @@ public class Downloader {
         private final Date modDate;
         private Date startTime;
         private Date endTime;
+        private long size;
         private Throwable error;
 
         private CacheInfo(String path) throws BathPathException {
@@ -59,7 +59,7 @@ public class Downloader {
         @Override
         public String toString() {
             // path;startTime;endTime;error
-            return serverPath + ";" + (startTime != null ? startTime.getTime() : "") + ";" + (endTime != null ? endTime.getTime() : "") + ";" + (error != null ? error.toString() : "");
+            return serverPath + ";" + (startTime != null ? startTime.getTime() : "") + ";" + (endTime != null ? endTime.getTime() : "") + ";" + (error != null ? error.toString() : "") + ";" + size;
         }
 
         @Override
@@ -138,6 +138,8 @@ public class Downloader {
                 synchronized (mCacheLock) {
                     info.startTime = new Date();
                 }
+                long size = 0;
+                Date lastProgressDate = new Date();
                 File temp = File.createTempFile("download", null, mDownloadDirectory);
                 URLConnection conn = url.openConnection();
                 InputStream stream = conn.getInputStream();
@@ -146,6 +148,12 @@ public class Downloader {
                     int len;
                     while ((len = stream.read(buffer)) > 0) {
                         out.write(buffer, 0, len);
+                        size += len;
+                        if (new Date().getTime() - lastProgressDate.getTime() > 1000) {
+                            synchronized (mCacheLock) {
+                                info.size = size;
+                            }
+                        }
                     }
                 }
                 Log.d(TAG, "downloader: rename " + temp + " to " + file);
@@ -156,6 +164,7 @@ public class Downloader {
                 }
                 synchronized (mCacheLock) {
                     info.endTime = new Date();
+                    info.size = size;
                 }
                 Log.d(TAG, "downloader: finished download to " + file);
             } catch (IOException e) {
@@ -225,23 +234,6 @@ public class Downloader {
         return new URL("http://" + mHost + ":" + mPort + info.serverPath);
     }
 
-    private void rmDir(File dir) {
-        if (!dir.exists()) return;
-        for (File f : dir.listFiles()) {
-            if (f.isDirectory()) {
-                rmDir(f);
-            } else {
-                Log.d(TAG, "rmDir: deleting file " + f);
-                File to = new File(f.getAbsolutePath() + System.currentTimeMillis());
-                if (!f.renameTo(to)) {
-                    Log.w(TAG, "rmDir: failed to rename " + f + " to " + to);
-                } else if (!to.delete()) {
-                    Log.w(TAG, "rmDir: failed to delete " + f);
-                }
-            }
-        }
-    }
-
     private void initStateFromDirectory(File dir) {
         if (!dir.exists()) return;
         for (File f : dir.listFiles()) {
@@ -256,6 +248,7 @@ public class Downloader {
                     CacheInfo info = new CacheInfo(path);
                     info.startTime = new Date();
                     info.endTime = new Date();
+                    info.size = f.length();
                     serverPathToCacheInfo.put(info.serverPath, info);
                 } catch (BathPathException e) {
                     Log.w(TAG, "deleting cached file without embedded mod date");

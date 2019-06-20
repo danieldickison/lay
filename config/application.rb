@@ -90,11 +90,12 @@ module Lay
 
       # These are cues from QLab to fire off various scenes
       @server.add_method('/cue') do |message|
+        start_time = Time.now
+
         @current_seq.stop if @current_seq
 
         cue = message.to_a[0].to_i
-        puts "received cue #{cue}; forwarding to isadora"
-        @isadora.send('/isadora/1', cue.to_s)
+        puts "received cue #{cue}"
         case cue
         when 500
             @current_seq = SeqGhosting.new
@@ -105,7 +106,15 @@ module Lay
             # ProductLaunch.start
         end
 
+        @current_seq.start_time = start_time
+
         @current_seq.start
+      end
+
+      @server.add_method('/isadora') do |message|
+        enable = message.to_a[0] == 'on'
+        Config["isadora_enabled"] = enable
+        puts "isadora " + (enable ? 'enabled' : 'disabled')
       end
 
       @server.add_method('/show_time') do |message|
@@ -145,24 +154,16 @@ module Lay
         #TablettesController.stop_cue(tablets)
       end
 
-      # /load <media> [<tablet#> ...]
-      @server.add_method('/load') do |message|
-        puts "#{message.inspect}"
-        args = message.to_a
-        file = args[0]
-        tablets = args[1 .. -1].collect {|t| t.to_i}
-        TablettesController.load_cue(tablets, file)
-      end
-
       @server.add_method('/reloadjs') do |message|
-        TablettesController.reload_js
+        tablets = message.to_a.collect {|t| t.to_i}
+        TablettesController.queue_command(tablets, 'reload')
       end
 
       # /clear [<tablet#> ...]
-      @server.add_method('/reset') do |message|
+      @server.add_method('/clear_cache') do |message|
         puts "#{message.inspect}"
         tablets = message.to_a.collect {|t| t.to_i}
-        TablettesController.reset_cue(tablets)
+        TablettesController.queue_command(tablets, 'clear_cache')
       end
 
       @server.add_method('/volume') do |message|

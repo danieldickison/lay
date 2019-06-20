@@ -129,13 +129,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         @JavascriptInterface
-        public void downloadFile(String path) {
-            mDownloader.downloadFile(path);
-        }
-
-        @JavascriptInterface
         public void setAssets(String assetsStr) {
-            mDownloader.setAssets(assetsStr.split("\n"));
+            if (assetsStr == null) {
+                mDownloader.setAssets(new String[0]);
+            } else {
+                mDownloader.setAssets(assetsStr.split("\n"));
+            }
         }
 
         @JavascriptInterface
@@ -237,7 +236,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
             @Override
             public void stopVideo() {
-                prepareNextVideoCue(null, 0, 0, 0, 0);
+                mContentView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        prepareNextVideoCue(null, 0, 0, 0, 0);
+                    }
+                });
             }
         });
 

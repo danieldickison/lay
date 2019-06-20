@@ -96,7 +96,7 @@ class SeqOffTheRails
     @queue = []
     @mutex = Mutex.new
 
-    attr_accessor(:state)
+    attr_accessor(:state, :start_time)
 
     def initialize(channel = 10) # channel??
         @channel_base = channel - FIRST_RAILS_CHANNEL
@@ -118,6 +118,11 @@ class SeqOffTheRails
         @queue = []
         @run = true
         Thread.new do
+
+            TablettesController.send_osc_prepare('/playback/media_tablets/112-OTR/112-201-C60-OTR_All.mp4')
+            sleep(@start_time + 1 - Time.now)
+            TablettesController.send_osc('/tablet/play')
+            
             @tablet_items.each do |t, items|
                 TablettesController.queue_command(t, 'offtherails', items)
             end
