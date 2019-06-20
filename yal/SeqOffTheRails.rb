@@ -78,7 +78,7 @@ class SeqOffTheRails
         {:tweet => 'oneuoloenthlonglonglongtextstringwhathappens', :profile_img => PROFILE_PICS.sample(1)},
         {:tweet => 'ユニコード', :profile_img => PROFILE_PICS.sample(1)},
         {:photo => PROFILE_PICS.sample(1), :caption => 'this is a caption'},
-    ] * 10
+    ]
 
     @run = false
     @tweets = []

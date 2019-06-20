@@ -393,12 +393,27 @@ function OffTheRails(items) {
 
     let div = document.createElement('div');
     div.setAttribute('id', 'offtherails');
-    div.innerHTML = '';
-    items.forEach((item, i) => {
+    document.body.appendChild(div);
+
+    let count = 10; // on screen at a time
+    var i = 0;
+    for (var j = 0; j < count; j++) {
+        triggerOneItem(j * 3);
+    }
+
+    function triggerOneItem(delay) {
+        if (div.parentNode !== document.body) {
+            log("offtherails not in dom; skipping item");
+            return;
+        }
+
+        if (i >= items.length) i = 0;
+        let item = items[i++];
+
         let container = document.createElement('div');
         if (item.tweet) {
             container.classList.add('tweet');
-            
+
             let img = document.createElement('img');
             img.src = item.profile_img;
             container.appendChild(img);
@@ -406,23 +421,36 @@ function OffTheRails(items) {
             let p = document.createElement('p');
             p.innerText = item.tweet;
             container.appendChild(p);
+        } else if (item.photo) {
+            container.classList.add('photo');
+
+            let img = document.createElement('img');
+            img.src = item.photo;
+            container.appendChild(img);
         } else {
-            container.innerText = 'TODO: facebook/instagram photo posts go here'
+            log("unknown OTR item format");
         }
-        container.classList.add('depth-' + (i % 3));
-        container.style.animationDelay = (7 * Math.floor(i / 3) + 3 * Math.random()) + 's';
-        container.style.left = Math.round(300 * Math.random()) + 'px';
+        let depth = Math.floor(3 * Math.random());
+        container.classList.add('depth-' + depth);
+        delay = delay || 0;
+        container.style.animationDelay = delay * 1000 + Math.floor(3000 * Math.random()) + 'ms';
+        container.style.left = Math.round(300 * Math.random() - 50) + 'px';
         div.appendChild(container);
         container.addEventListener('animationend', () => {
-            if (container.parentNode === div) div.removeChild(container);
+            if (container.parentNode === div) {
+                div.removeChild(container);
+                triggerOneItem();
+            }
         });
-    });
-    document.body.appendChild(div);
+    }
+
+    this.stopTimeout = setTimeout(() => this.stop, 200000); // 3m20s
 
     this.stop = function () {
         if (div.parentNode === document.body) {
             document.body.removeChild(div);
         }
+        clearTimeout(this.stopTimeout);
     };
 }
 
