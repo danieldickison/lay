@@ -1,1 +1,4 @@
-{"isadora_ip":"172.16.1.200","isadora_port":1234}
+{
+    "isadora_ip": "172.16.1.200",
+    "isadora_port": 1234
+}

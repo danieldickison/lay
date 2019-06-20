@@ -7,10 +7,9 @@ require 'google_drive'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-require_relative '../app/isadora'
-require_relative '../app/spectators_db'
-require_relative '../app/scenes/ghosting'
-require_relative '../app/scenes/off_the_rails'
+MAIN_DIR = File.expand_path('../yal', __dir__)
+$:.unshift(MAIN_DIR)
+require('SeqGhosting')
 
 module Lay
   class Application < Rails::Application
@@ -238,7 +237,10 @@ module Lay
       super
       require 'osc-ruby'
       puts "OSCApplication"
+      @isadora = Isadora.new
       @server = OSC::Server.new(53000)
+
+      @current_seq = nil
 
       # I think there's a bug in osc-ruby's parsing of * in OSC addresses in address_pattern.rb:
       # https://github.com/aberant/osc-ruby/blob/master/lib/osc-ruby/address_pattern.rb#L31
@@ -251,13 +253,14 @@ module Lay
 
       # These are cues from QLab to fire off various scenes
       @server.add_method('/cue') do |message|
+        @current_seq.stop if @current_seq
+
         cue = message.to_a[0].to_i
         puts "received cue #{cue}; forwarding to isadora"
-        Isadora.send('/isadora/1', cue.to_s)
+        @isadora.send('/isadora/1', cue.to_s)
         case cue
         when 500
-            g = Ghosting.new
-            g.go
+            @current_seq = SeqGhosting.new
         when 1200
             # OffTheRails.load
             # OffTheRails.start
@@ -265,6 +268,8 @@ module Lay
             # ProductLaunch.load
             # ProductLaunch.start
         end
+
+        @current_seq.start
       end
 
       @server.add_method('/show_time') do |message|
@@ -298,8 +303,10 @@ module Lay
       # /stop [<tablet#> ...]
       @server.add_method('/stop') do |message|
         puts "#{message.inspect}"
-        tablets = message.to_a.collect {|t| t.to_i}
-        TablettesController.stop_cue(tablets)
+        @current_seq.stop if @current_seq
+        TablettesController.send_osc('/tablet/stop')
+        #tablets = message.to_a.collect {|t| t.to_i}
+        #TablettesController.stop_cue(tablets)
       end
 
       # /load <media> [<tablet#> ...]
@@ -372,8 +379,8 @@ module Lay
         if args[0] && !args[0].empty?
             tablet = args[0].to_i
         end
-        g = Lay::Ghosting.new
-        g.go
+        g = SeqGhosting.new
+        g.start
       end
 
       # /testem
