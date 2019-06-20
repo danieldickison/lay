@@ -185,20 +185,6 @@ a {
     height: 100%;
     padding: 0;
 
-    > .tweet {
-        font-size: 60px;
-        display: flex;
-        color: #6699ff;
-
-        > img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50px;
-            margin-right: 20px;
-            flex-shrink: 0;
-        }
-    }
-
     p {
         margin: 0;
         font-size: inherit;
@@ -210,22 +196,41 @@ a {
         width: 80%;
         margin: 0;
         padding: 0;
+        
+        &.tweet {
+            font-size: 60px;
+            font-family: Roboto, sans-serif;
+            display: flex;
+            color: #6699ff;
+
+            > img {
+                width: 100px;
+                height: 100px;
+                border-radius: 50px;
+                margin-right: 20px;
+                flex-shrink: 0;
+            }
+        }
+        &.photo > img {
+            max-width: 400px;
+            height: auto;
+        }
 
         &.depth-0 {
             animation-name: text-feed-translate-1, text-feed-fade-1;
-            animation-duration: 10s;
+            animation-duration: 30s;
             z-index: 10;
         }
 
         &.depth-1 {
             animation-name: text-feed-translate-2, text-feed-fade-2;
-            animation-duration: 13s;
+            animation-duration: 40s;
             z-index: 9;
         }
 
         &.depth-2 {
             animation-name: text-feed-translate-3, text-feed-fade-3;
-            animation-duration: 17s;
+            animation-duration: 50s;
             z-index: 8;
         }
     }
