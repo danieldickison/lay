@@ -12,7 +12,7 @@
 
 ActiveRecord::Schema.define(version: 20171231152500) do
 
-  create_table "spectators", force: :cascade, options: "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci" do |t|
+  create_table "spectators", force: :cascade do |t|
     t.string "name"
     t.text "blah"
     t.datetime "created_at", null: false
