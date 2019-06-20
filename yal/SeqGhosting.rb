@@ -6,6 +6,8 @@ slot numbers for screens 1-6
 tablets - per table, 3 in tablet anim
 table info
 
+table # = tablet #
+"table_locations" => {1 => "left", 2 => "middle", 3 => "right", 4 => "left", 5 => "right"}
 =end
 
 require('Isadora')
