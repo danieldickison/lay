@@ -57,7 +57,7 @@ class SeqGhosting
 
         @profile_delay = 67_400 # ms
         @profile_duration = 18_300 # ms
-        @video = '/playback/105-Ghosting/105-011-C6?-Ghosting_all.mp4' # '?' replaced by tablet group
+        @video = '/playback/media_tablets/105-Ghosting/105-011-C6?-Ghosting_all.mp4' # '?' replaced by tablet group
         @prepare_sleep = 1 # second
         @isadora_delay = 2 # seconds
 
