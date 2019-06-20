@@ -104,6 +104,8 @@ class SeqGhosting
 
     def stop
         @run = false
+        TablettesController.queue_command(nil, 'stop')
+        TablettesController.send_osc('/tablet/stop')
     end
 
     def pause

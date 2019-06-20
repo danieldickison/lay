@@ -27,7 +27,7 @@ class TablettesController < ApplicationController
     @tablets = {}
     @tablets_mutex = Mutex.new
     @@dumping_stats = false
-    @volume = 50 # percent
+    @volume = 20 # percent
 
     @@show_time = true
 
@@ -256,8 +256,10 @@ class TablettesController < ApplicationController
 
     def self.queue_command(tablet, *cmd)
         puts "queue_command #{tablet} #{cmd.inspect}"
-        cmds = @commands[tablet] ||= []
-        cmds << cmd
+        tablet_enum(tablet).each do |t|
+            cmds = @commands[t] ||= []
+            cmds << cmd
+        end
     end
 
     def self.debug
