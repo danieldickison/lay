@@ -80,8 +80,8 @@ class Yal
 
     def run_cli
         Thread.new do
-            while line = Readline.readline('> ', true)
-                line = line.split(" ")
+            while @line = Readline.readline('> ', true)
+                line = @line.split(" ")
                 cmd = "cli_#{line[0].downcase}".to_sym
                 __send__(cmd, *line[1..-1])
             end
@@ -107,11 +107,11 @@ class Yal
                     puts Config[key].inspect
                 end
             else
-                a = args.join(" ")
+                args = @line.split(" ", 3)[-1]  # everything after "config <key> "
                 v = begin
-                    eval(a)
+                    eval(args)
                 rescue ScriptError, StandardError
-                    a
+                    args
                 end
                 Config[key] = v
                 Config.save

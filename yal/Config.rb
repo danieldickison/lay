@@ -1,3 +1,4 @@
+require('fileutils')
 
 class ConfigClass < Hash
     def initialize
@@ -5,7 +6,9 @@ class ConfigClass < Hash
     end
 
     def save
-        File.open(@file, "w") {|f| f.write(JSON.dump(self))}
+        contents = JSON.pretty_generate(self)
+        FileUtils.cp(@file, @file + ".bak")
+        File.open(@file, "w") {|f| f.write(contents)}
     end
 
     def load
