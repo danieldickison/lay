@@ -48,10 +48,9 @@ class SeqGhosting
         File.open(data_dynamic + "pbdata.json", "w") {|f| f.write(JSON.pretty_generate(pbdata))}
     end
 
-    attr_accessor(:state)
+    attr_accessor(:state, :start_time)
 
-    def initialize(start_time)
-        @start_time = start_time
+    def initialize
         @is = Isadora.new
         @state = :idle
         @time = nil

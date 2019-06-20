@@ -259,19 +259,26 @@ module Lay
         @current_seq.stop if @current_seq
 
         cue = message.to_a[0].to_i
-        puts "received cue #{cue}; forwarding to isadora"
-        #@isadora.send('/isadora/1', cue.to_s)
+        puts "received cue #{cue}"
         case cue
         when 500
-            @current_seq = SeqGhosting.new(start_time)
+            @current_seq = SeqGhosting.new
         when 1200
-            @current_seq = SeqOffTheRails.new(start_time)
+            @current_seq = SeqOffTheRails.new
         when 1300
             # ProductLaunch.load
             # ProductLaunch.start
         end
 
+        @current_seq.start_time = start_time
+
         @current_seq.start
+      end
+
+      @server.add_method('/isadora') do |message|
+        enable = message.to_a[0] == 'on'
+        Config["isadora_enabled"] = enable
+        puts "isadora " + (enable ? 'enabled' : 'disabled')
       end
 
       @server.add_method('/show_time') do |message|

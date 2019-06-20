@@ -4,7 +4,7 @@ class Isadora
   # defaults
   Config["isadora_ip"] = '172.16.1.202'
   Config["isadora_port"] = 1234
-  Config["isadora_enabled"] = true
+  Config["isadora_enabled"] = false
 
   attr_accessor(:cl)
 
@@ -14,6 +14,6 @@ class Isadora
 
   def send(msg, *args)
     @cl.send(OSC::Message.new(msg, *args)) if Config["isadora_enabled"]
-    puts "IZ send #{msg} - #{args.inspect}"
+    puts "IZ #{Config["isadora_enabled"] ? 'send' : 'fake'} #{msg} - #{args.inspect}"
   end
 end

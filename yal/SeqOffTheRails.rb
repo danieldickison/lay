@@ -85,10 +85,9 @@ class SeqOffTheRails
     @queue = []
     @mutex = Mutex.new
 
-    attr_accessor(:state)
+    attr_accessor(:state, :start_time)
 
-    def initialize(start_time, channel = 10) # channel??
-        @start_time = start_time
+    def initialize(channel = 10) # channel??
         @channel_base = channel - FIRST_RAILS_CHANNEL
         @channel = "/channel/#{channel}"
         @is = Isadora.new
