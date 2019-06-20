@@ -105,6 +105,11 @@ class SeqOffTheRails
         @queue = []
         @run = true
         Thread.new do
+
+            TablettesController.send_osc_prepare('/playback/media_tablets/112-OTR/112-201-C60-OTR_All.mp4')
+            sleep(1)
+            TablettesController.send_osc('/tablet/play')
+            
             @tablet_items.each do |t, items|
                 TablettesController.queue_command(t, 'offtherails', items)
             end
