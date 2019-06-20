@@ -1,3 +1,10 @@
+GIT
+  remote: https://github.com/danieldickison/osc-ruby.git
+  revision: 89f4c6f8e55c41751f2ac6d8ee60953cfd2a1127
+  branch: multicast-if
+  specs:
+    osc-ruby (1.1.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -120,7 +127,6 @@ GEM
     nokogiri (1.10.3)
       mini_portile2 (~> 2.4.0)
     os (1.0.1)
-    osc-ruby (1.1.2)
     public_suffix (3.1.0)
     puma (3.12.1)
     rack (2.0.7)
@@ -224,7 +230,7 @@ DEPENDENCIES
   jbuilder (~> 2.5)
   listen (>= 3.0.5, < 3.2)
   mysql2 (>= 0.3.18)
-  osc-ruby
+  osc-ruby!
   puma (~> 3.7)
   rails (~> 5.1.4)
   sass-rails (~> 5.0)

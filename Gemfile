@@ -35,7 +35,7 @@ gem 'jbuilder', '~> 2.5'
 
 # stuff for LAY
 gem 'google_drive'
-gem 'osc-ruby'
+gem 'osc-ruby', :github => 'danieldickison/osc-ruby', :branch => 'multicast-if'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console

@@ -15,11 +15,13 @@
     </thead>
 </table>
 
-<form id="preload-form" class="director-form" action="/tablettes/preload" method="POST">
-    <label>Tablet: <input name="tablet" type="number" value="1"></label>
-    <label>Files (one per line):
-        <textarea name="files" type="text">/lay/Tablet/Test/timecode1.mp4
-/lay/Tablet/Tablettes/tablette cue 1 T1.mp4</textarea>
+<form id="assets-form" class="director-form">
+    <label>Assets (one per line):
+        <textarea name="assets" type="text">
+<% for @asset in @assets -%>
+<%= @asset %>
+<% end -%>
+</textarea>
     </label>
     <p><input type="submit"></p>
 </form>

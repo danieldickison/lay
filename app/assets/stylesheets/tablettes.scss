@@ -2,8 +2,13 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
+html {
+    margin: 0;
+}
+
 body.tablet {
     background: transparent;
+    margin: 0;
 }
 
 a {
@@ -124,7 +129,7 @@ a {
 
 .director-form {
     border: solid 1px green;
-    margin-bottom: 10px;
+    margin: 20px 0;
     padding: 10px;
 }
 
@@ -162,7 +167,7 @@ a {
     position: absolute;
     background: #333;
     border: solid 1px red;
-    margin: 0;
+    margin: 3px 0 0 0;
 }
 #tablet-stats td.cache:hover {
     background: #333;
@@ -267,6 +272,43 @@ a {
         animation-timing-function: ease-out;
     }
     to {
+        opacity: 0;
+    }
+}
+
+#ghosting {
+    position: absolute;
+    top: 50px;
+    left: 54px;
+    right: 54px;
+    height: 180px;
+
+    display: flex;
+    justify-content: space-between;
+    
+    > img {
+        border: none;
+        width: 180px;
+        height: 180px;
+        /*mix-blend-mode: lighten;*/
+
+        transition: opacity ease-out 100ms, transform cubic-bezier(.42,.3,.5,1.25) 670ms;
+        transform: none;
+    }
+    > img:nth-child(2) {
+        transition-delay: 230ms;
+    }
+    > img:nth-child(3) {
+        transition-delay: 460ms;
+    }
+
+    &.ghosting-preroll > img {
+        opacity: 0;
+        transform: scale(0.1)
+    }
+    
+    &.ghosting-fadeout > img {
+        transition: opacity ease-in 3s;
         opacity: 0;
     }
 }

@@ -93,6 +93,7 @@ public class Dispatcher {
 
     public void stopListening() {
         portIn.stopListening();
+        Log.d("lay-osc", "Stopped listening to OSC");
     }
 
     public int getTabletNumber() {

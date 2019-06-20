@@ -13,7 +13,7 @@ public class InitActivity extends Activity {
 
     private final static String HOST_KEY = "com.danieldickison.lay.host";
     private final static String TABLET_NUMBER_KEY = "com.danieldickison.lay.tablet_number";
-    private final static String DEFAULT_HOST = "10.1.1.200";
+    private final static String DEFAULT_HOST = "172.16.1.2";
 
     private EditText serverIP;
     private EditText tabletNumber;

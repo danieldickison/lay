@@ -5,8 +5,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Color;
 import android.graphics.SurfaceTexture;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
@@ -49,9 +51,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     public final static String HOST_EXTRA = "com.danieldicksion.lay.host";
     public final static String TABLET_NUMBER_EXTRA = "com.danieldickison.lay.tablet_number";
 
-    private final static int PORT = 3000;
+    private final static int PORT = 80;
     private final static String PAGE_PATH = "/tablettes/index";
     private final static String TAG = "lay";
+
+    private final static int VIDEO_DELAY = 60; // ms to try and get audio and video more in sync; by default audio takes a bit longer to start than video.
 
     private View mContentView;
     private WebView mWebView;
@@ -130,6 +134,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         @JavascriptInterface
+        public void setAssets(String assetsStr) {
+            mDownloader.setAssets(assetsStr.split("\n"));
+        }
+
+        @JavascriptInterface
         public int getTabletNumber() {
             return dispatcher.getTabletNumber();
         }
@@ -157,6 +166,15 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         public void hideChrome() {
             WebViewActivity.this.hideChrome();
         }
+
+        @JavascriptInterface
+        public void setVolume(int percent) {
+            AudioManager mgr = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+            assert mgr != null;
+            int volume = Math.round(0.01f * percent * mgr.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
+            Log.d(TAG, "setting volume to " + volume);
+            mgr.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_SHOW_UI | AudioManager.FLAG_PLAY_SOUND);
+        }
     };
 
     private NtpSync mNtpSync;
@@ -177,6 +195,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setLoadWithOverviewMode(true);
+        settings.setUseWideViewPort(true);
         mWebView.addJavascriptInterface(mJSInterface, "layNativeInterface");
 
         mWebView.setWebViewClient(mWebClient);
@@ -211,7 +231,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
             @Override
             public void playVideo() {
-                mVideoHolders[mVideoViewIndex].startCueNow();
+                mVideoHolders[mVideoViewIndex].startCueAt(getServerNow() + VIDEO_DELAY);
                 audioPlayer.startAudioNow();
             }
 
@@ -288,6 +308,14 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop destroying webview");
+        mWebView.destroy();
+        finish();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         if (mHost != null) {
@@ -304,6 +332,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mMulticastLock.acquire();
         mNtpSync.start();
         dispatcher.startListening();
+        audioPlayer.playSilence();
     }
 
     private void connectToHost(String host) {
@@ -560,9 +589,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
-            if (subsequentVideoHolder == null) {
-                fadeOut();
-            } else {
+            if (subsequentVideoHolder != null) {
                 textureView.setAlpha(0);
                 url = null;
                 subsequentVideoHolder.textureView.setAlpha(1);
@@ -597,6 +624,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     private class AudioPlayer implements MediaPlayer.OnPreparedListener, MediaPlayer.OnSeekCompleteListener, MediaPlayer.OnCompletionListener {
         private MediaPlayer mediaPlayer = new MediaPlayer();
         private String url;
+        private boolean playingSilence = false;
 
         AudioPlayer() {
             mediaPlayer.setOnPreparedListener(this);
@@ -606,7 +634,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         @Override
         public void onPrepared(MediaPlayer mediaPlayer) {
-            mediaPlayer.seekTo(0);
+            if (playingSilence) {
+                Log.d(TAG, "starting to play silence-loop.wav");
+                mediaPlayer.start();
+            } else {
+                mediaPlayer.seekTo(0);
+            }
         }
 
         @Override
@@ -617,12 +650,14 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
+            playSilence();
         }
 
         private void prepareAudio(String url, boolean loop) {
             this.url = url;
 
             mediaPlayer.reset();
+            playingSilence = false;
             try {
                 mediaPlayer.setDataSource(url);
                 mediaPlayer.setLooping(loop);
@@ -656,6 +691,27 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         private void stopAudio() {
             if (mediaPlayer.isPlaying()) {
                 mediaPlayer.stop();
+                playSilence();
+            }
+        }
+
+        // We play silence when nothing else is playing to keep the audio driver from going to sleep. Hopefully this will reduce latency when the next audio is cued.
+        private void playSilence() {
+            try {
+                AssetFileDescriptor fd = getAssets().openFd("silence-loop.wav");
+
+                mediaPlayer.reset();
+                playingSilence = true;
+                try {
+                    mediaPlayer.setDataSource(fd.getFileDescriptor(), fd.getStartOffset(), fd.getLength());
+                    fd.close();
+                    mediaPlayer.setLooping(true);
+                    mediaPlayer.prepareAsync();
+                } catch (IOException e) {
+                    Log.w(TAG, "Error preparing silence audio", e);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Error opening silence-loop.wav asset", e);
             }
         }
     }

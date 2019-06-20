@@ -8,11 +8,13 @@
 if (!window.layNativeInterface) {
     window.layNativeInterface = {
         getTabletNumber: function () { return 0; },
-        getBuildName: function () { return 'fake native interface'; },
+        getBuildName: function () { return 'fake'; },
         getCacheInfo: function () { return ''; },
         getBatteryPercent: function () { return -1; },
         setVideoCue: function () {},
+        setVolume: function () {},
         downloadFile: function () {},
+        setAssets: function () {},
         hideChrome: function () {},
     };
 }
@@ -61,6 +63,8 @@ var lastNtpSuccess = 0;
 var currentCueTime = null;
 var nextCueTimeout = null;
 var currentPreload = null;
+var currentVolume = -1;
+var currentAssetsStr = '';
 
 var nowPlaying = {};
 
@@ -92,6 +96,8 @@ document.addEventListener("DOMContentLoaded", event => {
     updateBatteryStatus();
 
     preShowInit();
+
+    //triggerGhosting(Date.now() + 10000, 3000000, ['/lay/ghosting/profile-1.jpg', '/lay/ghosting/profile-1.jpg', '/lay/ghosting/profile-1.jpg']);
 });
 
 function preShowInit() {
@@ -230,14 +236,29 @@ function sendPing() {
                 case 'reload':
                     location.reload();
                     break;
+                case 'ghosting':
+                    triggerGhosting(cmd[1], cmd[2], [cmd[3], cmd[4], cmd[5]]); // delay, duration, img srcs
+                    break;
             }
         });
+
+        if (currentVolume !== json.volume) {
+            currentVolume = json.volume;
+            layNativeInterface.setVolume(json.volume);
+        }
+
+        let newAssetsStr = json.assets.map(a => a.path + ';' + a.mod_date).join("\n");
+        if (newAssetsStr && currentAssetsStr !== newAssetsStr) {
+            console.log("assets changed:\n" + newAssetsStr);
+            currentAssetsStr = newAssetsStr;
+            layNativeInterface.setAssets(newAssetsStr);
+        }
 
         if (json.text_feed) {
             triggerTextFeed(json.text_feed);
         }
 
-        document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " — " + json.tablet_ip;
+        document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " Group #" + json.tablet_group + " — " + json.tablet_ip;
         document.getElementById('tablettes-debug').classList.toggle('visible', json.debug);
         
         let preShow = document.getElementById('tablettes-pre-show');
@@ -350,6 +371,38 @@ function triggerTextFeed(strings) {
     });
 }
 window.triggerTextFeed = triggerTextFeed; // for testing in console
+
+function triggerGhosting(time, duration, srcs) {
+    let delay = time - serverNow();
+    let div = document.createElement('div');
+    div.setAttribute('id', 'ghosting');
+    div.classList.add('ghosting-preroll');
+    srcs.forEach((src) => {
+        let i = new Image(180, 180);
+        i.src = src;
+        div.appendChild(i);
+    });
+    document.body.appendChild(div);
+    setTimeout(() => {
+            div.classList.remove('ghosting-preroll');
+            //let rect = div.getBoundingClientRect();
+            //log("ghosting rect " + rect.left + ", " + rect.top + ", " + rect.right + ", " + rect.bottom);
+            setTimeout(() => {
+                    div.classList.add('ghosting-fadeout');
+                    div.addEventListener('transitionend', removeDiv);
+                },
+                duration
+            );
+        },
+        delay
+    );
+
+    function removeDiv() {
+        document.body.removeChild(div);
+        div.removeEventListener('transitionend', removeDiv);
+    }
+}
+window.triggerGhosting = triggerGhosting;
 
 function updateBatteryStatus() {
     batteryPercent = layNativeInterface.getBatteryPercent();

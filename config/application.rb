@@ -7,6 +7,11 @@ require 'google_drive'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+require_relative '../app/isadora'
+require_relative '../app/spectators_db'
+require_relative '../app/scenes/ghosting'
+require_relative '../app/scenes/off_the_rails'
+
 module Lay
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
@@ -28,43 +33,8 @@ module Lay
 
   class OSCApplication < Rails::Application
 
-    class SpectatorsDB
-      SPECTACTORS_SPREADSHEET = '1HSgh8-6KQGOKPjB_XRUbLAskCWgM5CpFFiospjn5Iq4'
-      #SPECTACTORS_SPREADSHEET = '1ij3yi9tyUhFjgBbicODBe-kTNh43Z20ygPkS0XddwRY' # "Copy of Spectators" for testing
-
-      attr_accessor(:session, :ws, :col, :patrons)
-
-      def initialize
-        @session = GoogleDrive::Session.from_service_account_key("config/gdrive-api.json")
-        @ws = session.spreadsheet_by_key(SPECTACTORS_SPREADSHEET).worksheets[0]
-        @col = {}
-        @ws.num_cols.times do |c|
-          @col[ws[2, c+1]] = c+1  # column numbers by name
-        end
-        @patrons = []
-        (2 .. @ws.num_rows).collect do |row|
-          @patrons[@ws[row, 1].to_i] = row
-        end
-      end
-    end
-
-
-    class Isadora
-      ISADORA_IP = '10.1.1.100'
-      ISADORA_PORT = 1234
-
-      attr_accessor(:cl)
-
-      def initialize
-        @cl = OSC::Client.new(ISADORA_IP, ISADORA_PORT)
-      end
-
-      def send(msg, *args)
-        @cl.send(OSC::Message.new(msg, *args))
-        puts "IZ send #{msg} - #{args.inspect}"
-      end
-    end
-
+    LAY_IP = ENV['LAY_IP'] || '172.16.1.2'
+    puts "LAY_IP=#{LAY_IP} for multicast sending. Set LAY_IP env var to customize the local IP of the ethernet interface the tablets are on"
 
     class ProductLaunch
       SHOW_DATE = "2/9/2018"
@@ -201,99 +171,6 @@ module Lay
 
     # --------------------------------------------
 
-    class OffTheRails
-      SHOW_DATE = "2/9/2018"
-      CARE_ABOUT_DATE = true
-      CARE_ABOUT_OPT = true
-
-      ISADORA_IP = '10.1.1.100'
-      ISADORA_PORT = 1234
-
-      FIRST_SPECTATOR_ROW = 3
-
-      INTERESTING_COLUMNS = ["Tweet 1", "Tweet 2", "Tweet 3", "Tweet 4", "Tweet 5"]
-
-      NUM_RAILS = 5
-      FIRST_RAILS_CHANNEL = 2
-      FIRST_RAILS_DURATION = 8
-
-      @@run = false
-      @@tweets = []
-      @@queue = []
-      @@mutex = Mutex.new
-
-      def self.load
-        db = SpectatorsDB.new
-        @@tweets = []
-        (FIRST_SPECTATOR_ROW .. db.ws.num_rows).each do |r|
-          INTERESTING_COLUMNS.each do |col_name|
-            if CARE_ABOUT_DATE && db.ws[r, db.col["Performance Date"]] != SHOW_DATE
-              next
-            end
-
-            if CARE_ABOUT_OPT && db.ws[r, db.col["Accept Terms? Y/N (auto)"]] != "Y"
-              next
-            end
-
-            col = db.col[col_name]
-            if db.ws[r, col] != ""
-              @@tweets.push(db.ws[r, col])
-            end
-          end
-        end
-        puts "got #{@@tweets.length} tweets"
-      end
-
-      def self.start
-        @@queue = []
-        @@run = true
-        Thread.new do
-          rails = NUM_RAILS.times.collect {|i| new(i + FIRST_RAILS_CHANNEL)}
-          while true
-            NUM_RAILS.times {|i| rails[i].run}
-            break if !@@run
-            sleep(0.1)
-          end
-        end
-      end
-
-      def self.stop
-        @@run = false
-      end
-
-      def initialize(channel)
-        @channel_base = channel - FIRST_RAILS_CHANNEL
-        @channel = "/channel/#{channel}"
-        @is = Isadora.new
-        @state = :idle
-        @time = nil
-      end
-
-      def run
-        case @state
-        when :idle
-          @time = Time.now + rand
-          @text = @@mutex.synchronize do
-            if @@queue.empty?
-              @@queue = @@tweets.dup.shuffle
-            end
-            @@queue.pop
-          end
-          @state = :pre
-        when :pre
-          if Time.now >= @time
-            @is.send(@channel, @text)
-            @state = :anim
-            @time = Time.now + (@channel_base * 2) + FIRST_RAILS_DURATION
-          end
-        when :anim
-          if Time.now > @time
-            @state = :idle
-          end
-        end
-      end
-    end
-
     class Patrons
       def self.update(patron_id, table, drink, opt_in)
         db = SpectatorsDB.new
@@ -372,8 +249,34 @@ module Lay
         puts "A #{message.ip_address}:#{message.ip_port} -- #{message.address} -- #{message.to_a}"
       end
 
+      # These are cues from QLab to fire off various scenes
+      @server.add_method('/cue') do |message|
+        cue = message.to_a[0].to_i
+        puts "received cue #{cue}; forwarding to isadora"
+        Isadora.send('/isadora/1', cue.to_s)
+        case cue
+        when 500
+        when 1200
+        when 1300
+        end
+      end
+
       @server.add_method('/show_time') do |message|
         TablettesController.show_time(message.to_a[0])
+      end
+
+      @server.add_method('/tablet_multicast') do |message|
+        client = OSC::BroadcastClient.new(53000, LAY_IP)
+        puts "multicasting #{message.to_a.join(' ')}"
+        client.send(OSC::Message.new(*message.to_a))
+      end
+
+      @server.add_method('/tablet_proxy') do |message|
+        TablettesController.send_osc(*message.to_a)
+      end
+
+      @server.add_method('/prepare') do |message|
+        TablettesController.send_osc_prepare(message.to_a[0])
       end
 
       # /start <media> [<tablet#> ...]
@@ -413,9 +316,14 @@ module Lay
         TablettesController.reset_cue(tablets)
       end
 
+      @server.add_method('/volume') do |message|
+        vol = message.to_a[0].to_i
+        TablettesController.volume = vol
+      end
+
       # /offtherails
       @server.add_method('/offtherails') do |message|
-        puts "offtherails #{message}"
+        puts "offtherails #{message.to_a}"
         if message.to_a[0] == "start"
           OffTheRails.start
         elsif message.to_a[0] == "stop"
@@ -446,6 +354,16 @@ module Lay
             tablet = args[0].to_i
         end
         TablettesController.trigger_text_feed(tablet, args[1..-1])
+      end
+
+      @server.add_method('/ghosting') do |message|
+        args = message.to_a
+        tablet = nil
+        if args[0] && !args[0].empty?
+            tablet = args[0].to_i
+        end
+        g = Lay::Ghosting.new
+        g.go
       end
 
       # /testem
