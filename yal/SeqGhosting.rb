@@ -50,7 +50,8 @@ class SeqGhosting
 
     attr_accessor(:state)
 
-    def initialize
+    def initialize(start_time)
+        @start_time = start_time
         @is = Isadora.new
         @state = :idle
         @time = nil
@@ -86,9 +87,9 @@ class SeqGhosting
         @run = true
         Thread.new do
             TablettesController.send_osc_prepare(@video)
-            sleep(@prepare_sleep) # TODO sleep only offset since the beginning of initialize
+            sleep(@start_time + @prepare_sleep - Time.now)
             TablettesController.send_osc('/tablet/play')
-            sleep(@isadora_delay)
+            sleep(@start_time + @prepare_sleep + @isadora_delay - Time.now)
             @is.send('/isadora/1', '500')
 
             puts "triggering ghosting profiles in #{@profile_delay}ms"

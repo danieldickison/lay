@@ -87,7 +87,8 @@ class SeqOffTheRails
 
     attr_accessor(:state)
 
-    def initialize(channel = 10) # channel??
+    def initialize(start_time, channel = 10) # channel??
+        @start_time = start_time
         @channel_base = channel - FIRST_RAILS_CHANNEL
         @channel = "/channel/#{channel}"
         @is = Isadora.new
@@ -107,7 +108,7 @@ class SeqOffTheRails
         Thread.new do
 
             TablettesController.send_osc_prepare('/playback/media_tablets/112-OTR/112-201-C60-OTR_All.mp4')
-            sleep(1)
+            sleep(@start_time + 1 - Time.now)
             TablettesController.send_osc('/tablet/play')
             
             @tablet_items.each do |t, items|
