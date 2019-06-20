@@ -22,6 +22,7 @@ class TablettesController < ApplicationController
     DEFAULT_PRESHOW_BG = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 0
 
     PUBLIC_DIR = File.expand_path('../../public', __dir__)
+    ASSETS_FILE = File.expand_path('../../tablet-assets.txt', __dir__)
 
     @@last_ping_stats = Time.now
     @tablets = {}
@@ -37,7 +38,7 @@ class TablettesController < ApplicationController
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
     @commands = {} # {int => [[cmd1, arg1-1, arg1-2], [cmd2, arg2-1, ...], ...]}
 
-    @assets = []
+    @assets = nil
 
     def install
     end
@@ -289,6 +290,11 @@ class TablettesController < ApplicationController
     end
 
     def self.assets
+        if !@assets
+            initial_paths = File.open(ASSETS_FILE) {|f| f.readlines}.collect(&:strip)
+            puts "initializing asset paths to:\n#{initial_paths.join("\n")}"
+            set_asset_paths(initial_paths)
+        end
         return @assets
     end
 
@@ -315,7 +321,7 @@ class TablettesController < ApplicationController
 
     # Returns an array of {:path => <str>, :mod_date => <timestamp int>}
     def self.assets_for_group(group)
-        return @assets.find_all do |a|
+        return assets.find_all do |a|
             g = asset_group(a[:path])
             g == 0 || g == group
         end
