@@ -239,6 +239,9 @@ function sendPing() {
                 case 'ghosting':
                     triggerGhosting(cmd[1], cmd[2], [cmd[3], cmd[4], cmd[5]]); // delay, duration, img srcs
                     break;
+                case 'offtherails':
+                    triggerOffTheRails(cmd[1]);
+                    break;
             }
         });
 
@@ -252,10 +255,6 @@ function sendPing() {
             console.log("assets changed:\n" + newAssetsStr);
             currentAssetsStr = newAssetsStr;
             layNativeInterface.setAssets(newAssetsStr);
-        }
-
-        if (json.text_feed) {
-            triggerTextFeed(json.text_feed);
         }
 
         document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " Group #" + json.tablet_group + " — " + json.tablet_ip;
@@ -403,6 +402,12 @@ function triggerGhosting(time, duration, srcs) {
     }
 }
 window.triggerGhosting = triggerGhosting;
+
+function triggerOffTheRails(items) {
+    log(JSON.stringify(items));
+    triggerTextFeed(items.map((item) => item.tweet));
+}
+window.triggerOffTheRails = triggerOffTheRails;
 
 function updateBatteryStatus() {
     batteryPercent = layNativeInterface.getBatteryPercent();

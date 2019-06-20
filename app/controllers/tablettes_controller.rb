@@ -35,7 +35,6 @@ class TablettesController < ApplicationController
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
-    @text_feed = {} # {int => [str1, str2, ...]}
     @commands = {} # {int => [[cmd1, arg1-1, arg1-2], [cmd2, arg2-1, ...], ...]}
 
     @assets = []
@@ -175,7 +174,6 @@ class TablettesController < ApplicationController
         ping_stats
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
         commands = self.class.commands.delete(tablet) || []
-        text_feed = self.class.text_feed.delete(tablet)
         assets = self.class.assets_for_group(group)
         # puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue} preload: #{preload && preload.join(', ')}"
         render json: {
@@ -189,7 +187,6 @@ class TablettesController < ApplicationController
             :next_seek_time => (cue[:seek] * 1000).round,
             :debug => self.class.debug,
             :show_time => @@show_time,
-            :text_feed => text_feed,
             :volume => self.class.volume,
             :assets => assets,
         }
@@ -268,17 +265,6 @@ class TablettesController < ApplicationController
         puts "queue_command #{tablet} #{cmd.inspect}"
         cmds = @commands[tablet] ||= []
         cmds << cmd
-    end
-
-    def self.text_feed
-        return @text_feed
-    end
-
-    def self.trigger_text_feed(tablet, strs)
-        tablet_enum(tablet).each do |t|
-            puts "text_feed[#{t}] = #{strs.inspect}"
-            @text_feed[tablet] = strs
-        end
     end
 
     def self.debug

@@ -13,7 +13,7 @@ module Lay
       FIRST_RAILS_DURATION = 8
 
       @@run = false
-      @@tweets = ['hi i ate a sandwich adn it was good', 'look im on social media', 'covfefe']
+      @@tweets = ['hi i ate a sandwich adn it was good', 'look im on social media', 'covfefe', 'bloh blah blah', 'oneuoloenthlonglonglongtextstringwhathappens?', 'ユニコード']
       @@queue = []
       @@mutex = Mutex.new
 
@@ -43,6 +43,13 @@ module Lay
         @@queue = []
         @@run = true
         Thread.new do
+          # TODO: assign tweets to tablets by who's sitting at the table.
+          TablettesController.tablet_enum(nil).each do |t|
+            TablettesController.queue_command(t, 'offtherails', @@tweets.collect do |str|
+                {:tweet => str, :profile_img => Ghosting::PROFILE_PICS.sample(1)[0]}
+            end)
+          end
+          
           rails = NUM_RAILS.times.collect {|i| new(i + FIRST_RAILS_CHANNEL)}
           while true
             NUM_RAILS.times {|i| rails[i].run}

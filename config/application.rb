@@ -359,7 +359,11 @@ module Lay
         if !args[0].empty?
             tablet = args[0].to_i
         end
-        TablettesController.trigger_text_feed(tablet, args[1..-1])
+        TablettesController.tablet_enum(tablet).each do |t|
+            TablettesController.queue_command(t, 'offtherails', args[1..-1].collect do |str|
+                {:tweet => str, :profile_img => Ghosting::PROFILE_PICS.sample(1)[0]}
+            end)
+        end
       end
 
       @server.add_method('/ghosting') do |message|
