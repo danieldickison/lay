@@ -67,7 +67,8 @@ function fetchStats() {
             tr.appendChild(td(tablet.clock && tablet.clock.latest + 'ms'));
             tr.appendChild(td(tablet.clock && tablet.clock.timeSince + 'ms'));
 
-            let cacheTD = td(tablet.cache && tablet.cache.length);
+            let cacheIncomplete = tablet.cache && tablet.cache.some(f => !f.end);
+            let cacheTD = td(tablet.cache && tablet.cache.length, cacheIncomplete ? 'orange' : null);
             cacheTD.classList.add('cache');
             tr.appendChild(cacheTD);
             buildCacheHover(cacheTD, tablet.cache)
