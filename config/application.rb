@@ -311,24 +311,15 @@ module Lay
         #TablettesController.stop_cue(tablets)
       end
 
-      # /load <media> [<tablet#> ...]
-      @server.add_method('/load') do |message|
-        puts "#{message.inspect}"
-        args = message.to_a
-        file = args[0]
-        tablets = args[1 .. -1].collect {|t| t.to_i}
-        TablettesController.load_cue(tablets, file)
-      end
-
       @server.add_method('/reloadjs') do |message|
         TablettesController.reload_js
       end
 
       # /clear [<tablet#> ...]
-      @server.add_method('/reset') do |message|
+      @server.add_method('/clear_cache') do |message|
         puts "#{message.inspect}"
         tablets = message.to_a.collect {|t| t.to_i}
-        TablettesController.reset_cue(tablets)
+        TablettesController.queue_command(tablets, 'clear_cache')
       end
 
       @server.add_method('/volume') do |message|

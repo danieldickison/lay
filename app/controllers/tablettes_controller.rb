@@ -222,11 +222,8 @@ class TablettesController < ApplicationController
         end
     end
 
-    def self.load_cue(tablet, file)
-        tablet_enum(tablet).each do |t|
-            queue_command(t, 'load', file)
-            puts "load[#{t}] - #{file}"
-        end
+    def self.clear_cache(tablet)
+        queue_command(tablet, 'load', file)
     end
 
     def self.start_cue(tablet, file, time, seek: 0)
