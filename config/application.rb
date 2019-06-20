@@ -319,7 +319,8 @@ module Lay
       end
 
       @server.add_method('/reloadjs') do |message|
-        TablettesController.reload_js
+        tablets = message.to_a.collect {|t| t.to_i}
+        TablettesController.queue_command(tablets, 'reload')
       end
 
       # /clear [<tablet#> ...]

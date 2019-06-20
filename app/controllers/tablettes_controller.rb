@@ -242,13 +242,6 @@ class TablettesController < ApplicationController
         end
     end
 
-    def self.reload_js
-        puts "reload_js"
-        tablet_enum(nil).each do |t|
-            queue_command(t, 'reload')
-        end
-    end
-
     def self.commands
         return @commands
     end
