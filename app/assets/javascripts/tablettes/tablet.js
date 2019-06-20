@@ -13,7 +13,6 @@ if (!window.layNativeInterface) {
         getBatteryPercent: function () { return -1; },
         setVideoCue: function () {},
         setVolume: function () {},
-        downloadFile: function () {},
         setAssets: function () {},
         hideChrome: function () {},
     };
@@ -462,8 +461,8 @@ function updateBatteryStatus() {
 function handleCommand(cmd, args) {
     log('Last command: ' + cmd + ' - ' + args.join(', '));
     switch (cmd) {
-        case 'load':
-            layNativeInterface.downloadFile(uriEscapePath(args[0]));
+        case 'clear_cache':
+            layNativeInterface.setAssets(null);
             break;
         case 'reload':
             location.reload();
