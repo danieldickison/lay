@@ -1,8 +1,6 @@
 #!/usr/bin/env ruby
 # bundle exec yal
 
-# (412) is Ralph
-
 APP_LAUNCH_DATE = Time.now.utc
 
 require('pathname')
@@ -10,19 +8,20 @@ require('fileutils')
 MAIN_DIR = Pathname.new(__FILE__).parent.realpath.to_s
 $:.unshift(MAIN_DIR)
 
+# ruby
 require('sqlite3')
 require('osc-ruby')
 require('rb-readline')
 require('json')
 
-# sqlite3
-# .tables
-
-require('Config')
+# our utils
 require('gm')
 require('ushell')
 
+# the goods
+require('Config')
 require('Isadora')
+require('Media')
 require('SeqGhosting')
 
 
@@ -52,12 +51,8 @@ class Yal
         end
     end
 
-    MEDIA_VOL = "/Volumes/Looking at You Media"
-    MEDIA_DB  = MEDIA_VOL + "/db"
-    MEDIA_PB  = MEDIA_VOL + "/playback"
-
     def run_db
-        # if !File.exist?(MEDIA_VOL)
+        # if !File.exist?(Media::VOL)
         #     # open "media.alias"
         #     raise "media volume not mounted"
         # end
