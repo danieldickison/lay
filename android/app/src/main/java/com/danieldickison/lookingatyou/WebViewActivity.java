@@ -237,7 +237,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
             @Override
             public void stopVideo() {
-                prepareNextVideoCue(null, 0, 0, 0, 0);
+                mContentView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        prepareNextVideoCue(null, 0, 0, 0, 0);
+                    }
+                });
             }
         });
 
