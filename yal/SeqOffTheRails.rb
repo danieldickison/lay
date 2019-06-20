@@ -5,52 +5,68 @@ osc to start
 osc image # and tweet text
 need channel
 
-https://docs.google.com/spreadsheets/d/15vOxUsTvJnuYiC-J1N6aU-Em2_-lubAkW5KSAw8P_Q4/edit#gid=0
+Q sheet: https://docs.google.com/spreadsheets/d/15vOxUsTvJnuYiC-J1N6aU-Em2_-lubAkW5KSAw8P_Q4/edit#gid=0
+folder/file/osc: https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/edit#
 
-ocean of social media posts - profile image / tweet
-    xxx-offtherails/xxx-001-R01-profile.jpg
-    xxx-offtherails/xxx-002-R01-profile.jpg
-    pbdata: "tweets" => {1 => ["...", "...", "..."], 2 => 
-FB profiles of all in room ?
-foods
-    xxx-offtherails/xxx-001-R01-food.jpg
-    xxx-offtherails/xxx-002-R01-food.jpg
-bday
-    xxx-offtherails/xxx-001-R01-birthday.jpg
-restaurants
-    xxx-offtherails/xxx-001-R01-restaurant.jpg
-travel
-    xxx-offtherails/xxx-001-R01-travel.jpg
-movies
-    handpicked, not datamined
-    xxx-offtherails/xxx-001-R01-movie.jpg
-
-
+convert in.jpg -extent 400x400+100+100 \
+  '(' +clone -alpha transparent -draw 'circle 200,200 200,0' ')' \
+  -compose copyopacity -composite out.png
 =end
 
 require('Isadora')
 require('Media')
+require('PlaybackData')
 
 class SeqOffTheRails
-    def self.import
-        media_dir = Yal::MEDIA_PB + "/media_dynamic/505-profile_ghosting/"
 
-        profile_images = `find "#{Yal::MEDIA_DB}" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
-        used = []
+    MEDIA_PROFILE = Media::PLAYBACK + "/media_dynamic/s_510-OTR_profile/"
+    DATA_DIR      = Media::PLAYBACK + "/data_dynamic/112-OTR/"
+    IMG_BASE      = Media::IMG_PATH + "/media_dynamic/112-OTR/"
+    DATABASE      = Media::DATABASE
+
+=begin
+    pbdata:
+        :profile_image_names => {1 => "xxx-001-R01-profile.jpg", 2 => ...}
+        :tweets => [{:tweet => "...", :profile_img => "/..."}, {...}]
+=end
+    def self.import
+        pbdata = {}
+
+        # profiles
+        debug_images = `find "#{DATABASE}/profile" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
+        profile_image_names = {}
         16.times do |i|
             begin
-                r = rand(profile_images.length)
-                f = profile_images.delete_at(r).strip
+                r = rand(debug_images.length)
+                f = debug_images.delete_at(r).strip
                 name = "505-#{'%03d' % (i + 1)}-R01-profile_ghosting.jpg"
-                GraphicsMagick.thumbnail(f, media_dir + name, 360, 360, "jpg", 85)
+                GraphicsMagick.thumbnail(f, MEDIA_PROFILE + name, 360, 360, "jpg", 85)
+                profile_image_names[i + 1] = name
             rescue
                 puts $!.inspect
+                puts "retrying"
                 retry
             end
         end
+        pbdata[:profile_image_names] = profile_image_names
 
-        pbdata = {}
-        File.open(media_dir + "pbdata.json", "w") {|f| f.write(JSON.dump(pbdata))}
+        # food, birthday, restuarant, travel
+        # debug_images = `find "#{DATABASE}/profile" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
+        # 10.times do |i|
+        #     begin
+        #         r = rand(debug_images.length)
+        #         f = debug_images.delete_at(r).strip
+        #         name = "112-#{'%03d' % (i + 1)}-R01-food.jpg"
+        #         GraphicsMagick.thumbnail(f, MEDIA_PROFILE + name, 360, 360, "jpg", 85)
+        #         profile_image_names[i + 1] = name
+        #     rescue
+        #         puts $!.inspect
+        #         puts "retrying"
+        #         retry
+        #     end
+        # end
+
+        PlaybackData.write(DATA_DIR, pbdata)
     end
 
 
@@ -58,14 +74,9 @@ class SeqOffTheRails
     CARE_ABOUT_DATE = true
     CARE_ABOUT_OPT = true
 
-    FIRST_SPECTATOR_ROW = 3
-
-    INTERESTING_COLUMNS = ["Tweet 1", "Tweet 2", "Tweet 3", "Tweet 4", "Tweet 5"]
-
     NUM_RAILS = 5
     FIRST_RAILS_CHANNEL = 2
     FIRST_RAILS_DURATION = 8
-
 
     # TODO: get these from the db
     PROFILE_PICS = %w[505-005-R01-profile_ghosting.jpg  505-010-R01-profile_ghosting.jpg  505-015-R01-profile_ghosting.jpg  505-001-R01-profile_ghosting.jpg  505-006-R01-profile_ghosting.jpg  505-011-R01-profile_ghosting.jpg  505-016-R01-profile_ghosting.jpg  505-002-R01-profile_ghosting.jpg  505-007-R01-profile_ghosting.jpg  505-012-R01-profile_ghosting.jpg  505-003-R01-profile_ghosting.jpg  505-008-R01-profile_ghosting.jpg  505-013-R01-profile_ghosting.jpg  505-004-R01-profile_ghosting.jpg  505-009-R01-profile_ghosting.jpg  505-014-R01-profile_ghosting.jpg
@@ -93,6 +104,8 @@ class SeqOffTheRails
         @is = Isadora.new
         @state = :idle
         @time = nil
+
+        pbdata = PlaybackData.read(DATA_DIR)
 
         @tablet_items = {}
         # TODO: assign items to tablets from db based on which spectator is at which table
@@ -177,5 +190,4 @@ class SeqOffTheRails
           end
         end
     end
-
 end

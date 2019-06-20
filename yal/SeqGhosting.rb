@@ -12,30 +12,35 @@ table # = tablet #
 
 require('Isadora')
 require('Media')
+require('PlaybackData')
 
 class SeqGhosting
-    def self.import
-        media_dynamic = Media::PLAYBACK + "/media_dynamic/505-profile_ghosting/"
-        data_dynamic  = Media::PLAYBACK + "/data_dynamic/105-Ghosting/"
 
+    MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/s_410-Ghosting_profile/"
+    DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/105-Ghosting/"
+    IMG_BASE      = Media::IMG_PATH + "/media_dynamic/s_410-Ghosting_profile/"
+    DATABASE      = Media::DATABASE
+
+    def self.import
         pbdata = {}
 
-        debug_images = `find "#{Media::DATABASE}" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
         used = []
         profile_image_names = {}
+        debug_images = `find "#{DATABASE}/profile" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
         16.times do |i|
             begin
                 r = rand(debug_images.length)
                 f = debug_images.delete_at(r).strip
-                name = "505-#{'%03d' % (i + 1)}-R01-profile_ghosting.jpg"
-                GraphicsMagick.thumbnail(f, media_dynamic + name, 360, 360, "jpg", 85)
+                name = "410-#{'%03d' % (i + 1)}-R01-Ghosting_profile.jpg"
+                GraphicsMagick.thumbnail(f, MEDIA_DYNAMIC + name, 180, 180, "jpg", 85)
                 profile_image_names[i + 1] = name
             rescue
                 puts $!.inspect
+                puts "retrying"
                 retry
             end
         end
-        pbdata['profile_image_names'] = profile_image_names
+        pbdata[:profile_image_names] = profile_image_names
 
         people_at_tables = {}
         # people_at_tables[1] -> [1,2,3]  - people at table 1
@@ -43,9 +48,9 @@ class SeqGhosting
             # must ensure 3
             people_at_tables[i + 1] = [rand(16) + 1, rand(16) + 1, rand(16) + 1]
         end
-        pbdata['people_at_tables'] = people_at_tables
+        pbdata[:people_at_tables] = people_at_tables
 
-        File.open(data_dynamic + "pbdata.json", "w") {|f| f.write(JSON.pretty_generate(pbdata))}
+        PlaybackData.write(DATA_DYNAMIC, pbdata)
     end
 
     attr_accessor(:state)
@@ -60,22 +65,18 @@ class SeqGhosting
         @video = '/playback/105-Ghosting/105-011-C6?-Ghosting_all.mp4' # '?' replaced by tablet group
         @prepare_sleep = 1 # second
 
-        media_dynamic = Media::PLAYBACK + "/media_dynamic/505-profile_ghosting/"
-        data_dynamic  = Media::PLAYBACK + "/data_dynamic/105-Ghosting/"
-        img_base      = Media::IMG_PATH + "/media_dynamic/505-profile_ghosting/"
-
-        pbdata = JSON.parse(File.read(data_dynamic + "pbdata.json"))
+        pbdata = PlaybackData.read(DATA_DYNAMIC)
 
         @tablet_profile_images = {}
-        # 1 => [img_base + profile_image_name, img_base + profile_image_name, img_base + profile_image_name]
+        # 1 => [IMG_BASE + profile_image_name, IMG_BASE + profile_image_name, IMG_BASE + profile_image_name]
         if defined?(TablettesController)
             enum = TablettesController.tablet_enum(nil)
         else
             enum = 1..25
         end
         enum.each do |t|
-            people = pbdata['people_at_tables'][t.to_s] || [1, 2, 3]  # default to first 3 people
-            images = people.collect {|p| img_base + pbdata['profile_image_names'][p.to_s]}
+            people = pbdata[:people_at_tables][t] || [1, 2, 3]  # default to first 3 people
+            images = people.collect {|p| IMG_BASE + pbdata[:profile_image_names][p]}
             @tablet_profile_images[t] = images
         end
     end
