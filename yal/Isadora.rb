@@ -2,9 +2,9 @@ require('Config')
 
 class Isadora
   # defaults
-  Config["isadora_ip"] = '10.1.1.100'
+  Config["isadora_ip"] = '172.16.1.202'
   Config["isadora_port"] = 1234
-  Config["isadora_enabled"] = false
+  Config["isadora_enabled"] = true
 
   attr_accessor(:cl)
 

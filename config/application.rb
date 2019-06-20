@@ -258,7 +258,7 @@ module Lay
 
         cue = message.to_a[0].to_i
         puts "received cue #{cue}; forwarding to isadora"
-        @isadora.send('/isadora/1', cue.to_s)
+        #@isadora.send('/isadora/1', cue.to_s)
         case cue
         when 500
             @current_seq = SeqGhosting.new

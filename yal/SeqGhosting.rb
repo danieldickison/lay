@@ -59,6 +59,7 @@ class SeqGhosting
         @profile_duration = 18_300 # ms
         @video = '/playback/105-Ghosting/105-011-C6?-Ghosting_all.mp4' # '?' replaced by tablet group
         @prepare_sleep = 1 # second
+        @isadora_delay = 2 # seconds
 
         media_dynamic = Media::PLAYBACK + "/media_dynamic/505-profile_ghosting/"
         data_dynamic  = Media::PLAYBACK + "/data_dynamic/105-Ghosting/"
@@ -85,8 +86,10 @@ class SeqGhosting
         @run = true
         Thread.new do
             TablettesController.send_osc_prepare(@video)
-            sleep(@prepare_sleep)
+            sleep(@prepare_sleep) # TODO sleep only offset since the beginning of initialize
             TablettesController.send_osc('/tablet/play')
+            sleep(@isadora_delay)
+            @is.send('/isadora/1', '500')
 
             puts "triggering ghosting profiles in #{@profile_delay}ms"
             time = (Time.now.to_f * 1000).round + @profile_delay
