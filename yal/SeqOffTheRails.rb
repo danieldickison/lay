@@ -31,7 +31,7 @@ class SeqOffTheRails
 =begin
     pbdata:
         :profile_image_names => {1 => "xxx-001-R01-profile.jpg", 2 => ...}
-        :tweets => [{:tweet => "...", :profile_img => "/..."}, {...}]
+        :tweets => [{:tweet => "...", :profile => 1}, {...}]
 =end
     def self.import
         pbdata = {}
@@ -79,6 +79,28 @@ class SeqOffTheRails
 
         end
 
+        tweets = [
+            {:profile => 1, :tweet => 'hi i ate a sandwich adn it was good'},
+            {:profile => 2, :tweet => 'look at me im on social media'},
+            {:profile => 3, :tweet => 'covfefe'},
+            {:profile => 4, :tweet => 'oneuoloenthlonglonglongtextstringwhathappens'},
+            {:profile => 5, :tweet => 'ユニコード'}
+        ]
+
+        facebooks = [
+            {:photo => 1, :caption => 'this is a caption'},
+            {:photo => 2, :caption => 'look at you your on social media'},
+        ]
+
+        instagrams = [
+            {:photo => 1, :caption => 'this is an insta'},
+            {:photo => 2, :caption => 'look at you your on instagram'},
+        ]
+
+        pbdata[:tweets] = tweets
+        pbdata[:facebooks] = facebooks
+        pbdata[:instagrams] = instagrams
+
         PlaybackData.write(DATA_DIR, pbdata)
     end
 
@@ -93,28 +115,6 @@ class SeqOffTheRails
     FB_DURATION = 18
     IG_DURATION = 18
 
-    # TODO: get these from the db
-    PROFILE_PIC_IDS = (1..16).to_a
-    PROFILE_URLS = PROFILE_PIC_IDS.collect do |id|
-        IMG_PROFILE + ('510-%03d-R02-OTR_profile.png' % id)
-    end.freeze
-
-    FB_PIC_IDS = (1..10).to_a
-    IG_PIC_IDS = (1..10).to_a
-
-    TEST_TWEETS = ['hi i ate a sandwich adn it was good', 'look at me im on social media', 'covfefe', 'oneuoloenthlonglonglongtextstringwhathappens', 'ユニコード'].freeze
-    TEST_CAPTIONS = ['one caption', 'another caption', 'this is another caption', 'yet another', 'blo blah blah blah bllh', 'and another one', 'somteh ngishtong', 'this is a test of unicode ユニコード'].freeze
-
-    TEST_ITEMS = [
-        {:tweet => 'hi i ate a sandwich adn it was good', :profile_img => PROFILE_URLS.sample(1)},
-        {:tweet => 'look at me im on social media', :profile_img => PROFILE_URLS.sample(1)},
-        {:tweet => 'covfefe', :profile_img => PROFILE_URLS.sample(1)},
-        {:tweet => 'oneuoloenthlonglonglongtextstringwhathappens', :profile_img => PROFILE_URLS.sample(1)},
-        {:tweet => 'ユニコード', :profile_img => PROFILE_URLS.sample(1)},
-        {:photo => PROFILE_URLS.sample(1), :caption => 'this is a caption'},
-        {:photo => PROFILE_URLS.sample(1), :caption => 'another caption'},
-    ]
-
     attr_accessor(:start_time)
 
     def initialize
@@ -126,15 +126,23 @@ class SeqOffTheRails
 
         pbdata = PlaybackData.read(DATA_DIR)
 
-        @tweets = TEST_TWEETS.collect {|t| [PROFILE_PIC_IDS.sample(1)[0], t]}
-        @fb = TEST_CAPTIONS.collect {|t| [FB_PIC_IDS.sample(1)[0], t]}
-        @ig = TEST_CAPTIONS.collect {|t| [IG_PIC_IDS.sample(1)[0], t]}
+        @tweets = pbdata[:tweets].collect {|h| [h[:profile], h[:tweet]]}
+        @fb = pbdata[:facebooks].collect {|h| [h[:photo], h[:caption]]}
+        @ig = pbdata[:instagrams].collect {|h| [h[:photo], h[:caption]]}
         @mutex = Mutex.new
 
         @tablet_items = {}
-        # TODO: assign items to tablets from db based on which spectator is at which table
         TablettesController.tablet_enum(nil).each do |t|
-            @tablet_items[t] = TEST_ITEMS.shuffle
+            @tablet_items[t] = 10.times.collect do
+                case rand(3)
+                when 0
+                    @tweets.sample
+                when 1
+                    @fb.sample
+                when 2
+                    @ig.sample
+                end
+            end
         end
     end
 
