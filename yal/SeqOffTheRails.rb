@@ -51,34 +51,40 @@ class SeqOffTheRails
 
         # Hard-coded for 6/21 
         # Aislinn Curry
-        f = "#{DATABASE}/hard_profile/test.jpg"
+        f = "#{DATABASE}/hard_profile/AislinnCurryTwitterPhoto.jpeg"
         name = "510-011-R02-OTR_profile.png"
         GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
+        profile_image_names[11] = name
 
         # Cierra Cass
-        f = "#{DATABASE}/hard_profile/test.jpg"
+        f = "#{DATABASE}/hard_profile/CierraCassTwitterPhoto.jpeg"
         name = "510-012-R02-OTR_profile.png"
         GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
+        profile_image_names[12] = name
 
         # Kamala Sankaram
-        f = "#{DATABASE}/hard_profile/test.jpg"
+        f = "#{DATABASE}/hard_profile/KamalaSankaramTwitterPhoto.jpg"
         name = "510-013-R02-OTR_profile.png"
         GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
+        profile_image_names[13] = name
 
         # Anne Hiatt
-        f = "#{DATABASE}/hard_profile/test.jpg"
+        f = "#{DATABASE}/hard_profile/AnneHiattTwitterPhoto.jpg"
         name = "510-014-R02-OTR_profile.png"
         GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
+        profile_image_names[14] = name
 
         # Jason Cady
-        f = "#{DATABASE}/hard_profile/test.jpg"
+        f = "#{DATABASE}/hard_profile/JasonCadyTwitterPhoto.jpg"
         name = "510-015-R02-OTR_profile.png"
         GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
+        profile_image_names[15] = name
 
         # Nick Benacerraf
-        f = "#{DATABASE}/hard_profile/test.jpg"
+        f = "#{DATABASE}/hard_profile/NicBenacerrafTwitterPhoto.jpeg"
         name = "510-016-R02-OTR_profile.png"
         GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
+        profile_image_names[16] = name
 
         pbdata[:profile_image_names] = profile_image_names
 
@@ -205,20 +211,23 @@ class SeqOffTheRails
         else
             enum = 1..25
         end
+
+        tweets_shuffled = []
+
         enum.each do |t|
             @tablet_items[t] = 10.times.collect do
                 case rand(3)
                 when 0
-                    i = @tweets.sample
-                    puts i.inspect
+                    if tweets_shuffled.empty?
+                        tweets_shuffled = @tweets.dup.shuffle
+                    end
+                    i = tweets_shuffled.pop
                     {:profile_img => IMG_PROFILE + "/" + pbdata[:profile_image_names][i[1]], :tweet => i[2]}
                 when 1
                     i = @fb.sample
-                    puts i.inspect
                     {:photo => IMG_FACEBOOK + "/" + pbdata[:facebook_image_names][i[1]]}
                 when 2
                     i = @ig.sample
-                    puts i.inspect
                     {:photo => IMG_INSTAGRAM + "/" + pbdata[:instagram_image_names][i[1]]}
                 end
             end
