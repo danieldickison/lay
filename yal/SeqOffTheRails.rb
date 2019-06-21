@@ -118,7 +118,6 @@ class SeqOffTheRails
     CARE_ABOUT_OPT = true
 
     NUM_RAILS = 8
-    FIRST_RAILS_CHANNEL = 2
     TWEET_DURATION = 25
     FB_DURATION = 18
     IG_DURATION = 18
@@ -184,11 +183,13 @@ class SeqOffTheRails
             ig_queue = []
 
             rails = [
+                Runner.new(@is, 0, @tweets, tweet_queue, @mutex, TWEET_DURATION),
+                Runner.new(@is, 1, @tweets, tweet_queue, @mutex, TWEET_DURATION),
                 Runner.new(@is, 2, @tweets, tweet_queue, @mutex, TWEET_DURATION),
-                Runner.new(@is, 3, @tweets, tweet_queue, @mutex, TWEET_DURATION),
+                Runner.new(@is, 3, @fb, fb_queue, @mutex, FB_DURATION),
                 Runner.new(@is, 4, @fb, fb_queue, @mutex, FB_DURATION),
                 Runner.new(@is, 5, @fb, fb_queue, @mutex, FB_DURATION),
-                Runner.new(@is, 6, @fb, fb_queue, @mutex, FB_DURATION),
+                Runner.new(@is, 6, @ig, ig_queue, @mutex, IG_DURATION),
                 Runner.new(@is, 7, @ig, ig_queue, @mutex, IG_DURATION),
                 Runner.new(@is, 8, @ig, ig_queue, @mutex, IG_DURATION),
             ]
@@ -239,8 +240,9 @@ class SeqOffTheRails
     class Runner
         def initialize(is, channel, all_items, queue, mutex, duration)
             @is = is
-            @addr = "/isadora-multi/#{channel}"
-            @channel_base = channel - FIRST_RAILS_CHANNEL
+            @addr_img = "/isadora/#{channel}"
+            @addr_str = "/isadora/#{channel+10}"
+            @channel_base = channel % 10
             @all_items = all_items
             @queue = queue
             @state = :idle
@@ -261,7 +263,8 @@ class SeqOffTheRails
                 @state = :pre
             when :pre
                 if Time.now >= @time
-                    @is.send(@addr, *@item)
+                    @is.send(@addr_img, @item[0])
+                    @is.send(@addr_str, @item[1])
                     @state = :anim
                     @time = Time.now + (@channel_base * 2) + @duration
                 end
