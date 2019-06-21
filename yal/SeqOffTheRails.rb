@@ -132,18 +132,26 @@ class SeqOffTheRails
         @mutex = Mutex.new
 
         @tablet_items = {}
-        TablettesController.tablet_enum(nil).each do |t|
+        if defined?(TablettesController)
+            enum = TablettesController.tablet_enum(nil)
+        else
+            enum = 1..25
+        end
+        enum.each do |t|
             @tablet_items[t] = 10.times.collect do
                 case rand(3)
                 when 0
-                    t = @tweets.sample
-                    {:profile_img => MEDIA_PROFILE + "/" + t[0], :tweet => t[1]}
+                    i = @tweets.sample
+                    puts i.inspect
+                    {:profile_img => MEDIA_PROFILE + "/" + pbdata[:profile_image_names][i[0]], :tweet => i[1]}
                 when 1
-                    t = @fb.sample
-                    {:photo => MEDIA_FACEBOOK + "/" + t[0]}
+                    i = @fb.sample
+                    puts i.inspect
+                    {:photo => MEDIA_FACEBOOK + "/" + pbdata[:profile_image_names][i[0]]}
                 when 2
-                    @ig.sample
-                    {:photo => MEDIA_INSTAGRAM + "/" + t[0]}
+                    i = @ig.sample
+                    puts i.inspect
+                    {:photo => MEDIA_INSTAGRAM + "/" + pbdata[:profile_image_names][i[0]]}
                 end
             end
         end
