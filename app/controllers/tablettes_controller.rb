@@ -66,6 +66,7 @@ class TablettesController < ApplicationController
             tablets: self.class.tablets.collect do |id, t|
                 {
                     id:         id,
+                    group:      t[:group],
                     ip:         t[:ip],
                     build:      t[:build],
                     ping:       t[:ping] && ((now - t[:ping]) * 1000).round,
