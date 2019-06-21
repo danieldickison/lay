@@ -24,6 +24,12 @@ class SeqOffTheRails
     MEDIA_INSTAGRAM = Media::DYNAMIC + "/s_512-Instagram"
     MEDIA_TRAVEL    = Media::DYNAMIC + "/s_531-Travel"
     MEDIA_FOOD      = Media::DYNAMIC + "/s_532-Food"
+    IMG_PROFILE     = Media::IMG_DYNAMIC + "/s_510-OTR_profile"
+    IMG_FACEBOOK    = Media::IMG_DYNAMIC + "/s_511-Facebook"
+    IMG_INSTAGRAM   = Media::IMG_DYNAMIC + "/s_512-Instagram"
+    IMG_TRAVEL      = Media::IMG_DYNAMIC + "/s_531-Travel"
+    IMG_FOOD        = Media::IMG_DYNAMIC + "/s_532-Food"
+
     DATA_DIR        = Media::PLAYBACK + "/data_dynamic/112-OTR/"
     IMG_BASE        = Media::IMG_PATH + "/media_dynamic/112-OTR/"
     DATABASE        = Media::DATABASE
@@ -145,15 +151,15 @@ class SeqOffTheRails
                 when 0
                     i = @tweets.sample
                     puts i.inspect
-                    {:profile_img => MEDIA_PROFILE + "/" + pbdata[:profile_image_names][i[0]], :tweet => i[1]}
+                    {:profile_img => IMG_PROFILE + "/" + pbdata[:profile_image_names][i[0]], :tweet => i[1]}
                 when 1
                     i = @fb.sample
                     puts i.inspect
-                    {:photo => MEDIA_FACEBOOK + "/" + pbdata[:facebook_image_names][i[0]]}
+                    {:photo => IMG_FACEBOOK + "/" + pbdata[:facebook_image_names][i[0]]}
                 when 2
                     i = @ig.sample
                     puts i.inspect
-                    {:photo => MEDIA_INSTAGRAM + "/" + pbdata[:instagram_image_names][i[0]]}
+                    {:photo => IMG_INSTAGRAM + "/" + pbdata[:instagram_image_names][i[0]]}
                 end
             end
         end
