@@ -15,6 +15,7 @@ if (!window.layNativeInterface) {
         setVolume: function () {},
         setAssets: function () {},
         hideChrome: function () {},
+        resetOSC: function () {},
     };
 }
 
@@ -463,6 +464,9 @@ function handleCommand(cmd, args) {
     switch (cmd) {
         case 'clear_cache':
             layNativeInterface.setAssets(null);
+            break;
+        case 'reset_osc':
+            layNativeInterface.resetOSC();
             break;
         case 'reload':
             location.reload();

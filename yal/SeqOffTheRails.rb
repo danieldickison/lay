@@ -88,8 +88,8 @@ class SeqOffTheRails
         ]
 
         instagrams = [
-            {:photo => 1, :caption => 'this is an insta'},
-            {:photo => 2, :caption => 'look at you your on instagram'},
+            {:photo => 3, :caption => 'this is an insta'},
+            {:photo => 4, :caption => 'look at you your on instagram'},
         ]
 
         pbdata[:tweets] = tweets
@@ -105,10 +105,10 @@ class SeqOffTheRails
     CARE_ABOUT_OPT = true
 
     NUM_RAILS = 8
-    FIRST_RAILS_CHANNEL = 2
     TWEET_DURATION = 25
     FB_DURATION = 18
     IG_DURATION = 18
+    RANDOM_OFFSET_RANGE = 5..12
 
     attr_accessor(:start_time)
 
@@ -121,9 +121,9 @@ class SeqOffTheRails
 
         pbdata = PlaybackData.read(DATA_DIR)
 
-        @tweets = pbdata[:tweets].collect {|h| [h[:profile], h[:tweet]]}
-        @fb = pbdata[:facebooks].collect {|h| [h[:photo], h[:caption]]}
-        @ig = pbdata[:instagrams].collect {|h| [h[:photo], h[:caption]]}
+        @tweets = pbdata[:tweets].collect {|h| [:tweet, h[:profile], h[:tweet]]}
+        @fb = pbdata[:facebooks].collect {|h| [:fb, h[:photo], h[:caption]]}
+        @ig = pbdata[:instagrams].collect {|h| [:ig, h[:photo], h[:caption]]}
         @mutex = Mutex.new
 
         @tablet_items = {}
@@ -138,15 +138,15 @@ class SeqOffTheRails
                 when 0
                     i = @tweets.sample
                     puts i.inspect
-                    {:profile_img => IMG_PROFILE + "/" + pbdata[:profile_image_names][i[0]], :tweet => i[1]}
+                    {:profile_img => IMG_PROFILE + "/" + pbdata[:profile_image_names][i[1]], :tweet => i[2]}
                 when 1
                     i = @fb.sample
                     puts i.inspect
-                    {:photo => IMG_FACEBOOK + "/" + pbdata[:facebook_image_names][i[0]]}
+                    {:photo => IMG_FACEBOOK + "/" + pbdata[:facebook_image_names][i[1]]}
                 when 2
                     i = @ig.sample
                     puts i.inspect
-                    {:photo => IMG_INSTAGRAM + "/" + pbdata[:instagram_image_names][i[0]]}
+                    {:photo => IMG_INSTAGRAM + "/" + pbdata[:instagram_image_names][i[1]]}
                 end
             end
         end
@@ -166,19 +166,22 @@ class SeqOffTheRails
                 TablettesController.queue_command(t, 'offtherails', items)
             end
 
+            sleep(30) #quick and dirty pre-delay for isadora tweets
+
             tweet_queue = []
             fb_queue = []
             ig_queue = []
 
-            rails = [
-                Runner.new(@is, 2, @tweets, tweet_queue, @mutex, TWEET_DURATION),
-                Runner.new(@is, 3, @tweets, tweet_queue, @mutex, TWEET_DURATION),
-                Runner.new(@is, 4, @fb, fb_queue, @mutex, FB_DURATION),
-                Runner.new(@is, 5, @fb, fb_queue, @mutex, FB_DURATION),
-                Runner.new(@is, 6, @fb, fb_queue, @mutex, FB_DURATION),
-                Runner.new(@is, 7, @ig, ig_queue, @mutex, IG_DURATION),
-                Runner.new(@is, 8, @ig, ig_queue, @mutex, IG_DURATION),
-            ]
+            all_items = @tweets + @fb + @ig
+            item_queue = []
+            channel_queues =  {
+                :tweet => (0..2).to_a,
+                :fb => (3..5).to_a,
+                :ig => (6..8).to_a,
+            }
+
+            rails = 6.times.collect {|i| Runner.new(i, @is, all_items, item_queue, channel_queues, @mutex)}
+
             while @run
                 rails.each(&:run)
                 sleep(0.1)
@@ -224,33 +227,52 @@ class SeqOffTheRails
     end
 
     class Runner
-        def initialize(is, channel, all_items, queue, mutex, duration)
+        def initialize(index, is, all_items, item_queue, channel_queues, mutex)
+            @index = index
             @is = is
-            @addr = "/isadora-multi/#{channel}"
-            @channel_base = channel - FIRST_RAILS_CHANNEL
             @all_items = all_items
-            @queue = queue
+            @item_queue = item_queue
+            @channel_queues = channel_queues
             @state = :idle
             @mutex = mutex
-            @duration = duration
+            @first_time = true
+            @channel = nil
         end
 
         def run
             case @state
             when :idle
-                @time = Time.now + rand
-                @item = @mutex.synchronize do
-                    if @queue.empty?
-                        @queue = @all_items.dup.shuffle
+                if @first_time
+                    @time = Time.now + @index * rand * (RANDOM_OFFSET_RANGE.max - RANDOM_OFFSET_RANGE.min)
+                    @first_time = false
+                else
+                    @time = Time.now + 2*rand
+                end
+                @mutex.synchronize do
+                    if @channel
+                        @channel_queues[@item[0]].push(@channel)
                     end
-                    @queue.pop
+                    @channel = nil
+                    while @channel == nil
+                        if @item_queue.empty?
+                            @item_queue = @all_items.dup.shuffle
+                        end
+                        @item = @item_queue.pop
+                        @channel = @channel_queues[@item[0]].pop
+                    end
                 end
                 @state = :pre
             when :pre
                 if Time.now >= @time
-                    @is.send(@addr, *@item)
+                    @is.send("/isadora/#{20 + @channel}", @item[1])
+                    @is.send("/isadora/#{30 + @channel}", @item[2])
                     @state = :anim
-                    @time = Time.now + (@channel_base * 2) + @duration
+                    duration = case @item[0]
+                    when :tweet then TWEET_DURATION
+                    when :fb then FB_DURATION
+                    when :ig then IG_DURATION
+                    end
+                    @time = Time.now + duration
                 end
             when :anim
                 if Time.now > @time

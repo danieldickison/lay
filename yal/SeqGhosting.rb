@@ -93,7 +93,7 @@ class SeqGhosting
             @is.send('/isadora/1', '500')
 
             puts "triggering ghosting profiles in #{@profile_delay}ms"
-            time = (Time.now.to_f * 1000).round + @profile_delay
+            time = ((@start_time + @prepare_sleep).to_f * 1000).round + @profile_delay
             @tablet_profile_images.each do |t, images|
                 TablettesController.queue_command(t, 'ghosting', time, @profile_duration, images)
             end

@@ -22,6 +22,8 @@ public class NtpSync {
     }
 
     final private static int INTERVAL_MS = 10_000;
+    final private static int INTERVAL_LONG_MS = 60_000; // after a few good pings, slow down to once a minute.
+    final private static int SLOW_DOWN_AFTER = 10;
     final private static int PAST_OFFSETS_COUNT = 15;
     final private static String TAG = "lay";
 
@@ -38,7 +40,7 @@ public class NtpSync {
     private int successfulRequests = 0;
     private Date lastSuccessDate = null;
 
-    public NtpSync(String host, Callback callback) throws UnknownHostException {
+    public NtpSync(String host, Callback callback) {
         this.host = host;
         this.callback = callback;
         for (int i = 0; i < pastOffsets.length; i++) {
@@ -53,12 +55,14 @@ public class NtpSync {
         if (ntpFuture != null) {
             ntpFuture.cancel(true);
         }
-        ntpFuture = executor.scheduleWithFixedDelay(updateRunnable, 0, INTERVAL_MS, TimeUnit.MILLISECONDS);
+        boolean slow = successfulRequests >= SLOW_DOWN_AFTER;
+        long interval = slow ? INTERVAL_LONG_MS : INTERVAL_MS;
+        ntpFuture = executor.scheduleWithFixedDelay(updateRunnable, slow ? interval : 0, interval, TimeUnit.MILLISECONDS);
 
         if (watchdogFuture != null) {
             watchdogFuture.cancel(true);
         }
-        watchdogFuture = executor.scheduleWithFixedDelay(watchdogRunnable, INTERVAL_MS, INTERVAL_MS, TimeUnit.MILLISECONDS);
+        watchdogFuture = executor.scheduleWithFixedDelay(watchdogRunnable, interval + 1000, interval, TimeUnit.MILLISECONDS);
     }
 
     public synchronized void stop() {
@@ -109,6 +113,13 @@ public class NtpSync {
                 stop();
             } catch (IOException e) {
                 Log.w("lay", "Failed to get NTP sync", e);
+            } catch (Throwable e) {
+                Log.e(TAG, "ntp update unexpected error", e);
+            }
+
+            if (successfulRequests == SLOW_DOWN_AFTER) {
+                Log.d(TAG, "ntp slowing down to slow interval");
+                start();
             }
         }
     };
@@ -116,11 +127,22 @@ public class NtpSync {
     final private Runnable watchdogRunnable = new Runnable() {
         @Override
         public void run() {
-            long timeSinceSuccess = new Date().getTime() - lastSuccessDate.getTime();
-            Log.d(TAG, "ntp watchdog timeSinceSuccess: " + timeSinceSuccess);
-            if (timeSinceSuccess > 3 * INTERVAL_MS) {
-                Log.w(TAG, "ntp watchdog thinks ntp has stalled; kicking it");
-                start();
+            try {
+                long timeSinceSuccess;
+                long interval;
+                synchronized (pastOffsets) {
+                    timeSinceSuccess = new Date().getTime() - lastSuccessDate.getTime();
+                    interval = successfulRequests >= SLOW_DOWN_AFTER ? INTERVAL_LONG_MS : INTERVAL_MS;
+                }
+                if (timeSinceSuccess > interval) {
+                    Log.d(TAG, "ntp watchdog timeSinceSuccess: " + timeSinceSuccess);
+                }
+                if (timeSinceSuccess > 3 * interval) {
+                    Log.w(TAG, "ntp watchdog thinks ntp has stalled; kicking it");
+                    start();
+                }
+            } catch (Throwable e) {
+                Log.e(TAG, "ntp watchdog error", e);
             }
         }
     };
