@@ -197,7 +197,7 @@ class SeqOffTheRails
     class Runner
         def initialize(is, channel, all_items, queue, mutex)
             @is = is
-            @addr = "/isadora/#{channel}"
+            @addr = "/isadora-multi/#{channel}"
             @channel_base = channel - FIRST_RAILS_CHANNEL
             @all_items = all_items
             @queue = queue
