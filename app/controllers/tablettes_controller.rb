@@ -2,7 +2,7 @@ class TablettesController < ApplicationController
 
     TABLET_BASE_IP_NUM = 200
 
-    @debug = true
+    @debug = false
     TABLET_TO_TABLE = {
         1 => 'A',
         2 => 'B',
@@ -28,7 +28,7 @@ class TablettesController < ApplicationController
     @tablets = {}
     @tablets_mutex = Mutex.new
     @@dumping_stats = false
-    @volume = 20 # percent
+    @volume = 90 # percent
 
     @@show_time = true
 
