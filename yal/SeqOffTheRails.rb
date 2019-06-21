@@ -57,11 +57,12 @@ class SeqOffTheRails
         end
         pbdata[:profile_image_names] = profile_image_names
 
-        [["facebook images", MEDIA_FACEBOOK, "511", "Facebook"],
-         ["instagram images", MEDIA_INSTAGRAM, "512", "Instagram"],
-         ["travel images", MEDIA_TRAVEL, "531", "Travel"],
-         ["food images", MEDIA_FOOD, "532", "Food"]].each do |src, dst, num, type|
+        [["facebook images", MEDIA_FACEBOOK, "511", "Facebook", :facebook_image_names],
+         ["instagram images", MEDIA_INSTAGRAM, "512", "Instagram", :instagram_image_names],
+         ["travel images", MEDIA_TRAVEL, "531", "Travel", :travel_image_names],
+         ["food images", MEDIA_FOOD, "532", "Food", :food_image_names]].each do |src, dst, num, type, pbkey|
             puts "#{type}..."
+            image_names = {}
             debug_images = `find "#{DATABASE}/#{src}" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
             10.times do |i|
                 begin
@@ -69,6 +70,7 @@ class SeqOffTheRails
                     f = debug_images.delete_at(r).strip
                     name = "#{num}-#{'%03d' % (i + 1)}-R03-#{type}.jpg"
                     GraphicsMagick.fit(f, "#{dst}/#{name}", 480, 480, "jpg", 85)
+                    image_names[i + 1] = name
                 rescue
                     puts $!.inspect
                     puts "retrying"
@@ -76,7 +78,7 @@ class SeqOffTheRails
                     retry
                 end
             end
-
+            pbdata[pbkey] = image_names
         end
 
         tweets = [
@@ -147,11 +149,11 @@ class SeqOffTheRails
                 when 1
                     i = @fb.sample
                     puts i.inspect
-                    {:photo => MEDIA_FACEBOOK + "/" + pbdata[:profile_image_names][i[0]]}
+                    {:photo => MEDIA_FACEBOOK + "/" + pbdata[:facebook_image_names][i[0]]}
                 when 2
                     i = @ig.sample
                     puts i.inspect
-                    {:photo => MEDIA_INSTAGRAM + "/" + pbdata[:profile_image_names][i[0]]}
+                    {:photo => MEDIA_INSTAGRAM + "/" + pbdata[:instagram_image_names][i[0]]}
                 end
             end
         end
