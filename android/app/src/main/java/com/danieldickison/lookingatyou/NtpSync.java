@@ -132,8 +132,10 @@ public class NtpSync {
                 long interval;
                 synchronized (pastOffsets) {
                     timeSinceSuccess = new Date().getTime() - lastSuccessDate.getTime();
-                    Log.d(TAG, "ntp watchdog timeSinceSuccess: " + timeSinceSuccess);
                     interval = successfulRequests >= SLOW_DOWN_AFTER ? INTERVAL_LONG_MS : INTERVAL_MS;
+                }
+                if (timeSinceSuccess > interval) {
+                    Log.d(TAG, "ntp watchdog timeSinceSuccess: " + timeSinceSuccess);
                 }
                 if (timeSinceSuccess > 3 * interval) {
                     Log.w(TAG, "ntp watchdog thinks ntp has stalled; kicking it");
