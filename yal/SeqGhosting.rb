@@ -60,8 +60,8 @@ class SeqGhosting
         @state = :idle
         @time = nil
 
-        @profile_delay = 67_400 # ms
-        @profile_duration = 18_300 # ms
+        @profile_delay = 67_600 # ms
+        @profile_duration = 18_100 # ms
         @video = '/playback/media_tablets/105-Ghosting/105-011-C6?-Ghosting_all.mp4' # '?' replaced by tablet group
         @prepare_sleep = 1 # second
         @isadora_delay = 2 # seconds
