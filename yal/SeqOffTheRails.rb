@@ -19,10 +19,14 @@ require('PlaybackData')
 
 class SeqOffTheRails
 
-    MEDIA_PROFILE = Media::PLAYBACK + "/media_dynamic/s_510-OTR_profile/"
-    DATA_DIR      = Media::PLAYBACK + "/data_dynamic/112-OTR/"
-    IMG_BASE      = Media::IMG_PATH + "/media_dynamic/112-OTR/"
-    DATABASE      = Media::DATABASE
+    MEDIA_PROFILE   = Media::DYNAMIC + "/s_510-OTR_profile"
+    MEDIA_FACEBOOK  = Media::DYNAMIC + "/s_511-Facebook"
+    MEDIA_INSTAGRAM = Media::DYNAMIC + "/s_512-Instagram"
+    MEDIA_TRAVEL    = Media::DYNAMIC + "/s_531-Travel"
+    MEDIA_FOOD      = Media::DYNAMIC + "/s_532-Food"
+    DATA_DIR        = Media::PLAYBACK + "/data_dynamic/112-OTR/"
+    IMG_BASE        = Media::IMG_PATH + "/media_dynamic/112-OTR/"
+    DATABASE        = Media::DATABASE
 
 =begin
     pbdata:
@@ -33,38 +37,47 @@ class SeqOffTheRails
         pbdata = {}
 
         # profiles
+        # 180x180 circles
+        puts "Profile..."
         debug_images = `find "#{DATABASE}/profile" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
         profile_image_names = {}
         16.times do |i|
             begin
                 r = rand(debug_images.length)
                 f = debug_images.delete_at(r).strip
-                name = "505-#{'%03d' % (i + 1)}-R01-profile_ghosting.jpg"
-                GraphicsMagick.thumbnail(f, MEDIA_PROFILE + name, 360, 360, "jpg", 85)
+                name = "510-#{'%03d' % (i + 1)}-R02-OTR_profile.png"
+                GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
                 profile_image_names[i + 1] = name
             rescue
                 puts $!.inspect
                 puts "retrying"
+                sleep(1)
                 retry
             end
         end
         pbdata[:profile_image_names] = profile_image_names
 
-        # food, birthday, restuarant, travel
-        # debug_images = `find "#{DATABASE}/profile" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
-        # 10.times do |i|
-        #     begin
-        #         r = rand(debug_images.length)
-        #         f = debug_images.delete_at(r).strip
-        #         name = "112-#{'%03d' % (i + 1)}-R01-food.jpg"
-        #         GraphicsMagick.thumbnail(f, MEDIA_PROFILE + name, 360, 360, "jpg", 85)
-        #         profile_image_names[i + 1] = name
-        #     rescue
-        #         puts $!.inspect
-        #         puts "retrying"
-        #         retry
-        #     end
-        # end
+        [["facebook images", MEDIA_FACEBOOK, "511", "Facebook"],
+         ["instagram images", MEDIA_INSTAGRAM, "512", "Instagram"],
+         ["travel images", MEDIA_TRAVEL, "531", "Travel"],
+         ["food images", MEDIA_FOOD, "532", "Food"]].each do |src, dst, num, type|
+            puts "#{type}..."
+            debug_images = `find "#{DATABASE}/#{src}" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
+            10.times do |i|
+                begin
+                    r = rand(debug_images.length)
+                    f = debug_images.delete_at(r).strip
+                    name = "#{num}-#{'%03d' % (i + 1)}-R03-#{type}.jpg"
+                    GraphicsMagick.fit(f, "#{dst}/#{name}", 480, 480, "jpg", 85)
+                rescue
+                    puts $!.inspect
+                    puts "retrying"
+                    sleep(1)
+                    retry
+                end
+            end
+
+        end
 
         PlaybackData.write(DATA_DIR, pbdata)
     end

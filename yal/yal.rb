@@ -23,6 +23,7 @@ require('Config')
 require('Isadora')
 require('Media')
 require('SeqGhosting')
+require('SeqOffTheRails')
 
 
 class Yal
@@ -162,8 +163,11 @@ class Yal
         end
     end
 
-    def cli_import
-        SeqGhosting.import
+    def cli_import(*args)
+        seqclass = Object.const_get("Seq#{args[0]}".to_sym)
+        seqclass.import
+
+        # SeqGhosting.import
         # GraphicsMagick.thumbnail(MEDIA_DB + "/profile-1.jpg", MEDIA_PB + "/media_dynamic/ghosting/profile-1.jpg", 180, 180, "jpg", 85)
         # GraphicsMagick.thumbnail(MEDIA_DB + "/profile-2.jpg", MEDIA_PB + "/media_dynamic/ghosting/profile-2.jpg", 180, 180, "jpg", 85)
         # GraphicsMagick.thumbnail(MEDIA_DB + "/profile-3.jpg", MEDIA_PB + "/media_dynamic/ghosting/profile-3.jpg", 180, 180, "jpg", 85)
