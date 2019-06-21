@@ -76,7 +76,9 @@ class SeqOffTheRails
 
     NUM_RAILS = 8
     FIRST_RAILS_CHANNEL = 2
-    FIRST_RAILS_DURATION = 8
+    TWEET_DURATION = 25
+    FB_DURATION = 18
+    IG_DURATION = 18
 
     # TODO: get these from the db
     PROFILE_PIC_IDS = (1..16).to_a
@@ -142,13 +144,13 @@ class SeqOffTheRails
             ig_queue = []
 
             rails = [
-                Runner.new(@is, 2, @tweets, tweet_queue, @mutex),
-                Runner.new(@is, 3, @tweets, tweet_queue, @mutex),
-                Runner.new(@is, 4, @fb, fb_queue, @mutex),
-                Runner.new(@is, 5, @fb, fb_queue, @mutex),
-                Runner.new(@is, 6, @fb, fb_queue, @mutex),
-                Runner.new(@is, 7, @ig, ig_queue, @mutex),
-                Runner.new(@is, 8, @ig, ig_queue, @mutex),
+                Runner.new(@is, 2, @tweets, tweet_queue, @mutex, TWEET_DURATION),
+                Runner.new(@is, 3, @tweets, tweet_queue, @mutex, TWEET_DURATION),
+                Runner.new(@is, 4, @fb, fb_queue, @mutex, FB_DURATION),
+                Runner.new(@is, 5, @fb, fb_queue, @mutex, FB_DURATION),
+                Runner.new(@is, 6, @fb, fb_queue, @mutex, FB_DURATION),
+                Runner.new(@is, 7, @ig, ig_queue, @mutex, IG_DURATION),
+                Runner.new(@is, 8, @ig, ig_queue, @mutex, IG_DURATION),
             ]
             while @run
                 rails.each(&:run)
@@ -195,7 +197,7 @@ class SeqOffTheRails
     end
 
     class Runner
-        def initialize(is, channel, all_items, queue, mutex)
+        def initialize(is, channel, all_items, queue, mutex, duration)
             @is = is
             @addr = "/isadora-multi/#{channel}"
             @channel_base = channel - FIRST_RAILS_CHANNEL
@@ -203,6 +205,7 @@ class SeqOffTheRails
             @queue = queue
             @state = :idle
             @mutex = mutex
+            @duration = duration
         end
 
         def run
@@ -220,7 +223,7 @@ class SeqOffTheRails
                 if Time.now >= @time
                     @is.send(@addr, *@item)
                     @state = :anim
-                    @time = Time.now + (@channel_base * 2) + FIRST_RAILS_DURATION
+                    @time = Time.now + (@channel_base * 2) + @duration
                 end
             when :anim
                 if Time.now > @time
