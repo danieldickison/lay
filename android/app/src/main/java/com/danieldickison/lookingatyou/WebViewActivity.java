@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
+import android.view.ViewPropertyAnimator;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
@@ -42,7 +43,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -174,6 +174,69 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             Log.d(TAG, "setting volume to " + volume);
             mgr.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_SHOW_UI | AudioManager.FLAG_PLAY_SOUND);
         }
+
+        @JavascriptInterface
+        public void resetOSC() {
+            mContentView.post(new Runnable() {
+                @Override
+                public void run() {
+                    // Last resort to wake up a table unresponsive to OSC, hopefully the web pings are still going.
+                    Log.w(TAG, "resetting OSC listener via command from web interface");
+                    int number = dispatcher.getTabletNumber();
+                    dispatcher.stopListening();
+
+                    dispatcher = new Dispatcher(number, oscHandler);
+                    dispatcher.startListening();
+                }
+            });
+        }
+    };
+
+    final private Dispatcher.Handler oscHandler = new Dispatcher.Handler() {
+        @Override
+        public void logMessage(OSCMessage message) {
+            String str = message.getAddress() +
+                    " " +
+                    TextUtils.join(", ", message.getArguments());
+            final String js = "setLastOSCMessage(\"" + str.replaceAll("\"", "\\\"") + "\")";
+            mWebView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mWebView.evaluateJavascript(js, null);
+                }
+            });
+        }
+
+        @Override
+        public void download(String path) {
+            mDownloader.downloadFile(path);
+        }
+
+        @Override
+        public void prepareVideo(final String path, final int fadeInDuration, final int fadeOutDuration) {
+            mContentView.post(new Runnable() {
+                @Override
+                public void run() {
+                    prepareNextVideoCue(path, 0, fadeInDuration, fadeOutDuration, -1);
+                }
+            });
+        }
+
+        @Override
+        public void playVideo() {
+            mVideoHolders[mVideoViewIndex].startCueAt(getServerNow() + VIDEO_DELAY);
+            audioPlayer.startAudioNow();
+        }
+
+        @Override
+        public void stopVideo() {
+            mContentView.post(new Runnable() {
+                @Override
+                public void run() {
+                    prepareNextVideoCue(null, 0, 0, 0, 0);
+                }
+            });
+        }
     };
 
     private NtpSync mNtpSync;
@@ -203,52 +266,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         mDownloader = new Downloader(getExternalFilesDir(null));
 
-        dispatcher = new Dispatcher(getIntent().getIntExtra(TABLET_NUMBER_EXTRA, 0), new Dispatcher.Handler() {
-            @Override
-            public void logMessage(OSCMessage message) {
-                String str = message.getAddress() +
-                        " " +
-                        TextUtils.join(", ", message.getArguments());
-                final String js = "setLastOSCMessage(\"" + str.replaceAll("\"", "\\\"") + "\")";
-                mWebView.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mWebView.evaluateJavascript(js, null);
-                    }
-                });
-            }
-
-            @Override
-            public void download(String path) {
-                mDownloader.downloadFile(path);
-            }
-
-            @Override
-            public void prepareVideo(final String path, final int fadeInDuration, final int fadeOutDuration) {
-                mContentView.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        prepareNextVideoCue(path, 0, fadeInDuration, fadeOutDuration, -1);
-                    }
-                });
-            }
-
-            @Override
-            public void playVideo() {
-                mVideoHolders[mVideoViewIndex].startCueAt(getServerNow() + VIDEO_DELAY);
-                audioPlayer.startAudioNow();
-            }
-
-            @Override
-            public void stopVideo() {
-                mContentView.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        prepareNextVideoCue(null, 0, 0, 0, 0);
-                    }
-                });
-            }
-        });
+        dispatcher = new Dispatcher(getIntent().getIntExtra(TABLET_NUMBER_EXTRA, 0), oscHandler);
 
         PowerManager pm = (PowerManager)getSystemService(Context.POWER_SERVICE);
         assert pm != null;
@@ -423,13 +441,17 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     @MainThread
     private void prepareNextVideoCue(String path, int seekTime, int fadeInDuration, int fadeOutDuration, long startTimestamp) {
+
+        Log.d(TAG, "prepareNextVideoCue: " + path);
+
         if (path == null) {
             mVideoHolders[0].fadeOut();
             mVideoHolders[1].fadeOut();
             audioPlayer.stopAudio();
         } else {
             VideoViewHolder precedingVideoHolder = mVideoHolders[mVideoViewIndex];
-            if (!precedingVideoHolder.isPlaying()) {
+            // let's never do this since we don't have a use for it and it causes some issues.
+            if (true || !precedingVideoHolder.isPlaying()) {
                 precedingVideoHolder = null;
             }
 
@@ -604,10 +626,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         private void fadeOut() {
             textureView.removeCallbacks(startVideoRunnable);
-            textureView.animate()
+            ViewPropertyAnimator anim = textureView.animate()
                     .setDuration(fadeOutDuration)
-                    .alpha(0)
-                    .withEndAction(stopVideoRunnable);
+                    .alpha(0);
+            if (mediaPlayer.isPlaying()) {
+                anim.withEndAction(stopVideoRunnable);
+            }
         }
 
         private boolean hardStop() {

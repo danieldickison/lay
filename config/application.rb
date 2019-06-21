@@ -166,6 +166,12 @@ module Lay
         TablettesController.queue_command(tablets, 'clear_cache')
       end
 
+      @server.add_method('/reset_osc') do |message|
+        tablets = message.to_a.collect {|t| t.to_i}
+        puts "/reset_osc #{tablets.inspect}"
+        TablettesController.queue_command(tablets, 'reset_osc')
+      end
+
       @server.add_method('/volume') do |message|
         vol = message.to_a[0].to_i
         TablettesController.volume = vol
