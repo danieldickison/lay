@@ -190,7 +190,7 @@ class SeqOffTheRails
         @state = :idle
         @time = nil
 
-        @prepare_delay = 1
+        @prepare_delay = 2.667
 
         pbdata = PlaybackData.read(DATA_DIR)
 
