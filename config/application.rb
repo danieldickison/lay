@@ -11,6 +11,7 @@ MAIN_DIR = File.expand_path('../yal', __dir__)
 $:.unshift(MAIN_DIR)
 require('SeqGhosting')
 require('SeqOffTheRails')
+require('SeqLaunch')
 
 module Lay
   class Application < Rails::Application
@@ -102,8 +103,7 @@ module Lay
         when 1200
             @current_seq = SeqOffTheRails.new
         when 1300
-            # ProductLaunch.load
-            # ProductLaunch.start
+            @current_seq = SeqLaunch.new
         end
 
         @current_seq.start_time = start_time
