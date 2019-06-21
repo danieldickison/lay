@@ -45,7 +45,9 @@ class SeqLaunch
 
   TIMINGS = [nil, nil, 10, 8, 8, 12, 8, 4, 5]
 
-    def initialize(p_data)
+    attr_accessor(:start_time)
+
+    def initialize(p_data={})
         @id = p_data["Patron ID"]
         @table = p_data["Table (auto)"]
 
@@ -62,7 +64,7 @@ class SeqLaunch
         @data[EDUCATION_CHANNEL] = p_data["Education 1"]
         @data[OCCUPATION_CHANNEL] = p_data["Current Occupation 1"]
 
-            pbdata = PlaybackData.read(DATA_DYNAMIC)
+            #pbdata = PlaybackData.read(DATA_DYNAMIC)
 
         @disp = [NAME_CHANNEL, HOMETOWN_CHANNEL, FACT1_CHANNEL, FACT2_CHANNEL, FAMILY_CHANNEL, OCCUPATION_CHANNEL, EDUCATION_CHANNEL].shuffle
 
@@ -70,6 +72,8 @@ class SeqLaunch
         @state = :idle
         @time = nil
         @end_time = Time.now
+        @start_time = Time.now
+        @prepare_delay = 1
     end
 
     def load
@@ -85,9 +89,8 @@ class SeqLaunch
         end
 
         if !(p.keys & ONE_OF_THESE_COLUMNS).empty?
-        patron = new(p)
-        @@patrons.push(patron)
-        end
+            patron = new(p)
+            @@patrons.push(patron)
         end
         puts "got #{@@patrons.length} patrons"
         puts @@patrons.inspect
@@ -95,13 +98,18 @@ class SeqLaunch
 
     def start
         @@run = true
-            Thread.new do
-                while true
-                    @@patrons.each do |patron|
-                        patron.run
-                    return if !@@run
-                end
-            end
+        Thread.new do
+            TablettesController.send_osc_prepare('/playback/media_tablets/113-Launch/113-511-C60-Launch_all.mp4')
+            sleep(@start_time + @prepare_delay - Time.now)
+            TablettesController.send_osc('/tablet/play')
+            @is.send('/isadora/1', '1300')
+
+            # while true
+            #     @@patrons.each do |patron|
+            #         patron.run
+            #     return if !@@run
+            #     sleep(0.1)
+            # end
         end
     end
 
@@ -109,38 +117,38 @@ class SeqLaunch
         @@run = false
     end
 
-    def pause
-    end
+    # def pause
+    # end
 
-    def unpause
-    end
+    # def unpause
+    # end
 
-    def run
-        @is.send("/channel/9", @img1 || "")
-        @is.send("/channel/10", @img2 || "")
-        @is.send("/channel/11", @img3 || "")
+    # def run
+    #     @is.send("/channel/9", @img1 || "")
+    #     @is.send("/channel/10", @img2 || "")
+    #     @is.send("/channel/11", @img3 || "")
 
-        while true
-            break if !@@run
-            case @state
-            when :idle
-                if @disp.empty?
-                    if Time.now > (@end_time - 2)
-                        return
-                    end
-                else
-                    ch = @disp.pop
-                    @is.send("/channel/#{ch}", @data[ch] || "")
-                    @end_time = [Time.now + TIMINGS[ch], @end_time].max
-                    @time = Time.now + rand
-                    @state = :disp
-                end
-            when :disp
-                if Time.now > @time
-                    @state = :idle
-                end
-            end
-            sleep(0.1)
-        end
-    end
+    #     while true
+    #         break if !@@run
+    #         case @state
+    #         when :idle
+    #             if @disp.empty?
+    #                 if Time.now > (@end_time - 2)
+    #                     return
+    #                 end
+    #             else
+    #                 ch = @disp.pop
+    #                 @is.send("/channel/#{ch}", @data[ch] || "")
+    #                 @end_time = [Time.now + TIMINGS[ch], @end_time].max
+    #                 @time = Time.now + rand
+    #                 @state = :disp
+    #             end
+    #         when :disp
+    #             if Time.now > @time
+    #                 @state = :idle
+    #             end
+    #         end
+    #         sleep(0.1)
+    #     end
+    # end
 end

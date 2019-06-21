@@ -59,6 +59,7 @@ function fetchStats() {
             }
             let tr = document.createElement('tr');
             tr.appendChild(td(tablet.id));
+            tr.appendChild(td(tablet.group));
             tr.appendChild(td(tablet.ip));
             tr.appendChild(td(tablet.build));
             tr.appendChild(td(tablet.ping + 'ms', isLagging ? 'red' : null));
