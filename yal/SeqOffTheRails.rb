@@ -136,11 +136,14 @@ class SeqOffTheRails
             @tablet_items[t] = 10.times.collect do
                 case rand(3)
                 when 0
-                    @tweets.sample
+                    t = @tweets.sample
+                    {:profile_img => MEDIA_PROFILE + "/" + t[0], :tweet => t[1]}
                 when 1
-                    @fb.sample
+                    t = @fb.sample
+                    {:photo => MEDIA_FACEBOOK + "/" + t[0]}
                 when 2
                     @ig.sample
+                    {:photo => MEDIA_INSTAGRAM + "/" + t[0]}
                 end
             end
         end
