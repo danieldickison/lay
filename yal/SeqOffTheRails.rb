@@ -1,10 +1,4 @@
 =begin
-1 movie file for every table, audio
-add images to the tweets
-osc to start
-osc image # and tweet text
-need channel
-
 Q sheet: https://docs.google.com/spreadsheets/d/15vOxUsTvJnuYiC-J1N6aU-Em2_-lubAkW5KSAw8P_Q4/edit#gid=0
 folder/file/osc: https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/edit#
 
@@ -29,16 +23,9 @@ class SeqOffTheRails
     IMG_INSTAGRAM   = Media::IMG_DYNAMIC + "/s_512-Instagram"
     IMG_TRAVEL      = Media::IMG_DYNAMIC + "/s_531-Travel"
     IMG_FOOD        = Media::IMG_DYNAMIC + "/s_532-Food"
-
     DATA_DIR        = Media::PLAYBACK + "/data_dynamic/112-OTR/"
-    IMG_BASE        = Media::IMG_PATH + "/media_dynamic/112-OTR/"
     DATABASE        = Media::DATABASE
 
-=begin
-    pbdata:
-        :profile_image_names => {1 => "xxx-001-R01-profile.jpg", 2 => ...}
-        :tweets => [{:tweet => "...", :profile => 1}, {...}]
-=end
     def self.import
         pbdata = {}
 
