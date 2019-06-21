@@ -261,7 +261,7 @@ class SeqOffTheRails
                 rails.each(&:run)
                 sleep(0.1)
             end
-            @run = false
+            stop
         end
     end
 
