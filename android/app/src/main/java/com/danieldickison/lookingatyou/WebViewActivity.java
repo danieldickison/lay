@@ -349,14 +349,10 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         Log.d(TAG, "connectToHost: " + host);
 
         mHost = host;
-        try {
-            if (mNtpSync != null) {
-                mNtpSync.stop();
-            }
-            mNtpSync = new NtpSync(host, this);
-        } catch (UnknownHostException e) {
-            throw new RuntimeException("Unable to start NtpSync to host " + host, e);
+        if (mNtpSync != null) {
+            mNtpSync.stop();
         }
+        mNtpSync = new NtpSync(host, this);
         mDownloader.setHost(host, PORT);
         mWebView.loadUrl(serverURL(PAGE_PATH));
     }
