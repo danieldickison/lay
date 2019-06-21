@@ -87,38 +87,49 @@ class SeqOffTheRails
     CARE_ABOUT_DATE = true
     CARE_ABOUT_OPT = true
 
-    NUM_RAILS = 5
+    NUM_RAILS = 8
     FIRST_RAILS_CHANNEL = 2
-    FIRST_RAILS_DURATION = 8
+    TWEET_DURATION = 25
+    FB_DURATION = 18
+    IG_DURATION = 18
 
     # TODO: get these from the db
-    PROFILE_PICS = %w[505-005-R01-profile_ghosting.jpg  505-010-R01-profile_ghosting.jpg  505-015-R01-profile_ghosting.jpg  505-001-R01-profile_ghosting.jpg  505-006-R01-profile_ghosting.jpg  505-011-R01-profile_ghosting.jpg  505-016-R01-profile_ghosting.jpg  505-002-R01-profile_ghosting.jpg  505-007-R01-profile_ghosting.jpg  505-012-R01-profile_ghosting.jpg  505-003-R01-profile_ghosting.jpg  505-008-R01-profile_ghosting.jpg  505-013-R01-profile_ghosting.jpg  505-004-R01-profile_ghosting.jpg  505-009-R01-profile_ghosting.jpg  505-014-R01-profile_ghosting.jpg
-    ].collect {|n| "/playback/media_dynamic/505-profile_ghosting/#{n}"}.freeze
+    PROFILE_PIC_IDS = (1..16).to_a
+    PROFILE_URLS = PROFILE_PIC_IDS.collect do |id|
+        IMG_PROFILE + ('510-%03d-R02-OTR_profile.png' % id)
+    end.freeze
+
+    FB_PIC_IDS = (1..10).to_a
+    IG_PIC_IDS = (1..10).to_a
+
+    TEST_TWEETS = ['hi i ate a sandwich adn it was good', 'look at me im on social media', 'covfefe', 'oneuoloenthlonglonglongtextstringwhathappens', 'ユニコード'].freeze
+    TEST_CAPTIONS = ['one caption', 'another caption', 'this is another caption', 'yet another', 'blo blah blah blah bllh', 'and another one', 'somteh ngishtong', 'this is a test of unicode ユニコード'].freeze
 
     TEST_ITEMS = [
-        {:tweet => 'hi i ate a sandwich adn it was good', :profile_img => PROFILE_PICS.sample(1)},
-        {:tweet => 'look at me im on social media', :profile_img => PROFILE_PICS.sample(1)},
-        {:tweet => 'covfefe', :profile_img => PROFILE_PICS.sample(1)},
-        {:tweet => 'oneuoloenthlonglonglongtextstringwhathappens', :profile_img => PROFILE_PICS.sample(1)},
-        {:tweet => 'ユニコード', :profile_img => PROFILE_PICS.sample(1)},
-        {:photo => PROFILE_PICS.sample(1), :caption => 'this is a caption'},
+        {:tweet => 'hi i ate a sandwich adn it was good', :profile_img => PROFILE_URLS.sample(1)},
+        {:tweet => 'look at me im on social media', :profile_img => PROFILE_URLS.sample(1)},
+        {:tweet => 'covfefe', :profile_img => PROFILE_URLS.sample(1)},
+        {:tweet => 'oneuoloenthlonglonglongtextstringwhathappens', :profile_img => PROFILE_URLS.sample(1)},
+        {:tweet => 'ユニコード', :profile_img => PROFILE_URLS.sample(1)},
+        {:photo => PROFILE_URLS.sample(1), :caption => 'this is a caption'},
+        {:photo => PROFILE_URLS.sample(1), :caption => 'another caption'},
     ]
 
-    @run = false
-    @tweets = []
-    @queue = []
-    @mutex = Mutex.new
+    attr_accessor(:start_time)
 
-    attr_accessor(:state, :start_time)
-
-    def initialize(channel = 10) # channel??
-        @channel_base = channel - FIRST_RAILS_CHANNEL
-        @channel = "/channel/#{channel}"
+    def initialize
         @is = Isadora.new
         @state = :idle
         @time = nil
 
+        @prepare_delay = 1
+
         pbdata = PlaybackData.read(DATA_DIR)
+
+        @tweets = TEST_TWEETS.collect {|t| [PROFILE_PIC_IDS.sample(1)[0], t]}
+        @fb = TEST_CAPTIONS.collect {|t| [FB_PIC_IDS.sample(1)[0], t]}
+        @ig = TEST_CAPTIONS.collect {|t| [IG_PIC_IDS.sample(1)[0], t]}
+        @mutex = Mutex.new
 
         @tablet_items = {}
         # TODO: assign items to tablets from db based on which spectator is at which table
@@ -133,16 +144,29 @@ class SeqOffTheRails
         Thread.new do
 
             TablettesController.send_osc_prepare('/playback/media_tablets/112-OTR/112-201-C60-OTR_All.mp4')
-            sleep(@start_time + 1 - Time.now)
+            sleep(@start_time + @prepare_delay - Time.now)
             TablettesController.send_osc('/tablet/play')
+            @is.send('/isadora/1', '1200')
             
             @tablet_items.each do |t, items|
                 TablettesController.queue_command(t, 'offtherails', items)
             end
 
-            rails = NUM_RAILS.times.collect {|i| new(i + FIRST_RAILS_CHANNEL)}
+            tweet_queue = []
+            fb_queue = []
+            ig_queue = []
+
+            rails = [
+                Runner.new(@is, 2, @tweets, tweet_queue, @mutex, TWEET_DURATION),
+                Runner.new(@is, 3, @tweets, tweet_queue, @mutex, TWEET_DURATION),
+                Runner.new(@is, 4, @fb, fb_queue, @mutex, FB_DURATION),
+                Runner.new(@is, 5, @fb, fb_queue, @mutex, FB_DURATION),
+                Runner.new(@is, 6, @fb, fb_queue, @mutex, FB_DURATION),
+                Runner.new(@is, 7, @ig, ig_queue, @mutex, IG_DURATION),
+                Runner.new(@is, 8, @ig, ig_queue, @mutex, IG_DURATION),
+            ]
             while @run
-                NUM_RAILS.times {|i| rails[i].run}
+                rails.each(&:run)
                 sleep(0.1)
             end
         end
@@ -185,27 +209,40 @@ class SeqOffTheRails
         puts self.inspect
     end
 
-    def run
-        case @state
-        when :idle
-          @time = Time.now + rand
-          @text = @mutex.synchronize do
-            if @queue.empty?
-              @queue = @tweets.dup.shuffle
-            end
-            @queue.pop
-          end
-          @state = :pre
-        when :pre
-          if Time.now >= @time
-            @is.send(@channel, @text)
-            @state = :anim
-            @time = Time.now + (@channel_base * 2) + FIRST_RAILS_DURATION
-          end
-        when :anim
-          if Time.now > @time
+    class Runner
+        def initialize(is, channel, all_items, queue, mutex, duration)
+            @is = is
+            @addr = "/isadora-multi/#{channel}"
+            @channel_base = channel - FIRST_RAILS_CHANNEL
+            @all_items = all_items
+            @queue = queue
             @state = :idle
-          end
+            @mutex = mutex
+            @duration = duration
+        end
+
+        def run
+            case @state
+            when :idle
+                @time = Time.now + rand
+                @item = @mutex.synchronize do
+                    if @queue.empty?
+                        @queue = @all_items.dup.shuffle
+                    end
+                    @queue.pop
+                end
+                @state = :pre
+            when :pre
+                if Time.now >= @time
+                    @is.send(@addr, *@item)
+                    @state = :anim
+                    @time = Time.now + (@channel_base * 2) + @duration
+                end
+            when :anim
+                if Time.now > @time
+                    @state = :idle
+                end
+            end
         end
     end
 end

@@ -13,7 +13,10 @@ class Isadora
   end
 
   def send(msg, *args)
-    @cl.send(OSC::Message.new(msg, *args)) if Config["isadora_enabled"]
     puts "IZ #{Config["isadora_enabled"] ? 'send' : 'fake'} #{msg} - #{args.inspect}"
+    @cl.send(OSC::Message.new(msg, *args)) if Config["isadora_enabled"]
+  rescue
+    puts "error sending isadora: #{$!}"
+    puts $!.backtrace
   end
 end
