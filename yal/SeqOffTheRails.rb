@@ -191,6 +191,7 @@ class SeqOffTheRails
         @time = nil
 
         @prepare_delay = 2.667
+        @duration = 200 # 3:20
 
         pbdata = PlaybackData.read(DATA_DIR)
 
@@ -255,10 +256,12 @@ class SeqOffTheRails
 
             rails = 6.times.collect {|i| Runner.new(i, @is, all_items, item_queue, channel_queues, @mutex)}
 
-            while @run
+            end_time = @start_time + @prepare_delay + @duration
+            while @run && Time.now < end_time
                 rails.each(&:run)
                 sleep(0.1)
             end
+            @run = false
         end
     end
 
