@@ -183,15 +183,15 @@ class SeqOffTheRails
             ig_queue = []
 
             rails = [
-                Runner.new(@is, 0, @tweets, tweet_queue, @mutex, TWEET_DURATION),
-                Runner.new(@is, 1, @tweets, tweet_queue, @mutex, TWEET_DURATION),
-                Runner.new(@is, 2, @tweets, tweet_queue, @mutex, TWEET_DURATION),
-                Runner.new(@is, 3, @fb, fb_queue, @mutex, FB_DURATION),
-                Runner.new(@is, 4, @fb, fb_queue, @mutex, FB_DURATION),
-                Runner.new(@is, 5, @fb, fb_queue, @mutex, FB_DURATION),
-                Runner.new(@is, 6, @ig, ig_queue, @mutex, IG_DURATION),
-                Runner.new(@is, 7, @ig, ig_queue, @mutex, IG_DURATION),
-                Runner.new(@is, 8, @ig, ig_queue, @mutex, IG_DURATION),
+                Runner.new(@is, 20, @tweets, tweet_queue, @mutex, TWEET_DURATION),
+                Runner.new(@is, 21, @tweets, tweet_queue, @mutex, TWEET_DURATION),
+                Runner.new(@is, 22, @tweets, tweet_queue, @mutex, TWEET_DURATION),
+                Runner.new(@is, 23, @fb, fb_queue, @mutex, FB_DURATION),
+                Runner.new(@is, 24, @fb, fb_queue, @mutex, FB_DURATION),
+                Runner.new(@is, 25, @fb, fb_queue, @mutex, FB_DURATION),
+                Runner.new(@is, 26, @ig, ig_queue, @mutex, IG_DURATION),
+                Runner.new(@is, 27, @ig, ig_queue, @mutex, IG_DURATION),
+                Runner.new(@is, 28, @ig, ig_queue, @mutex, IG_DURATION),
             ]
             while @run
                 rails.each(&:run)
