@@ -26,7 +26,7 @@ class SeqGhosting
 
         used = []
         profile_image_names = {}
-        debug_images = `find "#{DATABASE}/profile" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
+        debug_images = `find "#{DATABASE}/facebook profile images" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
         16.times do |i|
             begin
                 r = rand(debug_images.length)

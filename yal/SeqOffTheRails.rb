@@ -32,7 +32,7 @@ class SeqOffTheRails
         # profiles
         # 180x180 circles
         puts "Profile..."
-        debug_images = `find "#{DATABASE}/profile" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
+        debug_images = `find "#{DATABASE}/test_profile" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
         profile_image_names = {}
         10.times do |i|
             begin
@@ -96,7 +96,7 @@ class SeqOffTheRails
             puts "#{type}..."
             image_names = {}
             debug_images = `find "#{DATABASE}/#{src}" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
-            10.times do |i|
+            30.times do |i|
                 begin
                     r = rand(debug_images.length)
                     f = debug_images.delete_at(r).strip
@@ -145,31 +145,8 @@ class SeqOffTheRails
             {:profile => 16, :tweet => "You can be ugly and stupid as long as you have a big shaft. -spam email"},
         ]
 
-        facebooks = [
-            {:photo => 1, :caption => ""},
-            {:photo => 2, :caption => ""},
-            {:photo => 3, :caption => ""},
-            {:photo => 4, :caption => ""},
-            {:photo => 5, :caption => ""},
-            {:photo => 6, :caption => ""},
-            {:photo => 7, :caption => ""},
-            {:photo => 8, :caption => ""},
-            {:photo => 9, :caption => ""},
-            {:photo => 10, :caption => ""},
-        ]
-
-        instagrams = [
-            {:photo => 1, :caption => ""},
-            {:photo => 2, :caption => ""},
-            {:photo => 3, :caption => ""},
-            {:photo => 4, :caption => ""},
-            {:photo => 5, :caption => ""},
-            {:photo => 6, :caption => ""},
-            {:photo => 7, :caption => ""},
-            {:photo => 8, :caption => ""},
-            {:photo => 9, :caption => ""},
-            {:photo => 10, :caption => ""},
-        ]
+        facebooks = 30.times.collect {|i| {:photo => i + 1, :caption => ""}}
+        instagrams = 30.times.collect {|i| {:photo => i + 1, :caption => ""}}
 
         pbdata[:tweets] = tweets
         pbdata[:facebooks] = facebooks
@@ -215,7 +192,7 @@ class SeqOffTheRails
         tweets_shuffled = []
 
         enum.each do |t|
-            @tablet_items[t] = 10.times.collect do
+            @tablet_items[t] = 50.times.collect do
                 case rand(3)
                 when 0
                     if tweets_shuffled.empty?
