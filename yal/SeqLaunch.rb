@@ -73,7 +73,7 @@ class SeqLaunch
         @time = nil
         @end_time = Time.now
         @start_time = Time.now
-        @prepare_delay = 1
+        @prepare_delay = 2.0
     end
 
     def load
