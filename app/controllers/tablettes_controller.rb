@@ -30,6 +30,10 @@ class TablettesController < ApplicationController
     @@dumping_stats = false
     @volume = 90 # percent
 
+    @last_osc_ping = Time.now
+    @last_osc_ping_mutex = Mutex.new
+    OSC_PING_INTERVAL = 5 # seconds
+
     @@show_time = true
 
     skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :assets, :update_patron, :stats]
@@ -61,6 +65,7 @@ class TablettesController < ApplicationController
     end
 
     def stats
+        osc_ping
         now = Time.now.utc
         render json: {
             tablets: self.class.tablets.collect do |id, t|
@@ -356,6 +361,20 @@ class TablettesController < ApplicationController
             rescue
                 puts "error sending OSC packet to #{tablet[:ip]}: #{$!}"
             end
+        end
+    end
+
+    def self.osc_ping
+        do_ping = @last_osc_ping_mutex.synchronize do
+            if Time.now - @last_osc_ping > OSC_PING_INTERVAL
+                @last_osc_ping = Time.now
+                true
+            else
+                false
+            end
+        end
+        if do_ping
+            send_osc('/tablet/ping')
         end
     end
 end
