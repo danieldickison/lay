@@ -7,7 +7,8 @@ Rails.application.routes.draw do
   get 'tablettes/director'
   post 'tablettes/stats'
   post 'tablettes/ping'
-  post 'tablettes/cue'
+  post 'tablettes/play_timecode'
+  post 'tablettes/stop_tablets'
   post 'tablettes/assets'
   post 'tablettes/update_patron'
 

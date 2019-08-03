@@ -36,7 +36,7 @@ class TablettesController < ApplicationController
 
     @@show_time = true
 
-    skip_before_action :verify_authenticity_token, :only => [:ping, :cue, :assets, :update_patron, :stats]
+    skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :stop_tablets, :assets, :update_patron, :stats]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
@@ -54,8 +54,15 @@ class TablettesController < ApplicationController
         @assets = self.class.assets.collect {|a| a[:path]}
     end
 
-    def cue
-        self.class.start_cue([params[:tablet].to_i], params[:file], params[:time].to_f / 1000, seek: params[:seek].to_f)
+    def play_timecode
+        self.class.send_osc_prepare('/tablet-util/tc.mp4')
+        sleep(1)
+        self.class.send_osc('/tablet/play')
+    end
+
+    def stop_tablets
+        self.class.queue_command(nil, 'stop')
+        self.class.send_osc('/tablet/stop')
     end
 
     def assets
@@ -235,20 +242,22 @@ class TablettesController < ApplicationController
         queue_command(tablet, 'load', file)
     end
 
-    def self.start_cue(tablet, file, time, seek: 0)
-        tablet_enum(tablet).each do |t|
-            @cues[t] = {:file => "downloads:#{file}", :time => time.to_f, :seek => seek.to_f}
-            puts "start[#{t}] - #{@cues[t].inspect}"
-        end
-    end
+    # These are obsolete; all video cues are via OSC messages (e.g. see SeqGhosting)
+    # 
+    # def self.start_cue(tablet, file, time, seek: 0)
+    #     tablet_enum(tablet).each do |t|
+    #         @cues[t] = {:file => "downloads:#{file}", :time => time.to_f, :seek => seek.to_f}
+    #         puts "start[#{t}] - #{@cues[t].inspect}"
+    #     end
+    # end
 
-    def self.stop_cue(tablet)
-        tablet_enum(tablet).each do |t|
-            puts "stop[#{t}]"
-            queue_command(t, 'stop')
-            @cues[t] = nil
-        end
-    end
+    # def self.stop_cue(tablet)
+    #     tablet_enum(tablet).each do |t|
+    #         puts "stop[#{t}]"
+    #         queue_command(t, 'stop')
+    #         @cues[t] = nil
+    #     end
+    # end
 
     def self.commands
         return @commands

@@ -27,15 +27,9 @@
     <p><input type="submit"></p>
 </form>
 
-<form id="cue-form" class="director-form" action="/tablettes/cue" method="POST">
-    <label>Tablet: <input name="tablet" type="number" value="1"></label>
-    <label>File: <input name="file" type="text" value="/lay/Tablet/Tablettes/tablette cue 1 T1.mp4"></label>
-    <label>Seconds in the future: <input name="seconds" type="number" value="5"></label>
-    <label>Seek Time: <input name="seek" type="number" value="0"></label>
-
-    <p><input type="submit"></p>
-
-    <p><label>Trigger time: <input name="time" type="datetime" disabled></label></p>
+<form id="debug-form" class="director-form">
+    <button id="play-timecode-button">Play Timecode</button>
+    <button id="stop-tablets-button">Stop Tablets</button>
 </form>
 
 <p><a href="/lay/etc/app.apk">Download app.apk</a></p>

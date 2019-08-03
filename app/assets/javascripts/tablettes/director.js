@@ -8,30 +8,25 @@ let STATS_INTERVAL = 1000;
 let PING_ALERT = 10000;
 
 document.addEventListener("DOMContentLoaded", event => {
-    let cueForm = document.getElementById('cue-form');
-    if (!cueForm) return;
-
-    cueForm.addEventListener('submit', event => {
-        event.preventDefault();
-        let tablet = parseInt(cueForm.elements.tablet.value);
-        let seconds = parseInt(cueForm.elements.seconds.value);
-        let time = Date.now() + seconds * 1000;
-        cueForm.elements.time.value = new Date(time).toString();
-        let body = new URLSearchParams();
-        body.append('tablet', tablet);
-        body.append('time', time);
-        body.append('file', cueForm.elements.file.value);
-        body.append('seek', cueForm.elements.seek.value);
-        fetch('/tablettes/cue.json', {method: 'POST', body: body});
-    });
-
     let assetsForm = document.getElementById('assets-form');
+    if (!assetsForm) return;
+
     assetsForm.addEventListener('submit', event => {
         event.preventDefault();
         let assets = assetsForm.elements.assets.value;
         let body = new URLSearchParams();
         body.append('assets', assets);
         fetch('/tablettes/assets.json', {method: 'POST', body: body});
+    });
+
+    document.getElementById('play-timecode-button').addEventListener('click', event => {
+        event.preventDefault();
+        fetch('/tablettes/play_timecode.json', {method: 'POST'});
+    });
+
+    document.getElementById('stop-tablets-button').addEventListener('click', event => {
+        event.preventDefault();
+        fetch('/tablettes/stop_tablets.json', {method: 'POST'});
     });
 
     setInterval(fetchStats, STATS_INTERVAL);
@@ -56,7 +51,7 @@ function fetchStats() {
             let isLagging = parseInt(tablet.ping) > PING_ALERT;
             let isOSCLagging = parseInt(tablet.osc_ping) > PING_ALERT;
             if (isLagging || isOSCLagging) {
-                console.log("tablet " + tablet.tablet + " is lagging http: " + tablet.ping + "ms" + " osc: " + tablet.osc_ping, tablet);
+                console.log("tablet " + tablet.id + " is lagging http: " + tablet.ping + "ms" + " osc: " + tablet.osc_ping, tablet);
             }
             let tr = document.createElement('tr');
             tr.appendChild(td(tablet.id));
