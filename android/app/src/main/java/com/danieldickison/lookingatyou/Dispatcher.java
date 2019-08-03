@@ -25,6 +25,7 @@ public class Dispatcher {
         void prepareVideo(String path, int fadeInDuration, int fadeOutDuration);
         void playVideo();
         void stopVideo();
+        void ping(long serverTime);
     }
 
     private static final int OSC_PORT = 53000;
@@ -67,6 +68,9 @@ public class Dispatcher {
 
                     .addMessageListener(wildcardAddr("stop"), stopListener)
                     .addMessageListener(tabletAddr("stop"), stopListener)
+
+                    .addMessageListener(wildcardAddr("ping"), pingListener)
+                    .addMessageListener(tabletAddr("ping"), pingListener)
 
                     .build();
         } catch (IOException e) {
@@ -130,6 +134,19 @@ public class Dispatcher {
         @Override
         public void acceptMessage(OSCMessageEvent event) {
             handler.stopVideo();
+        }
+    };
+
+    private final OSCMessageListener pingListener = new OSCMessageListener() {
+        @Override
+        public void acceptMessage(OSCMessageEvent event) {
+            ArgParser args = new ArgParser(event.getMessage().getArguments());
+            try {
+                long time = Long.parseLong(args.popString());
+                handler.ping(time);
+            } catch (NumberFormatException e) {
+                Log.e("lay-osc", "failed to parse server timestamp from osc ping: " + e);
+            }
         }
     };
 

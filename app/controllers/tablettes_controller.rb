@@ -75,6 +75,7 @@ class TablettesController < ApplicationController
                     ip:         t[:ip],
                     build:      t[:build],
                     ping:       t[:ping] && ((now - t[:ping]) * 1000).round,
+                    osc_ping:   t[:osc_ping] && ((now - t[:osc_ping]) * 1000).round,
                     playing:    t[:playing]&.split('/').last.gsub('%20', ' '),
                     clock:      t[:clock]&.split(' ')&.collect {|c| c.split('=')}&.to_h,
                     cache:      t[:cache]&.split("\n")&.collect do |c|
@@ -109,6 +110,7 @@ class TablettesController < ApplicationController
                 group:      tablet_group(id),
                 ip:         ip,
                 ping:       Time.now.utc,
+                osc_ping:   Time.at(params[:osc_ping].to_f / 1000),
                 build:      params[:build],
                 playing:    params[:now_playing_path],
                 clock:      params[:clock_info],
@@ -374,7 +376,8 @@ class TablettesController < ApplicationController
             end
         end
         if do_ping
-            send_osc('/tablet/ping')
+            now = (Time.now.to_r * 1000).to_i.to_s # ms since epoch, as string since OSC ints are only 32 bits
+            send_osc('/tablet/ping', now)
         end
     end
 

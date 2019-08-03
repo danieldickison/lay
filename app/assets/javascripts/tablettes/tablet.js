@@ -19,18 +19,21 @@ if (!window.layNativeInterface) {
     };
 }
 
-window.setClockOffsets = function (offsets, lastSuccess) {
-    let latest = offsets[0];
+window.updateOSCPing = function (serverTime, offset) {
+    pastClockOffsets.push(offset);
+    if (pastClockOffsets.length > PAST_OFFSETS_COUNT) {
+        pastClockOffsets.splice(0, pastClockOffsets.length - PAST_OFFSETS_COUNT);
+    }
+    let offsets = pastClockOffsets.slice().sort((a, b) => a - b);
     let len = offsets.length;
     let sum = offsets.reduce((accum, val) => accum + val, 0);
     let mean = sum / offsets.length;
-    offsets.sort((a, b) => a - b);
     let median = offsets[Math.floor(offsets.length / 2)];
     let stdev = Math.sqrt(offsets.reduce((accum, val) => accum + Math.pow(val - mean, 2), 0) / Math.max(1, (len - 1)));
-    clockInfo = "latest=" + latest + " mean=" + latest.toFixed(1) + " median=" + median + " stdev=" + stdev.toFixed(1);
+    clockInfo = "latest=" + offset + " mean=" + mean.toFixed(1) + " median=" + median + " stdev=" + stdev.toFixed(1);
     document.getElementById('clock-offset').innerText = "Clock offset (ms): " + clockInfo;
     clockOffset = median;
-    lastNtpSuccess = lastSuccess;
+    lastOSCPing = serverTime;
 };
 
 window.setLastOSCMessage = function (msg) {
@@ -53,13 +56,18 @@ window.clearNowPlaying = function (np) {
 };
 
 let TABLET_NUMBER = layNativeInterface.getTabletNumber();
+let BUILD_NAME = layNativeInterface.getBuildName();
 
 let PING_INTERVAL = 1000;
 let PING_TIMEOUT = 3000;
 var pingStartTime = null;
+
+let PAST_OFFSETS_COUNT = 20;
+var pastClockOffsets = [];
 var clockOffset = 0;
 var clockInfo = null;
-var lastNtpSuccess = 0;
+var lastOSCPing = 0;
+
 var currentCueTime = null;
 var nextCueTimeout = null;
 var currentPreload = null;
@@ -87,7 +95,7 @@ document.addEventListener("DOMContentLoaded", event => {
     });
 
     let version = document.getElementById('version');
-    version.innerText = layNativeInterface.getBuildName();
+    version.innerText = BUILD_NAME;
 
     //setInterval(cycleLogoBg, LOGO_BG_INTERVAL);
     setInterval(sendPing, PING_INTERVAL);
@@ -190,9 +198,10 @@ function sendPing() {
 
     let body = new URLSearchParams();
     body.append('tablet_number', TABLET_NUMBER);
-    body.append('build', layNativeInterface.getBuildName());
+    body.append('build', BUILD_NAME);
     body.append('now_playing_path', nowPlaying.path);
-    body.append('clock_info', (clockInfo || '') + " timeSince=" + (Date.now() - lastNtpSuccess));
+    body.append('clock_info', clockInfo || '');
+    body.append('osc_ping', lastOSCPing);
     body.append('cache_info', layNativeInterface.getCacheInfo());
     body.append('battery_percent', batteryPercent);
     let startTime = Date.now();

@@ -54,19 +54,20 @@ function fetchStats() {
         tbody.setAttribute('id', 'tablet-stats-body');
         json.tablets.forEach(tablet => {
             let isLagging = parseInt(tablet.ping) > PING_ALERT;
-            if (isLagging) {
-                console.log("tablet " + tablet.tablet + " is lagging by " + tablet.ping + "ms", tablet);
+            let isOSCLagging = parseInt(tablet.osc_ping) > PING_ALERT;
+            if (isLagging || isOSCLagging) {
+                console.log("tablet " + tablet.tablet + " is lagging http: " + tablet.ping + "ms" + " osc: " + tablet.osc_ping, tablet);
             }
             let tr = document.createElement('tr');
             tr.appendChild(td(tablet.id));
             tr.appendChild(td(tablet.group));
             tr.appendChild(td(tablet.ip));
             tr.appendChild(td(tablet.build));
-            tr.appendChild(td(tablet.ping + 'ms', isLagging ? 'red' : null));
+            tr.appendChild(td(tablet.ping + ' ms', isLagging ? 'red' : null));
+            tr.appendChild(td(tablet.osc_ping + ' ms', isOSCLagging ? 'red' : null));
             tr.appendChild(td(tablet.battery + '%'));
-            tr.appendChild(td(tablet.clock && tablet.clock.median + 'ms'));
-            tr.appendChild(td(tablet.clock && tablet.clock.latest + 'ms'));
-            tr.appendChild(td(tablet.clock && tablet.clock.timeSince + 'ms'));
+            tr.appendChild(td(tablet.clock && tablet.clock.median + ' ms'));
+            tr.appendChild(td(tablet.clock && tablet.clock.stdev + ' ms'));
 
             let cacheIncomplete = tablet.cache && tablet.cache.some(f => !f.end);
             let cacheTD = td(tablet.cache && tablet.cache.length, cacheIncomplete ? 'orange' : null);

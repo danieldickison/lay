@@ -237,9 +237,20 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 }
             });
         }
+
+        @Override
+        public void ping(final long serverTime) {
+            final long offset = serverTime - System.currentTimeMillis();
+            mContentView.post(new Runnable() {
+                @Override
+                public void run() {
+                    mWebView.evaluateJavascript("updateOSCPing(" + serverTime + ", " + offset + ")", null);
+                }
+            });
+        }
     };
 
-    private NtpSync mNtpSync;
+    //private NtpSync mNtpSync;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -325,9 +336,9 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     @Override
     protected void onPause() {
         super.onPause();
-        if (mNtpSync != null) {
-            mNtpSync.stop();
-        }
+        //if (mNtpSync != null) {
+        //    mNtpSync.stop();
+        //}
         mWakeLock.release();
         mWifiLock.release();
         mMulticastLock.release();
@@ -357,7 +368,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mWakeLock.acquire();
         mWifiLock.acquire();
         mMulticastLock.acquire();
-        mNtpSync.start();
+        //mNtpSync.start();
         dispatcher.startListening();
         audioPlayer.playSilence();
     }
@@ -367,10 +378,10 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         Log.d(TAG, "connectToHost: " + host);
 
         mHost = host;
-        if (mNtpSync != null) {
-            mNtpSync.stop();
-        }
-        mNtpSync = new NtpSync(host, this);
+        //if (mNtpSync != null) {
+        //    mNtpSync.stop();
+        //}
+        //mNtpSync = new NtpSync(host, this);
         mDownloader.setHost(host, PORT);
         mWebView.loadUrl(serverURL(PAGE_PATH));
     }
