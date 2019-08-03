@@ -66,7 +66,15 @@ class SeqGhosting
         @prepare_sleep = 1 # second
         @isadora_delay = 2 # seconds
 
-        pbdata = PlaybackData.read(DATA_DYNAMIC)
+        begin
+            pbdata = PlaybackData.read(DATA_DYNAMIC)
+        rescue
+            puts "failed to read playback data from #{DATA_DYNAMIC}; using placeholders"
+            pbdata = {
+                :people_at_tables => [],
+                :profile_image_names => Array.new(25, 'placeholder.jpg')
+            }
+        end
 
         @tablet_profile_images = {}
         # 1 => [IMG_BASE + profile_image_name, IMG_BASE + profile_image_name, IMG_BASE + profile_image_name]
