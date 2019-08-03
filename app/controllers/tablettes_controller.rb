@@ -377,4 +377,8 @@ class TablettesController < ApplicationController
             send_osc('/tablet/ping')
         end
     end
+
+    def osc_ping
+        self.class.osc_ping
+    end
 end
