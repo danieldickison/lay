@@ -16,6 +16,7 @@ class TablettesController < ApplicationController
         10 => 'J',
         11 => 'XX',
     }
+    TABLET_GROUPS = 6
 
     PRESHOW_BG = (0..10).collect {|t| '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % t}
     PRESHOW_BG[11] = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 3
@@ -320,7 +321,7 @@ class TablettesController < ApplicationController
     end
 
     def self.tablet_group(tablet)
-        return (tablet - 1) % 8 + 1
+        return (tablet - 1) % TABLET_GROUPS + 1
     end
 
     def tablet_group(tablet)
