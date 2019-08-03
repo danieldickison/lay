@@ -30,3 +30,6 @@ gdrive-api.json
 .idea
 /public/lay
 /public/playback
+/vendor/bundle
+/db/test.sqlite3
+/db/development.sqlite3
