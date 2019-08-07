@@ -39,6 +39,7 @@ window.updateClockOffset = function (offset, lastSuccess) {
 };
 
 window.updateOSCPing = function (serverTime) {
+    //console.log("got osc server time: " + serverTime);
     lastOSCPing = serverTime;
 };
 

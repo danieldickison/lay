@@ -43,7 +43,7 @@ public class Dispatcher {
                     .addPacketListener(new OSCPacketListener() {
                         @Override
                         public void handlePacket(OSCPacketEvent oscPacketEvent) {
-                            Log.d("lay-osc", "handlePacket: " + oscPacketEvent);
+                            //Log.d("lay-osc", "handlePacket: " + oscPacketEvent);
                             if (oscPacketEvent.getPacket() instanceof OSCMessage) {
                                 handler.logMessage((OSCMessage) oscPacketEvent.getPacket());
                             } else {
@@ -133,7 +133,7 @@ public class Dispatcher {
             ArgParser args = new ArgParser(event.getMessage().getArguments());
             long time = args.popLong(0);
             if (time > 0) {
-                handler.ping(args.popLong(0));
+                handler.ping(time);
             }
         }
     };

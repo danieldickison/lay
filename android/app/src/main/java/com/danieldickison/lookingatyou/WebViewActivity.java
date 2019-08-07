@@ -58,6 +58,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private View mContentView;
     private WebView mWebView;
+    private boolean webViewReady = false;
     private ProgressBar mSpinny;
 
     private PowerManager.WakeLock mWakeLock;
@@ -76,9 +77,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private Dispatcher dispatcher;
 
+    private NtpSync mNtpSync;
+
     private final WebViewClient mWebClient = new WebViewClient() {
         @Override
         public void onPageFinished(WebView view, String url) {
+            webViewReady = true;
             mSpinny.setVisibility(View.GONE);
             hideChrome();
             onWebviewStart();
@@ -214,12 +218,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                     " " +
                     TextUtils.join(", ", message.getArguments());
             final String js = "setLastOSCMessage(\"" + str.replaceAll("\"", "\\\"") + "\")";
-            mWebView.post(new Runnable() {
-                @Override
-                public void run() {
-                    mWebView.evaluateJavascript(js, null);
-                }
-            });
+            evalJS(js, null);
+            Log.d(TAG, "received OSC: " + str);
         }
 
         @Override
@@ -249,16 +249,9 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         @Override
         public void ping(final long serverTime) {
-            mContentView.post(new Runnable() {
-                @Override
-                public void run() {
-                    mWebView.evaluateJavascript("updateOSCPing(" + serverTime + ")", null);
-                }
-            });
+            evalJS("updateOSCPing(" + serverTime + ")", null);
         }
     };
-
-    private NtpSync mNtpSync;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -364,7 +357,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     @Override
     protected void onResume() {
         super.onResume();
-        if (mHost != null) {
+        if (webViewReady) {
             onWebviewStart();
         }
     }
@@ -391,52 +384,51 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
         mNtpSync = new NtpSync(host, this);
         mDownloader.setHost(host, PORT);
+        webViewReady = false;
         mWebView.loadUrl(serverURL(PAGE_PATH));
+    }
+
+    private void evalJS(final String js, @Nullable final ValueCallback<String> callback) {
+        mWebView.post(new Runnable() {
+            @Override
+            public void run() {
+                if (webViewReady) {
+                    mWebView.evaluateJavascript(js, callback);
+                } else {
+                    Log.w(TAG, "Not running JS because webview is not ready: " + js);
+                }
+            }
+        });
     }
 
     @Override
     public void onUpdateClockOffset(final long offset, final Date lastSuccess) {
-        mWebView.post(new Runnable() {
+        evalJS("updateClockOffset(" + offset + ", " + lastSuccess.getTime() + ")", new ValueCallback<String>() {
             @Override
-            public void run() {
-                mWebView.evaluateJavascript("updateClockOffset(" + offset + ", " + lastSuccess.getTime() + ")", new ValueCallback<String>() {
-                    @Override
-                    public void onReceiveValue(String s) {
-                        mClockOffset = Long.parseLong(s);
-                    }
-                });
+            public void onReceiveValue(String s) {
+                mClockOffset = Long.parseLong(s);
             }
         });
     }
 
     private void setNowPlaying(final String path) {
-        mWebView.post(new Runnable() {
-            @Override
-            public void run() {
-                JSONObject json = new JSONObject();
-                try {
-                    json.put("path", path);
-                } catch (JSONException e) {
-                    Log.e(TAG, "setNowPlaying: failed to put path", e);
-                }
-                mWebView.evaluateJavascript("setNowPlaying(" + json.toString() + ")", null);
-            }
-        });
+        JSONObject json = new JSONObject();
+        try {
+            json.put("path", path);
+        } catch (JSONException e) {
+            Log.e(TAG, "setNowPlaying: failed to put path", e);
+        }
+        evalJS("setNowPlaying(" + json.toString() + ")", null);
     }
 
     private void clearNowPlaying(final String path) {
-        mWebView.post(new Runnable() {
-            @Override
-            public void run() {
-                JSONObject json = new JSONObject();
-                try {
-                    json.put("path", path);
-                } catch (JSONException e) {
-                    Log.e(TAG, "clearNowPlaying: failed to put path", e);
-                }
-                mWebView.evaluateJavascript("clearNowPlaying(" + json.toString() + ")", null);
-            }
-        });
+        JSONObject json = new JSONObject();
+        try {
+            json.put("path", path);
+        } catch (JSONException e) {
+            Log.e(TAG, "clearNowPlaying: failed to put path", e);
+        }
+        evalJS("clearNowPlaying(" + json.toString() + ")", null);
     }
 
     private void hideChrome() {
