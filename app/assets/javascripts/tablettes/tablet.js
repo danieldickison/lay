@@ -127,7 +127,8 @@ function preShowInit() {
 
     let introButton = document.getElementById('intro-button');
     let dataEntry = document.getElementById('pre-show-data-entry');
-    let programNumber = document.getElementById('program-number-input');
+    let name = document.getElementById('name-input');
+    let email = document.getElementById('email-input');
     let drinkMenu = document.getElementById('drink-menu');
     let optOutButton = document.getElementById('opt-out-button');
     let optInButton = document.getElementById('opt-in-button');
@@ -137,7 +138,7 @@ function preShowInit() {
         params = new URLSearchParams();
         introButton.style.display = 'none';
         dataEntry.style.display = 'block';
-        programNumber.focus();
+        name.focus();
     });
     document.getElementById('no-drink-button').addEventListener('click', () => {
         drinkMenu.style.display = 'none';
@@ -171,7 +172,9 @@ function preShowInit() {
         optInButton.disabled = true;
         optOutButton.disabled = true;
 
-        params.set('patron_id', programNumber.value);
+        params.set('tablet', TABLET_NUMBER);
+        params.set('name', name.value);
+        params.set('email', email.value);
         fetch('/tablettes/update_patron.json', {method: 'POST', body: params})
         .then(response => {
             return response.json();
@@ -188,13 +191,17 @@ function preShowInit() {
     }
 
     function reset() {
+        layNativeInterface.setVideoCue('/tablet-util/tc.mp4', serverNow() + 1000, 0);
+        setTimeout(() => layNativeInterface.setVideoCue(null, 0, 0), 5000);
+
         optInButton.disabled = false;
         optOutButton.disabled = false;
         popup.style.display = 'none';
         dataEntry.style.display = 'none';
         drinkMenu.style.display = 'none';
         introButton.style.display = 'block';
-        programNumber.value = '';
+        name.value = '';
+        email.value = '';
         document.getElementById('consent-popup-box').scrollTop = 0;
     }
 }

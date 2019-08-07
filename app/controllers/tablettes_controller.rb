@@ -210,16 +210,18 @@ class TablettesController < ApplicationController
     end
 
     def update_patron
-        ip = request.headers['X-Forwarded-For'].split(',').first
-        tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
         begin
+            tablet = params[:tablet]
+            name = params[:name]
+            email = params[:email]
             drink = params[:drink]
             drink = 'none' if !drink || drink == ''
-            Lay::OSCApplication::Patrons.update(params[:patron_id].to_i, TABLET_TO_TABLE[tablet] || tablet, drink, params[:opt])
+            Lay::OSCApplication::Patrons.update(tablet, name, email, drink, params[:opt])
             render json: {
                 :error => false
             }
         rescue
+            puts "failed to update patron: #{$!}"
             render json: {
                 :error => true
             }
