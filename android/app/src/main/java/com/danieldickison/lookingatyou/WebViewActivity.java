@@ -397,6 +397,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             @Override
             public void run() {
                 if (webViewReady) {
+                    //Log.d(TAG, "evalJS: " + js);
                     mWebView.evaluateJavascript(js, callback);
                 } else {
                     Log.w(TAG, "Not running JS because webview is not ready: " + js);
