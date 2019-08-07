@@ -18,13 +18,12 @@ import java.util.concurrent.TimeUnit;
 public class NtpSync {
 
     public interface Callback {
-        @WorkerThread void onUpdateClockOffsets(long[] offsets, Date lastSuccess);
+        @WorkerThread void onUpdateClockOffset(long offset, Date lastSuccess);
     }
 
     final private static int INTERVAL_MS = 10_000;
     final private static int INTERVAL_LONG_MS = 60_000; // after a few good pings, slow down to once a minute.
     final private static int SLOW_DOWN_AFTER = 10;
-    final private static int PAST_OFFSETS_COUNT = 15;
     final private static String TAG = "lay";
 
     final private ScheduledExecutorService executor = Executors.newScheduledThreadPool(3);
@@ -35,17 +34,13 @@ public class NtpSync {
     private ScheduledFuture ntpFuture;
     private ScheduledFuture watchdogFuture;
 
-    final private long[] pastOffsets = new long[PAST_OFFSETS_COUNT];
-    private int nextOffsetIndex = 0;
+    private final Object mutex = new Object();
     private int successfulRequests = 0;
     private Date lastSuccessDate = null;
 
     public NtpSync(String host, Callback callback) {
         this.host = host;
         this.callback = callback;
-        for (int i = 0; i < pastOffsets.length; i++) {
-            pastOffsets[i] = Long.MIN_VALUE;
-        }
     }
 
     public synchronized void start() {
@@ -76,22 +71,6 @@ public class NtpSync {
         }
     }
 
-    private void notifyCallback() {
-        long[] offsets;
-        Date lastSuccess;
-        synchronized (pastOffsets) {
-            int count = Math.min(successfulRequests, pastOffsets.length);
-            offsets = new long[count];
-            for (int i = 0; i < count; i++) {
-                int j = nextOffsetIndex - i - 1;
-                if (j < 0) j += pastOffsets.length;
-                offsets[i] = pastOffsets[j];
-            }
-            lastSuccess = lastSuccessDate;
-        }
-        callback.onUpdateClockOffsets(offsets, lastSuccess);
-    }
-
     final private Runnable updateRunnable = new Runnable() {
         @Override
         public void run() {
@@ -100,14 +79,13 @@ public class NtpSync {
                 TimeInfo time = client.getTime(hostAddress);
                 time.computeDetails();
                 long offset = time.getOffset();
-                synchronized (pastOffsets) {
-                    pastOffsets[nextOffsetIndex] = offset;
-                    nextOffsetIndex = (nextOffsetIndex + 1) % pastOffsets.length;
+                Date lastSuccess = new Date();
+                synchronized (mutex) {
                     successfulRequests++;
-                    lastSuccessDate = new Date();
+                    lastSuccessDate = lastSuccess;
                 }
                 Log.d("lay", "NTP received clockOffset: " + offset + "; " + successfulRequests + " successful requests");
-                notifyCallback();
+                callback.onUpdateClockOffset(offset, lastSuccess);
             } catch (UnknownHostException e) {
                 Log.w("lay", "NTP unknown host: " + host);
                 stop();
@@ -130,7 +108,7 @@ public class NtpSync {
             try {
                 long timeSinceSuccess;
                 long interval;
-                synchronized (pastOffsets) {
+                synchronized (mutex) {
                     timeSinceSuccess = new Date().getTime() - lastSuccessDate.getTime();
                     interval = successfulRequests >= SLOW_DOWN_AFTER ? INTERVAL_LONG_MS : INTERVAL_MS;
                 }

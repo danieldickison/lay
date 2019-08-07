@@ -19,7 +19,7 @@ if (!window.layNativeInterface) {
     };
 }
 
-window.updateOSCPing = function (serverTime, offset) {
+window.updateClockOffset = function (offset, lastNTP) {
     pastClockOffsets.push(offset);
     if (pastClockOffsets.length > PAST_OFFSETS_COUNT) {
         pastClockOffsets.splice(0, pastClockOffsets.length - PAST_OFFSETS_COUNT);
@@ -33,6 +33,10 @@ window.updateOSCPing = function (serverTime, offset) {
     clockInfo = "latest=" + offset + " mean=" + mean.toFixed(1) + " median=" + median + " stdev=" + stdev.toFixed(1);
     document.getElementById('clock-offset').innerText = "Clock offset (ms): " + clockInfo;
     clockOffset = median;
+    return median;
+};
+
+window.updateOSCPing = function (serverTime) {
     lastOSCPing = serverTime;
 };
 

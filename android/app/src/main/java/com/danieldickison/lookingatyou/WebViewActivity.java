@@ -30,6 +30,7 @@ import android.view.ViewPropertyAnimator;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -38,12 +39,10 @@ import android.widget.ProgressBar;
 
 import com.illposed.osc.OSCMessage;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Date;
 
 public class WebViewActivity extends Activity implements NtpSync.Callback {
@@ -250,7 +249,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
     };
 
-    //private NtpSync mNtpSync;
+    private NtpSync mNtpSync;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -336,9 +335,9 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     @Override
     protected void onPause() {
         super.onPause();
-        //if (mNtpSync != null) {
-        //    mNtpSync.stop();
-        //}
+        if (mNtpSync != null) {
+            mNtpSync.stop();
+        }
         mWakeLock.release();
         mWifiLock.release();
         mMulticastLock.release();
@@ -368,7 +367,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mWakeLock.acquire();
         mWifiLock.acquire();
         mMulticastLock.acquire();
-        //mNtpSync.start();
+        mNtpSync.start();
         dispatcher.startListening();
         audioPlayer.playSilence();
     }
@@ -378,27 +377,25 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         Log.d(TAG, "connectToHost: " + host);
 
         mHost = host;
-        //if (mNtpSync != null) {
-        //    mNtpSync.stop();
-        //}
-        //mNtpSync = new NtpSync(host, this);
+        if (mNtpSync != null) {
+            mNtpSync.stop();
+        }
+        mNtpSync = new NtpSync(host, this);
         mDownloader.setHost(host, PORT);
         mWebView.loadUrl(serverURL(PAGE_PATH));
     }
 
     @Override
-    public void onUpdateClockOffsets(final long[] offsets, final Date lastSuccess) {
-        final JSONArray json = new JSONArray();
-        for (long offset : offsets) {
-            json.put(offset);
-        }
-        // Set mClockOffset to the median. Don't care about averaging the middle 2 if length is even.
-        Arrays.sort(offsets);
-        mClockOffset = offsets[offsets.length / 2];
+    public void onUpdateClockOffset(final long offset, final Date lastSuccess) {
         mWebView.post(new Runnable() {
             @Override
             public void run() {
-                mWebView.evaluateJavascript("setClockOffsets(" + json.toString() + ", " + lastSuccess.getTime() + ")", null);
+                mWebView.evaluateJavascript("updateClockOffset(" + offset + ", " + lastSuccess.getTime() + ")", new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String s) {
+                        mClockOffset = Long.parseLong(s);
+                    }
+                });
             }
         });
     }
