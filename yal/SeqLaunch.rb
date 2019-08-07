@@ -99,9 +99,8 @@ class SeqLaunch
     def start
         @@run = true
         Thread.new do
-            TablettesController.send_osc_prepare('/playback/media_tablets/113-Launch/113-511-C60-Launch_all.mp4')
+            TablettesController.send_osc_cue('/playback/media_tablets/113-Launch/113-511-C60-Launch_all.mp4', @prepare_delay)
             sleep(@start_time + @prepare_delay - Time.now)
-            TablettesController.send_osc('/tablet/play')
             @is.send('/isadora/1', '1300')
 
             # while true

@@ -22,8 +22,7 @@ public class Dispatcher {
     public interface Handler {
         void logMessage(OSCMessage message);
         void download(String path);
-        void prepareVideo(String path, int fadeInDuration, int fadeOutDuration);
-        void playVideo();
+        void cueVideo(String path, long startTimestamp, int fadeInDuration, int fadeOutDuration);
         void stopVideo();
         void ping(long serverTime);
     }
@@ -60,11 +59,8 @@ public class Dispatcher {
                     .addMessageListener(wildcardAddr("download"), downloadListener)
                     .addMessageListener(tabletAddr("download"), downloadListener)
 
-                    .addMessageListener(wildcardAddr("prepare"), prepareListener)
-                    .addMessageListener(tabletAddr("prepare"), prepareListener)
-
-                    .addMessageListener(wildcardAddr("play"), playListener)
-                    .addMessageListener(tabletAddr("play"), playListener)
+                    .addMessageListener(wildcardAddr("cue"), cueListener)
+                    .addMessageListener(tabletAddr("cue"), cueListener)
 
                     .addMessageListener(wildcardAddr("stop"), stopListener)
                     .addMessageListener(tabletAddr("stop"), stopListener)
@@ -112,21 +108,15 @@ public class Dispatcher {
         }
     };
 
-    private final OSCMessageListener prepareListener = new OSCMessageListener() {
+    private final OSCMessageListener cueListener = new OSCMessageListener() {
         @Override
         public void acceptMessage(OSCMessageEvent event) {
             ArgParser args = new ArgParser(event.getMessage().getArguments());
             String path = args.popString();
+            long startTimestamp = args.popLong(0);
             int fadeIn = args.popInt(0);
             int fadeOut = args.popInt(0);
-            handler.prepareVideo(path, fadeIn, fadeOut);
-        }
-    };
-
-    private final OSCMessageListener playListener = new OSCMessageListener() {
-        @Override
-        public void acceptMessage(OSCMessageEvent event) {
-            handler.playVideo();
+            handler.cueVideo(path, startTimestamp, fadeIn, fadeOut);
         }
     };
 
@@ -141,11 +131,9 @@ public class Dispatcher {
         @Override
         public void acceptMessage(OSCMessageEvent event) {
             ArgParser args = new ArgParser(event.getMessage().getArguments());
-            try {
-                long time = Long.parseLong(args.popString());
-                handler.ping(time);
-            } catch (NumberFormatException e) {
-                Log.e("lay-osc", "failed to parse server timestamp from osc ping: " + e);
+            long time = args.popLong(0);
+            if (time > 0) {
+                handler.ping(args.popLong(0));
             }
         }
     };
@@ -164,6 +152,18 @@ public class Dispatcher {
             if (val instanceof Integer) return (Integer)val;
             if (val instanceof String) return Integer.parseInt((String)val);
             return defaultValue;
+        }
+
+        public long popLong(long defaultValue) {
+            if (pos >= args.size()) return defaultValue;
+            Object val = args.get(pos++);
+            try {
+                if (val instanceof String) return Long.parseLong((String) val);
+                return defaultValue;
+            } catch (NumberFormatException e) {
+                Log.e("lay-osc", "failed to parse long arg " + val);
+                return defaultValue;
+            }
         }
 
         public String popString() {

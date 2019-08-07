@@ -131,8 +131,8 @@ module Lay
         TablettesController.send_osc(*message.to_a)
       end
 
-      @server.add_method('/prepare') do |message|
-        TablettesController.send_osc_prepare(message.to_a[0])
+      @server.add_method('/tablet_video') do |message|
+        TablettesController.send_osc_cue(message.to_a[0], message.to_a[1])
       end
 
       # /start <media> [<tablet#> ...]

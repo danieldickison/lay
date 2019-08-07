@@ -54,7 +54,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     private final static String PAGE_PATH = "/tablettes/index";
     private final static String TAG = "lay";
 
-    private final static int VIDEO_DELAY = 60; // ms to try and get audio and video more in sync; by default audio takes a bit longer to start than video.
+    private final static int AUDIO_LAG = 60; // ms to try and get audio and video more in sync; by default audio takes a bit longer to start than video.
 
     private View mContentView;
     private WebView mWebView;
@@ -212,19 +212,13 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         @Override
-        public void prepareVideo(final String path, final int fadeInDuration, final int fadeOutDuration) {
+        public void cueVideo(final String path, final long startTimestamp, final int fadeInDuration, final int fadeOutDuration) {
             mContentView.post(new Runnable() {
                 @Override
                 public void run() {
-                    prepareNextVideoCue(path, 0, fadeInDuration, fadeOutDuration, -1);
+                    prepareNextVideoCue(path, 0, fadeInDuration, fadeOutDuration, startTimestamp);
                 }
             });
-        }
-
-        @Override
-        public void playVideo() {
-            mVideoHolders[mVideoViewIndex].startCueAt(getServerNow() + VIDEO_DELAY);
-            audioPlayer.startAudioNow();
         }
 
         @Override
@@ -239,11 +233,10 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
         @Override
         public void ping(final long serverTime) {
-            final long offset = serverTime - System.currentTimeMillis();
             mContentView.post(new Runnable() {
                 @Override
                 public void run() {
-                    mWebView.evaluateJavascript("updateOSCPing(" + serverTime + ", " + offset + ")", null);
+                    mWebView.evaluateJavascript("updateOSCPing(" + serverTime + ")", null);
                 }
             });
         }
@@ -494,7 +487,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             audioPlayer.prepareAudio(filePath, loop);
 
             if (startTimestamp >= 0) {
-                audioPlayer.startAudio(startTimestamp);
+                audioPlayer.startAudio(startTimestamp - AUDIO_LAG);
             }
         }
     }
@@ -578,10 +571,6 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 return;
             }
             textureView.postDelayed(startVideoRunnable, timestamp - now);
-        }
-
-        private void startCueNow() {
-            startVideoRunnable.run();
         }
 
         @Override
@@ -712,10 +701,6 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 return;
             }
             mContentView.postDelayed(startAudioRunnable, timestamp - now);
-        }
-
-        private void startAudioNow() {
-            mediaPlayer.start();
         }
 
         private final Runnable startAudioRunnable = new Runnable() {
