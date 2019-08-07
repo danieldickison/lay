@@ -187,6 +187,7 @@ class TablettesController < ApplicationController
         #tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
         tablet = params[:tablet_number].to_i
         group = tablet_group(tablet)
+        osc_ping
         ping_stats
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
         commands = self.class.commands.delete(tablet) || []

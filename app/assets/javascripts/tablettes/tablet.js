@@ -71,8 +71,8 @@ var pingStartTime = null;
 let WATCHDOG_INTERVAL = 5000;
 let NTP_TIMEOUT = 180000; // 3 minutes
 let OSC_TIMEOUT = 15000;
-var lastNTPReset = 0;
-var lastOSCReset = 0;
+var lastNTPReset = Date.now();
+var lastOSCReset = Date.now();
 
 let PAST_OFFSETS_COUNT = 20;
 var pastClockOffsets = [];
