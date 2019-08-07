@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", event => {
 
     document.getElementById('stop-tablets-button').addEventListener('click', event => {
         event.preventDefault();
-        queueTabletCommand('stop');
+        queueTabletCommand('stop', '/tablet/stop');
     });
 
     document.getElementById('reload-tablets-button').addEventListener('click', event => {
@@ -46,11 +46,13 @@ document.addEventListener("DOMContentLoaded", event => {
     setInterval(fetchStats, STATS_INTERVAL);
 });
 
-function queueTabletCommand(command) {
+function queueTabletCommand(command, oscMessage) {
     let body = new URLSearchParams();
     body.append('command', command);
+    if (oscMessage) {
+        body.append('osc_message', oscMessage);
+    }
     fetch('/tablettes/queue_tablet_command.json', {method: 'POST', body: body});
-
 }
 
 function fetchStats() {

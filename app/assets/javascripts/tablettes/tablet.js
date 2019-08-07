@@ -384,14 +384,13 @@ function uriEscapePath(path) {
 }
 
 function triggerSequence(constructor, args) {
-    if (currentSequence) currentSequence.stop();
+    stop();
     args.unshift(constructor);
     currentSequence = new (constructor.bind.apply(constructor, args));
 }
 
 function stop() {
     if (currentSequence) currentSequence.stop();
-    layNativeInterface.setVideoCue(null, 0, 0);
 }
 
 function Ghosting(time, duration, srcs) {

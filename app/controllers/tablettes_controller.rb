@@ -61,6 +61,9 @@ class TablettesController < ApplicationController
 
     def queue_tablet_command
         self.class.queue_command(nil, params[:command])
+        if osc_message = params[:osc_message]
+            self.class.send_osc(osc_message)
+        end
     end
 
     def start_cue
