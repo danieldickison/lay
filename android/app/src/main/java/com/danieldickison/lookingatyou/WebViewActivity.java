@@ -77,7 +77,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
 
     private Dispatcher dispatcher;
 
-    private NtpSync mNtpSync;
+    private NtpSync ntpSync;
 
     private final WebViewClient mWebClient = new WebViewClient() {
         @Override
@@ -200,12 +200,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 @Override
                 public void run() {
                     // Last resort to wake up a table unresponsive to OSC, hopefully the web pings are still going.
-                    Log.w(TAG, "resetting NTP sync via command from web interface");
-                    if (mNtpSync != null) {
-                        mNtpSync.stop();
-                    }
-                    mNtpSync = new NtpSync(mHost, WebViewActivity.this);
-                    mNtpSync.start();
+                    WebViewActivity.this.resetNTP();
                 }
             });
         }
@@ -337,8 +332,9 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     @Override
     protected void onPause() {
         super.onPause();
-        if (mNtpSync != null) {
-            mNtpSync.stop();
+        if (ntpSync != null) {
+            ntpSync.stop();
+            ntpSync = null;
         }
         mWakeLock.release();
         mWifiLock.release();
@@ -369,7 +365,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mWakeLock.acquire();
         mWifiLock.acquire();
         mMulticastLock.acquire();
-        mNtpSync.start();
+        resetNTP();
         dispatcher.startListening();
         audioPlayer.playSilence();
     }
@@ -379,13 +375,21 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         Log.d(TAG, "connectToHost: " + host);
 
         mHost = host;
-        if (mNtpSync != null) {
-            mNtpSync.stop();
-        }
-        mNtpSync = new NtpSync(host, this);
         mDownloader.setHost(host, PORT);
         webViewReady = false;
         mWebView.loadUrl(serverURL(PAGE_PATH));
+    }
+
+    private void resetNTP() {
+        Log.w(TAG, "resetting NTP sync");
+        if (ntpSync != null) {
+            ntpSync.stop();
+            ntpSync = null;
+        }
+        if (mHost != null) {
+            ntpSync = new NtpSync(mHost, this);
+            ntpSync.start();
+        }
     }
 
     private void evalJS(final String js, @Nullable final ValueCallback<String> callback) {
