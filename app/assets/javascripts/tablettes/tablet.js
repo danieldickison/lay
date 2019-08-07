@@ -16,10 +16,11 @@ if (!window.layNativeInterface) {
         setAssets: function () {},
         hideChrome: function () {},
         resetOSC: function () {},
+        resetNTP: function () {},
     };
 }
 
-window.updateClockOffset = function (offset, lastNTP) {
+window.updateClockOffset = function (offset, lastSuccess) {
     pastClockOffsets.push(offset);
     if (pastClockOffsets.length > PAST_OFFSETS_COUNT) {
         pastClockOffsets.splice(0, pastClockOffsets.length - PAST_OFFSETS_COUNT);
@@ -33,6 +34,7 @@ window.updateClockOffset = function (offset, lastNTP) {
     clockInfo = "latest=" + offset + " mean=" + mean.toFixed(1) + " median=" + median + " stdev=" + stdev.toFixed(1);
     document.getElementById('clock-offset').innerText = "Clock offset (ms): " + clockInfo;
     clockOffset = median;
+    lastNTP = lastSuccess;
     return median;
 };
 
@@ -66,10 +68,17 @@ let PING_INTERVAL = 1000;
 let PING_TIMEOUT = 3000;
 var pingStartTime = null;
 
+let WATCHDOG_INTERVAL = 5000;
+let NTP_TIMEOUT = 180000; // 3 minutes
+let OSC_TIMEOUT = 15000;
+var lastNTPReset = 0;
+var lastOSCReset = 0;
+
 let PAST_OFFSETS_COUNT = 20;
 var pastClockOffsets = [];
 var clockOffset = 0;
 var clockInfo = null;
+var lastNTP = 0;
 var lastOSCPing = 0;
 
 var currentCueTime = null;
@@ -103,8 +112,9 @@ document.addEventListener("DOMContentLoaded", event => {
 
     //setInterval(cycleLogoBg, LOGO_BG_INTERVAL);
     setInterval(sendPing, PING_INTERVAL);
-    setInterval(cueTick, 100);
+    //setInterval(cueTick, 100);
     setInterval(updateBatteryStatus, BATTERY_INTERVAL);
+    setInterval(watchdog, WATCHDOG_INTERVAL);
 
     sendPing();
     updateBatteryStatus();
@@ -205,6 +215,7 @@ function sendPing() {
     body.append('build', BUILD_NAME);
     body.append('now_playing_path', nowPlaying.path);
     body.append('clock_info', clockInfo || '');
+    body.append('last_ntp', lastNTP);
     body.append('osc_ping', lastOSCPing);
     body.append('cache_info', layNativeInterface.getCacheInfo());
     body.append('battery_percent', batteryPercent);
@@ -271,13 +282,25 @@ function sendPing() {
         }
 
         pingStartTime = null;
-        // setTimeout(sendPing, PING_INTERVAL);
     })
     .catch(error => {
         log("ping failed", error);
-        // setTimeout(sendPing, PING_INTERVAL);
         pingStartTime = null;
     });
+}
+
+function watchdog() {
+    let now = Date.now();
+    if (now - lastNTP > NTP_TIMEOUT && now - lastNTPReset > NTP_TIMEOUT) {
+        console.log("NTP appears to be stalled; resetting");
+        lastNTPReset = now;
+        layNativeInterface.resetNTP();
+    }
+    if (now - lastOSCPing > OSC_TIMEOUT && now - lastOSCReset > OSC_TIMEOUT) {
+        console.log("OSC appears to be stalled; resetting");
+        lastOSCReset = now;
+        layNativeInterface.resetOSC();
+    }
 }
 
 function lz(num, size) {

@@ -189,6 +189,22 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 }
             });
         }
+
+        @JavascriptInterface
+        public void resetNTP() {
+            mContentView.post(new Runnable() {
+                @Override
+                public void run() {
+                    // Last resort to wake up a table unresponsive to OSC, hopefully the web pings are still going.
+                    Log.w(TAG, "resetting NTP sync via command from web interface");
+                    if (mNtpSync != null) {
+                        mNtpSync.stop();
+                    }
+                    mNtpSync = new NtpSync(mHost, WebViewActivity.this);
+                    mNtpSync.start();
+                }
+            });
+        }
     };
 
     final private Dispatcher.Handler oscHandler = new Dispatcher.Handler() {
