@@ -26,11 +26,32 @@ document.addEventListener("DOMContentLoaded", event => {
 
     document.getElementById('stop-tablets-button').addEventListener('click', event => {
         event.preventDefault();
-        fetch('/tablettes/stop_tablets.json', {method: 'POST'});
+        queueTabletCommand('stop');
+    });
+
+    document.getElementById('reload-tablets-button').addEventListener('click', event => {
+        event.preventDefault();
+        queueTabletCommand('reload');
+    });
+
+    let cueForm = document.getElementById('cue-form');
+    cueForm.addEventListener('submit', event => {
+        event.preventDefault();
+        let cue = cueForm.elements.cue.value;
+        let body = new URLSearchParams();
+        body.append('cue', cue);
+        fetch('/tablettes/start_cue.json', {method: 'POST', body: body});
     });
 
     setInterval(fetchStats, STATS_INTERVAL);
 });
+
+function queueTabletCommand(command) {
+    let body = new URLSearchParams();
+    body.append('command', command);
+    fetch('/tablettes/queue_tablet_command.json', {method: 'POST', body: body});
+
+}
 
 function fetchStats() {
     fetch('/tablettes/stats.json', {method: 'POST'})

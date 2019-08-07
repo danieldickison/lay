@@ -8,7 +8,8 @@ Rails.application.routes.draw do
   post 'tablettes/stats'
   post 'tablettes/ping'
   post 'tablettes/play_timecode'
-  post 'tablettes/stop_tablets'
+  post 'tablettes/queue_tablet_command'
+  post 'tablettes/start_cue'
   post 'tablettes/assets'
   post 'tablettes/update_patron'
 
