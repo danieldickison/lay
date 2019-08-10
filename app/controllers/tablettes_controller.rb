@@ -35,7 +35,7 @@ class TablettesController < ApplicationController
     @last_osc_ping_mutex = Mutex.new
     OSC_PING_INTERVAL = 5 # seconds
 
-    @@show_time = true
+    @show_time = true
 
     skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :start_cue, :assets, :update_patron, :stats]
 
@@ -54,6 +54,8 @@ class TablettesController < ApplicationController
     def director
         @assets = self.class.assets.collect {|a| a[:path]}
         @volume = self.class.volume
+        @debug = self.class.debug
+        @show_time = self.class.show_time
     end
 
     def play_timecode
@@ -83,6 +85,8 @@ class TablettesController < ApplicationController
     def stats
         osc_ping
         self.class.volume = params[:volume].to_i if params[:volume]
+        self.class.debug = params[:debug] == '1' if params[:debug]
+        self.class.show_time = params[:show_time] == '1' if params[:show_time]
         now = Time.now.utc
         render json: {
             tablets: self.class.tablets.collect do |id, t|
@@ -214,7 +218,7 @@ class TablettesController < ApplicationController
             :next_cue_time => (cue[:time] * 1000).round,
             :next_seek_time => (cue[:seek] * 1000).round,
             :debug => self.class.debug,
-            :show_time => @@show_time,
+            :show_time => self.class.show_time,
             :volume => self.class.volume,
             :assets => assets,
         }
@@ -296,8 +300,12 @@ class TablettesController < ApplicationController
         return @cues
     end
 
-    def self.show_time(bool)
-        @@show_time = !!bool
+    def self.show_time
+        return @show_time
+    end
+
+    def self.show_time=(bool)
+        @show_time = !!bool
     end
 
     def self.volume
