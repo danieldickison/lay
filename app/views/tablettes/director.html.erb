@@ -1,52 +1,59 @@
-<h1>Tablettes Director</h1>
+<div id="p-director">
+    <h1>Tablettes Director</h1>
 
-<table id="tablet-stats">
-    <thead>
-        <th>tablet</th>
-        <th>group</th>
-        <th>IP</th>
-        <th>build</th>
-        <th>http ping</th>
-        <th>osc ping</th>
-        <th>battery</th>
-        <th>clock</th>
-        <th>stdev</th>
-        <th>cache</th>
-        <th>now playing</th>
-    </thead>
-</table>
+    <section id="director-messages">
+    </section>
 
-<form id="assets-form" class="director-form">
-    <label>Assets (one per line):
-        <textarea name="assets" type="text">
-<% for @asset in @assets -%>
-<%= @asset %>
-<% end -%>
-</textarea>
-    </label>
-    <p><input type="submit"></p>
-</form>
+    <section id="director-deets">
+        <table id="tablet-stats">
+            <thead>
+                <th>tablet</th>
+                <th>group</th>
+                <th>IP</th>
+                <th>build</th>
+                <th>http ping</th>
+                <th>osc ping</th>
+                <th>battery</th>
+                <th>clock</th>
+                <th>stdev</th>
+                <th>cache</th>
+                <th>now playing</th>
+            </thead>
+        </table>
 
-<form id="debug-form" class="director-form">
-    <button id="play-timecode-button">Play Timecode</button>
-    <button id="stop-tablets-button">Stop Tablets</button>
-    <button id="reload-tablets-button">Reload Tablets</button>
-    <label class="volume-input-label">
-        Volume: <input id="volume-input" type="range" min="0" max="100" value=<%= @volume %>>
-    </label>
-    <br>
-    <label>
-        Debug: <input id="debug-checkbox" type="checkbox" <% if @debug %>checked<% end %>>
-    </label>
-    <br>
-    <label>
-        Show Time: <input id="show-time-checkbox" type="checkbox" <% if @show_time %>checked<% end %>>
-    </label>
-</form>
+        <form id="assets-form" class="director-form">
+            <label>Assets (one per line):
+                <textarea name="assets" type="text">
+        <% for @asset in @assets -%>
+        <%= @asset %>
+        <% end -%>
+        </textarea>
+            </label>
+            <p><input type="submit"></p>
+        </form>
 
-<form id="cue-form" class="director-form">
-    <label>Cue #: <input name="cue" type="number" value="500"></label>
-    <input type="submit" value="Start">
-</form>
+        <form id="debug-form" class="director-form">
+            <button id="play-timecode-button">Play Timecode</button>
+            <button id="stop-tablets-button">Stop Tablets</button>
+            <button id="reload-tablets-button">Reload Tablets</button>
+            <label class="volume-input-label">
+                Volume: <input id="volume-input" type="range" min="0" max="100" value=<%= @volume %>>
+            </label>
+            <br>
+            <label>
+                Debug: <input id="debug-checkbox" type="checkbox" <% if @debug %>checked<% end %>>
+            </label>
+            <br>
+            <label>
+                Show Time: <input id="show-time-checkbox" type="checkbox" <% if @show_time %>checked<% end %>>
+            </label>
+        </form>
 
-<p><a href="/tablet-util/app.apk">Download app.apk</a></p>
+        <form id="cue-form" class="director-form">
+            <label>Cue #: <input name="cue" type="number" value="500"></label>
+            <input type="submit" value="Start">
+        </form>
+
+        <p><a href="/tablet-util/app.apk">Download app.apk</a></p>
+    </section>
+</div>

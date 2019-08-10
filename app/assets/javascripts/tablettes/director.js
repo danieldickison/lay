@@ -7,9 +7,15 @@
 let STATS_INTERVAL = 1000;
 let PING_ALERT = 10000;
 
+var messagesDiv;
+var unresponsiveTablets = [];
+var serverError = undefined;
+
 document.addEventListener("DOMContentLoaded", event => {
+    messagesDiv = document.getElementById('director-messages');
+    if (!messagesDiv) return;
+
     let assetsForm = document.getElementById('assets-form');
-    if (!assetsForm) return;
 
     assetsForm.addEventListener('submit', event => {
         event.preventDefault();
@@ -65,8 +71,10 @@ function fetchStats() {
         return response.json();
     })
     .then(json => {
-        if (!json) return;
-        if (!json.tablets) return;
+        if (!json) throw "response json is null";
+        if (!json.tablets) throw "response json missing tablets key";
+
+        unresponsiveTablets = [];
 
         let table = document.getElementById('tablet-stats');
         let oldTbody = document.getElementById('tablet-stats-body');
@@ -79,6 +87,7 @@ function fetchStats() {
             let isOSCLagging = parseInt(tablet.osc_ping) > PING_ALERT;
             if (isLagging || isOSCLagging) {
                 console.log("tablet " + tablet.id + " is lagging http: " + tablet.ping + "ms" + " osc: " + tablet.osc_ping, tablet);
+                unresponsiveTablets.push(tablet.id);
             }
             let tr = document.createElement('tr');
             tr.appendChild(td(tablet.id));
@@ -102,7 +111,12 @@ function fetchStats() {
             tbody.appendChild(tr);
         });
         table.appendChild(tbody);
-    });
+    })
+    .catch(err => {
+        console.log("server error:", err);
+        serverError = err;
+    })
+    .finally(updateMessages);
 
     function td(text, color) {
         let td = document.createElement('td');
@@ -141,6 +155,37 @@ function fetchStats() {
             ul.appendChild(li);
         });
         td.appendChild(ul);
+    }
+
+    var prevServerError = null;
+    var prevUnresponsiveTablets = [];
+    function updateMessages() {
+        unresponsiveTablets.sort();
+        if (prevServerError === serverError && prevUnresponsiveTablets.every((t, i) => unresponsiveTablets[i] === t)) {
+            return; // no change, leave the dom alone
+        }
+
+        messagesDiv.innerHTML = '';
+
+        if (!serverError && unresponsiveTablets.length === 0) {
+            messagesDiv.innerText = 'All good';
+        } else {
+            if (serverError) {
+                let p = document.createElement('p');
+                p.classList.add('warning');
+                p.innerText = "Restart playback server!";
+                messagesDiv.appendChild(p);
+            }
+            unresponsiveTablets.forEach(t => {
+                let p = document.createElement('p');
+                p.classList.add('warning');
+                p.innerText = "Replace tablet #" + t;
+                messagesDiv.appendChild(p);
+            });
+        }
+
+        prevUnresponsiveTablets = unresponsiveTablets;
+        prevServerError = serverError;
     }
 }
 })();
