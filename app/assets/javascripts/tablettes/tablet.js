@@ -498,6 +498,77 @@ function OffTheRails(items) {
     };
 }
 
+function ProductLaunch(images, targetXTime) {
+    let div = document.createElement('div');
+    div.setAttribute('id', 'product-launch');
+    document.body.appendChild(div);
+
+    var imgTimeout = null;
+    var prevSpec = null;
+    var prevImg = null;
+
+    let targetXTimeout = setTimeout(() => {
+        div.classList.add('target-x');
+    }, targetXTime - serverNow());
+
+    queueNextImage();
+
+    function queueNextImage() {
+        var spec = images.shift();
+        if (!spec) {
+            div.classList.remove('target-x');
+            setTimeout(removeDiv, 2000); // wait for last image to fade out before removing.
+            return;
+        }
+
+        var img = document.createElement('img');
+        img.src = spec.src;
+        img.classList.add(spec.position);
+        div.appendChild(img);
+
+        imgTimeout = setTimeout(() => {
+            if (!prevSpec || prevSpec.position !== spec.position) {
+                img.classList.add('fade-in');
+                animateImgOut(prevImg, 'fade-out');
+            } else {
+                img.classList.add('slide-in');
+                animateImgOut(prevImg, 'slide-out');
+            }
+
+            if (spec.out_time) {
+                setTimeout(() => {
+                    animateImgOut(img, 'fade-out');
+                    prevImg = null;
+                    prevSpec = null;
+                    queueNextImage();
+                }, spec.out_time - serverNow());
+            } else {
+                prevSpec = spec;
+                prevImg = img;
+                queueNextImage();
+            }
+        }, spec.in_time - serverNow())
+    }
+
+    this.stop = function () {
+        clearTimeout(imgTimeout);
+        removeDiv();
+    };
+
+    function removeDiv() {
+        if (div.parentNode === document.body) {
+            document.body.removeChild(div);
+        }
+    }
+
+    function animateImgOut(img, animation) {
+        if (!img) return;
+        img.classList.remove('fade-in');
+        img.classList.remove('slide-in');
+        img.classList.add(animation);
+    }
+}
+
 function updateBatteryStatus() {
     batteryPercent = layNativeInterface.getBatteryPercent();
     log('batteryPercent updated to ' + batteryPercent);
@@ -523,6 +594,9 @@ function handleCommand(cmd, args) {
             break;
         case 'offtherails':
             triggerSequence(OffTheRails, args);
+            break;
+        case 'productlaunch':
+            triggerSequence(ProductLaunch, args);
             break;
         default:
             log('unknown command: ' + cmd);
