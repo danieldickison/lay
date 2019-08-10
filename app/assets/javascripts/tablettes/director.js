@@ -56,7 +56,9 @@ function queueTabletCommand(command, oscMessage) {
 }
 
 function fetchStats() {
-    fetch('/tablettes/stats.json', {method: 'POST'})
+    let body = new URLSearchParams();
+    body.append('volume', document.getElementById('volume-input').value);
+    fetch('/tablettes/stats.json', {method: 'POST', body: body})
     .then(response => {
         return response.json();
     })

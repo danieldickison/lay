@@ -53,6 +53,7 @@ class TablettesController < ApplicationController
 
     def director
         @assets = self.class.assets.collect {|a| a[:path]}
+        @volume = self.class.volume
     end
 
     def play_timecode
@@ -81,6 +82,7 @@ class TablettesController < ApplicationController
 
     def stats
         osc_ping
+        self.class.volume = params[:volume].to_i if params[:volume]
         now = Time.now.utc
         render json: {
             tablets: self.class.tablets.collect do |id, t|
@@ -303,9 +305,11 @@ class TablettesController < ApplicationController
     end
 
     def self.volume=(vol)
-        vol = [0, [100, vol].min].max
-        puts "setting volume to #{vol}%"
-        @volume = vol.to_i
+        vol = [0, [100, vol].min].max.to_i
+        if vol != @volume
+            puts "setting volume to #{vol}%"
+            @volume = vol
+        end
     end
 
     def self.assets

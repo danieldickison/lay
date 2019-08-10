@@ -142,6 +142,11 @@ a {
 .director-form label {
     display: block;
     margin-bottom: 5px;
+
+    &.volume-input-label {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.25);
+    }
 }
 
 #tablet-stats {
