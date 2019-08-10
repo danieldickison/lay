@@ -9,7 +9,7 @@ let PING_ALERT = 10000;
 
 var messagesDiv;
 var unresponsiveTablets = [];
-var serverError = undefined;
+var serverError = null;
 
 document.addEventListener("DOMContentLoaded", event => {
     messagesDiv = document.getElementById('director-messages');
@@ -75,6 +75,7 @@ function fetchStats() {
         if (!json.tablets) throw "response json missing tablets key";
 
         unresponsiveTablets = [];
+        serverError = null;
 
         let table = document.getElementById('tablet-stats');
         let oldTbody = document.getElementById('tablet-stats-body');
@@ -157,7 +158,7 @@ function fetchStats() {
         td.appendChild(ul);
     }
 
-    var prevServerError = null;
+    var prevServerError = undefined;
     var prevUnresponsiveTablets = [];
     function updateMessages() {
         unresponsiveTablets.sort();
