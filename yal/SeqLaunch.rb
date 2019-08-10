@@ -78,9 +78,10 @@ class SeqLaunch
         facebook_1a = 1
         facebook_1b = 2
         person_2 = 2 # TODO: pbdata[:product_launch_target_2]
+        facebook_2a = 3
         person_3 = 3 # TODO: pbdata[:product_launch_target_3]
-        facebook_3a = 3
-        person_4 = 4
+        facebook_3a = 4
+        person_4 = 4 # the target person
         @tablet_images = [
             # Person 1
             {
@@ -106,6 +107,12 @@ class SeqLaunch
                 :src => IMG_BASE + pbdata[:profile_image_names][person_2],
                 :in_offset => 139.5,
                 :out_offset => 152.8,
+            },
+            {
+                :position => :back,
+                :src => IMG_BASE + pbdata[:facebook_image_names][facebook_3a],
+                :in_offset => 152.8,
+                :out_offset => 158.0,
             },
 
             # Person 3
