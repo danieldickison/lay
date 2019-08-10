@@ -86,7 +86,7 @@ class SeqGhosting
         @queue = []
         @run = true
         Thread.new do
-            TablettesController.send_osc_cue(@video, @prepare_sleep)
+            TablettesController.send_osc_cue(@video, @start_time + @prepare_sleep)
             sleep(@start_time + @prepare_sleep + @isadora_delay - Time.now)
             @is.send('/isadora/1', '500')
 
@@ -102,7 +102,7 @@ class SeqGhosting
             end
             @run = false
         end
-    end
+    end 
 
     def stop
         @run = false

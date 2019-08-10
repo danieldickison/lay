@@ -132,7 +132,7 @@ module Lay
       end
 
       @server.add_method('/tablet_video') do |message|
-        TablettesController.send_osc_cue(message.to_a[0], message.to_a[1])
+        TablettesController.send_osc_cue(message.to_a[0], Time.now.utc + 1)
       end
 
       # /start <media> [<tablet#> ...]
