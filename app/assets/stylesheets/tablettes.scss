@@ -376,12 +376,12 @@ a {
 
         &.fade-in {
             opacity: 1;
-            transition: opacity ease-out 400ms;
+            transition: opacity ease-in-out 400ms;
             transform: none;
         }
         &.fade-out {
             opacity: 0;
-            transition: opacity ease-out 400ms;
+            transition: opacity ease-in-out 400ms;
             transform: none;
         }
         &.slide-in {
