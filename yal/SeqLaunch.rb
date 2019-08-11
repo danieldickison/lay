@@ -87,56 +87,55 @@ class SeqLaunch
             {
                 :position => :front,
                 :src => IMG_BASE + pbdata[:profile_image_names][person_1],
-                :in_offset => 109.5, # s from start of video
+                :in_offset => 109.0, # s from start of video
             },
             {
                 :position => :back,
                 :src => IMG_BASE + pbdata[:facebook_image_names][facebook_1a],
-                :in_offset => 112.5,
+                :in_offset => 111.97,
             },
             {
                 :position => :back,
                 :src => IMG_BASE + pbdata[:facebook_image_names][facebook_1b],
-                :in_offset => 124.0,
-                :out_offset => 130.0,
+                :in_offset => 125.57,
+                :out_offset => 130.03,
             },
             
             # Person 2
             {
                 :position => :front,
                 :src => IMG_BASE + pbdata[:profile_image_names][person_2],
-                :in_offset => 139.5,
-                :out_offset => 152.8,
+                :in_offset => 139.0,
             },
             {
                 :position => :back,
-                :src => IMG_BASE + pbdata[:facebook_image_names][facebook_3a],
-                :in_offset => 152.8,
-                :out_offset => 158.0,
+                :src => IMG_BASE + pbdata[:facebook_image_names][facebook_2a],
+                :in_offset => 152.33,
+                :out_offset => 157.47,
             },
 
             # Person 3
             {
                 :position => :front,
                 :src => IMG_BASE + pbdata[:profile_image_names][person_3],
-                :in_offset => 167.5, # s from start of video
+                :in_offset => 167.0, # s from start of video
             },
             {
                 :position => :back,
                 :src => IMG_BASE + pbdata[:facebook_image_names][facebook_3a],
-                :in_offset => 178.0,
-                :out_offset => 186.75,
+                :in_offset => 178.43,
+                :out_offset => 185.93,
             },
 
             # Person 4
             {
                 :position => :front,
                 :src => IMG_BASE + pbdata[:profile_image_names][person_4],
-                :in_offset => 232.5, # s from start of video
-                :out_offset => 365.5,
+                :in_offset => 232.0, # s from start of video
+                :out_offset => 364.8,
             },
         ]
-        @target_x_offset = 323.5
+        @target_x_offset = 323.0
     end
 
     def load
@@ -166,11 +165,12 @@ class SeqLaunch
             sleep(@start_time + @prepare_delay - Time.now)
             @is.send('/isadora/1', '1300')
 
+            img_start_time = @start_time + @prepare_delay
             @tablet_images.each do |i|
-                i[:in_time] = ((@start_time + i.delete(:in_offset)).to_f * 1000).round
-                i[:out_time] = ((@start_time + i.delete(:out_offset)).to_f * 1000).round if i[:out_offset]
+                i[:in_time] = ((img_start_time + i.delete(:in_offset)).to_f * 1000).round
+                i[:out_time] = ((img_start_time + i.delete(:out_offset)).to_f * 1000).round if i[:out_offset]
             end
-            target_x_time = ((@start_time + @target_x_offset).to_f * 1000).round
+            target_x_time = ((img_start_time + @target_x_offset).to_f * 1000).round
             TablettesController.queue_command(nil, 'productlaunch', @tablet_images, target_x_time)
 
             # while true

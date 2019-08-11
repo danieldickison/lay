@@ -503,12 +503,16 @@ function ProductLaunch(images, targetXTime) {
     div.setAttribute('id', 'product-launch');
     document.body.appendChild(div);
 
+    let targetX = document.createElement('div');
+    targetX.classList.add('target-x');
+    div.appendChild(targetX);
+
     var imgTimeout = null;
     var prevSpec = null;
     var prevImg = null;
 
     let targetXTimeout = setTimeout(() => {
-        div.classList.add('target-x');
+        div.classList.add('show-target-x');
     }, targetXTime - serverNow());
 
     queueNextImage();
@@ -516,7 +520,7 @@ function ProductLaunch(images, targetXTime) {
     function queueNextImage() {
         var spec = images.shift();
         if (!spec) {
-            div.classList.remove('target-x');
+            div.classList.add('final-fade-out');
             setTimeout(removeDiv, 2000); // wait for last image to fade out before removing.
             return;
         }
@@ -552,6 +556,7 @@ function ProductLaunch(images, targetXTime) {
 
     this.stop = function () {
         clearTimeout(imgTimeout);
+        clearTimeout(targetXTimeout);
         removeDiv();
     };
 

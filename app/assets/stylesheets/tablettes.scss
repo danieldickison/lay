@@ -312,26 +312,44 @@ a {
     right: 0;
     bottom: 0;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &::after {
+    > .target-x {
         display: block;
-        content: '×';
-        font-size: 700px;
-        font-weight: bold;
-        color: red;
-        opacity: 0;
-        transition: opacity ease-out 1000ms;
-        transform: translateY(-30px);
+        position: absolute;
+        width: 500px;
+        height: 0;
+        left: 150px;
+        bottom: 420px;
+        overflow: hidden;
+        z-index: 1;
+
+        &::after {
+            content: ' ';
+            background: no-repeat center url(/tablet-util/x.png);
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 500px;
+            height: 500px;
+            opacity: 0.75;
+        }
     }
 
-    &.target-x {
+    &.show-target-x {
         opacity: 0.75;
+        transition: opacity ease-in-out 1000ms;
 
-        &:after {
-            opacity: 0.75;
+        > .target-x {
+            transition: height linear 1630ms;
+            height: 500px;
+        }
+        
+        &.final-fade-out {
+            opacity: 0;
+            transition: opacity ease-in-out 1630ms;
+
+            > img.fade-out {
+                opacity: 1; /* don't do the image fade-out; the full container fades out at the end more slowly. */
+            }
         }
     }
 
@@ -358,22 +376,22 @@ a {
 
         &.fade-in {
             opacity: 1;
-            transition: opacity ease-out 500ms;
+            transition: opacity ease-out 400ms;
             transform: none;
         }
         &.fade-out {
             opacity: 0;
-            transition: opacity ease-out 500ms;
+            transition: opacity ease-out 400ms;
             transform: none;
         }
         &.slide-in {
             opacity: 1;
-            transition: transform ease-in-out 800ms;
+            transition: transform ease-in-out 730ms;
             transform: none;
         }
         &.slide-out {
             opacity: 1;
-            transition: transform ease-in-out 800ms;
+            transition: transform ease-in-out 730ms;
             transform: translateX(-800px);
         }
     }
