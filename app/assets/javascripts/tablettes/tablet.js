@@ -98,6 +98,8 @@ var batteryPercent = -2;
 
 var currentSequence = null;
 
+let EMAIL_REGEX = /^\s*[^@]+@[^@]+\.[^@]+\s*$/
+
 document.addEventListener("DOMContentLoaded", event => {
     let isIndexPage = document.getElementById('tablettes-index');
     if (!isIndexPage) return;
@@ -126,29 +128,44 @@ document.addEventListener("DOMContentLoaded", event => {
 function preShowInit() {
     var params;
 
-    let introButton = document.getElementById('intro-button');
+    let preShow = document.getElementById('tablettes-pre-show');
+    let intro = document.getElementById('intro-button-container');
     let dataEntry = document.getElementById('pre-show-data-entry');
-    let name = document.getElementById('name-input');
+    //let name = document.getElementById('name-input');
     let email = document.getElementById('email-input');
+    let emailContinue = document.getElementById('email-continue-button')
+    let agePanel = document.getElementById('age-button-panel');
     let drinkMenu = document.getElementById('drink-menu');
     let optOutButton = document.getElementById('opt-out-button');
     let optInButton = document.getElementById('opt-in-button');
     let popup = document.getElementById('consent-popup');
 
-    introButton.addEventListener('click', function () {
+    preShow.addEventListener('click', event => {
+        if (dataEntry.style.display === 'block') return;
+
         params = new URLSearchParams();
-        introButton.style.display = 'none';
+        intro.style.display = 'none';
         dataEntry.style.display = 'block';
-        name.focus();
+        email.focus();
     });
-    document.getElementById('no-drink-button').addEventListener('click', () => {
-        drinkMenu.style.display = 'none';
-        showConsentPopup();
+    email.addEventListener('input', () => {
+        let valid = email.value.match(EMAIL_REGEX);
+        emailContinue.disabled = !valid;
     });
-    document.getElementById('yes-drink-button').addEventListener('click', () => {
+    emailContinue.addEventListener('click', () => {
+        agePanel.style.display = 'block';
+    });
+    document.getElementById('not-21-button').addEventListener('click', () => {
+        params.set('age_21', 'N');
         drinkMenu.style.display = 'block';
+        drinkMenu.querySelectorAll('.alcoholic').forEach(button => button.disabled = true);
     });
-    document.querySelectorAll('#drink-menu button').forEach(button => {
+    document.getElementById('yes-21-button').addEventListener('click', () => {
+        params.set('age_21', 'Y');
+        drinkMenu.style.display = 'block';
+        drinkMenu.querySelectorAll('.alcoholic').forEach(button => button.disabled = false);
+    });
+    drinkMenu.querySelectorAll('button').forEach(button => {
         button.addEventListener('click', () => {
             params.set('drink', button.innerText);
             showConsentPopup();
@@ -161,10 +178,12 @@ function preShowInit() {
     }
 
     optOutButton.addEventListener('click', () => {
+        event.stopPropagation();
         params.set('opt', 'N');
         submit();
     });
-    optInButton.addEventListener('click', () => {
+    optInButton.addEventListener('click', event => {
+        event.stopPropagation();
         params.set('opt', 'Y');
         submit();
     });
@@ -174,7 +193,7 @@ function preShowInit() {
         optOutButton.disabled = true;
 
         params.set('tablet', TABLET_NUMBER);
-        params.set('name', name.value);
+        //params.set('name', name.value);
         params.set('email', email.value);
         fetch('/tablettes/update_patron.json', {method: 'POST', body: params})
         .then(response => {
@@ -192,17 +211,22 @@ function preShowInit() {
     }
 
     function reset() {
-        layNativeInterface.setVideoCue('/tablet-util/tc.mp4', serverNow() + 1000, 0);
-        setTimeout(() => layNativeInterface.setVideoCue(null, 0, 0), 5000);
+        // TODO: play singing server tablette video then reset.
+        layNativeInterface.setVideoCue('/playback/media_tablets/105-Ghosting/105-011-C62-Ghosting_all.mp4', serverNow() + 1000, 3300);
+        setTimeout(() => {
+            layNativeInterface.setVideoCue(null, 0, 0);
+            intro.style.display = 'block';
+        }, 5000)
 
         optInButton.disabled = false;
         optOutButton.disabled = false;
         popup.style.display = 'none';
         dataEntry.style.display = 'none';
+        agePanel.style.display = 'none';
         drinkMenu.style.display = 'none';
-        introButton.style.display = 'block';
-        name.value = '';
+        //name.value = '';
         email.value = '';
+        emailContinue.disabled = true;
         document.getElementById('consent-popup-box').scrollTop = 0;
     }
 }
@@ -280,7 +304,7 @@ function sendPing() {
         
         let preShow = document.getElementById('tablettes-pre-show');
         if (json.show_time) {
-            if (preShow.style.display != 'none') {
+            if (preShow.style.display !== 'none') {
                 layNativeInterface.hideChrome();
             }
             preShow.style.display = 'none';

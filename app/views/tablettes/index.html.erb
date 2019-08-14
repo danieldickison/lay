@@ -5,33 +5,39 @@
     <p>last OSC: <span id="last-osc-message"></span></p>
     <p id="cue">cue text</p>
     <p id="clock-offset">clock offset not yet set</p>
-    <p style="font-size: 24px"><a target="_blank" href="/">Update App via Browser</a></p>
+    <p style="font-size: 24px"><a target="_blank" href="/">Update App (via Browser)</a></p>
     <button id="reload-button">Reload</button>
 </div>
 
 <div id="tablettes-pre-show">
     <div id="intro-button-container">
-        <p>Welcome to the Rix Corporate Cafe. I can help you get a free drink.</p>
-        <button id="intro-button">Begin</button>
+        <p>I can help you get a free drink. Tap me!</p>
     </div>
 
     <div id="pre-show-data-entry" style="display: none;">
-        <label>
+        <!--label>
             <input id="name-input" type="text" placeholder="Name">
-        </label>
+        </label-->
         <label>
+            Enter your email address to begin:
+            <br>
             <input id="email-input" type="email" placeholder="Email">
         </label>
-        <p>Would you like a free beverage?</p>
-        <p>
-            <button id="no-drink-button">No Drink</button>
-            <button id="yes-drink-button">Oh Yes</button>
-        </p>
+        <button id="email-continue-button" disabled>Continue</button>
+
+        <div id="age-button-panel" style="display: none;">
+            <p>Are you over 21?</p>
+            <p>
+                <button id="not-21-button">No</button>
+                <button id="yes-21-button">Yes</button>
+            </p>
+        </div>
 
         <ul id="drink-menu" style="display: none;">
-            <li><button>Red Wine</button>
-            <li><button>White Wine</button>
+            <li><button class="alcoholic">Red Wine</button>
+            <li><button class="alcoholic">White Wine</button>
             <li><button>Water</button>
+            <li><button>No Drink</button>
         </ul>
     </div>
 
