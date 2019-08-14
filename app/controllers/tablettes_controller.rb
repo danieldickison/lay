@@ -20,7 +20,7 @@ class TablettesController < ApplicationController
 
     PRESHOW_BG = (0..10).collect {|t| '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % t}
     PRESHOW_BG[11] = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 3
-    DEFAULT_PRESHOW_BG = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 0
+    DEFAULT_PRESHOW_BG = '/tablet-util/tablette.png'
 
     PUBLIC_DIR = File.expand_path('../../public', __dir__)
     ASSETS_FILE = File.expand_path('../../tablet-assets.txt', __dir__)
@@ -212,7 +212,8 @@ class TablettesController < ApplicationController
             :tablet_ip => ip,
             :tablet_number => tablet,
             :tablet_group => group,
-            :preshow_bg => PRESHOW_BG[tablet] || DEFAULT_PRESHOW_BG,
+            #:preshow_bg => PRESHOW_BG[tablet] || DEFAULT_PRESHOW_BG,
+            :preshow_bg => DEFAULT_PRESHOW_BG,
             :commands => commands,
             :next_cue_file => cue[:file],
             :next_cue_time => (cue[:time] * 1000).round,

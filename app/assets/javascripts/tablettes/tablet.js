@@ -212,10 +212,12 @@ function preShowInit() {
 
     function reset() {
         // TODO: play singing server tablette video then reset.
-        layNativeInterface.setVideoCue('/playback/media_tablets/105-Ghosting/105-011-C62-Ghosting_all.mp4', serverNow() + 1000, 3300);
+        layNativeInterface.setVideoCue('/playback/media_tablets/105-Ghosting/105-011-C62-Ghosting_all.mp4', serverNow() + 1000, 3000);
+        setTimeout(() => preShow.style.opacity = 0, 1000);
         setTimeout(() => {
             layNativeInterface.setVideoCue(null, 0, 0);
             intro.style.display = 'block';
+            preShow.style.opacity = 1
         }, 5000)
 
         optInButton.disabled = false;
