@@ -22,8 +22,8 @@ public class Dispatcher {
     public interface Handler {
         void logMessage(OSCMessage message);
         void download(String path);
-        void cueVideo(String path, long startTimestamp, int fadeInDuration, int fadeOutDuration);
-        void stopVideo();
+        void cueVideo(String path, long startTimestamp, int fadeDuration);
+        void stopVideo(int fadeDuration);
         void ping(long serverTime);
     }
 
@@ -114,16 +114,17 @@ public class Dispatcher {
             ArgParser args = new ArgParser(event.getMessage().getArguments());
             String path = args.popString();
             long startTimestamp = args.popLong(0);
-            int fadeIn = args.popInt(0);
-            int fadeOut = args.popInt(0);
-            handler.cueVideo(path, startTimestamp, fadeIn, fadeOut);
+            int fadeDuration = args.popInt(0);
+            handler.cueVideo(path, startTimestamp, fadeDuration);
         }
     };
 
     private final OSCMessageListener stopListener = new OSCMessageListener() {
         @Override
         public void acceptMessage(OSCMessageEvent event) {
-            handler.stopVideo();
+            ArgParser args = new ArgParser(event.getMessage().getArguments());
+            int fadeDuration = args.popInt(0);
+            handler.stopVideo(fadeDuration);
         }
     };
 
