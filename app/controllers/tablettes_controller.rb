@@ -59,7 +59,7 @@ class TablettesController < ApplicationController
     end
 
     def play_timecode
-        self.class.send_osc_cue('/tablet-util/tc.mp4', Time.now.utc + 1)
+        self.class.send_osc_cue('/tablet-util/tc.mp4', Time.now.utc + 1, 2000)
     end
 
     def queue_tablet_command
@@ -387,13 +387,13 @@ class TablettesController < ApplicationController
         end
     end
 
-    def self.send_osc_cue(video_path, start_time)
+    def self.send_osc_cue(video_path, start_time, fade_duration = 0)
         start_time = (start_time.to_f * 1000).to_i.to_s # ms since epoch; string since OSC ints are only 32 bits
         @tablets.each_value do |tablet|
             begin
                 c = OSC::Client.new(tablet[:ip], 53000)
                 path = video_path.sub('?', tablet[:group].to_s)
-                c.send(OSC::Message.new('/tablet/cue', path, start_time))
+                c.send(OSC::Message.new('/tablet/cue', path, start_time, fade_duration))
             rescue
                 puts "error sending OSC packet to #{tablet[:ip]}: #{$!}"
             end

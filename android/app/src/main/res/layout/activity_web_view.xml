@@ -7,16 +7,20 @@
     android:keepScreenOn="true"
     tools:context="com.danieldickison.lookingatyou.WebViewActivity">
 
-    <TextureView
-        android:id="@+id/video_view_0"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0"/>
-    <TextureView
-        android:id="@+id/video_view_1"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0"/>
+        android:layout_height="match_parent">
+        <TextureView
+            android:id="@+id/video_view_0"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0"/>
+        <TextureView
+            android:id="@+id/video_view_1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0"/>
+    </FrameLayout>
 
     <WebView
         android:id="@+id/web_view"
