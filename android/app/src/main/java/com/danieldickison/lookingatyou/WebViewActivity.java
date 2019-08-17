@@ -258,8 +258,8 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mWebView = findViewById(R.id.web_view);
         mSpinny = findViewById(R.id.spinny);
 
-        mVideoHolders[0] = new VideoViewHolder((TextureView) findViewById(R.id.video_view_0));
-        mVideoHolders[1] = new VideoViewHolder((TextureView) findViewById(R.id.video_view_1));
+        mVideoHolders[0] = new VideoViewHolder((TextureView) findViewById(R.id.video_view_0), 0);
+        mVideoHolders[1] = new VideoViewHolder((TextureView) findViewById(R.id.video_view_1), 1);
 
         WebSettings settings = mWebView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -416,20 +416,22 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         });
     }
 
-    private void setNowPlaying(final String path) {
+    private void setNowPlaying(final String path, final int playerIndex) {
         JSONObject json = new JSONObject();
         try {
             json.put("path", path);
+            json.put("playerIndex", playerIndex);
         } catch (JSONException e) {
             Log.e(TAG, "setNowPlaying: failed to put path", e);
         }
         evalJS("setNowPlaying(" + json.toString() + ")", null);
     }
 
-    private void clearNowPlaying(final String path) {
+    private void clearNowPlaying(final String path, final int playerIndex) {
         JSONObject json = new JSONObject();
         try {
             json.put("path", path);
+            json.put("playerIndex", playerIndex);
         } catch (JSONException e) {
             Log.e(TAG, "clearNowPlaying: failed to put path", e);
         }
@@ -515,13 +517,15 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     private class VideoViewHolder implements TextureView.SurfaceTextureListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnSeekCompleteListener {
         private final MediaPlayer mediaPlayer = new MediaPlayer();
         private final TextureView textureView;
+        private final int index;
         private int seekTime;
         private int fadeInDuration;
         private String url;
         private ViewPropertyAnimator fadeOutAnimator;
 
-        private VideoViewHolder(TextureView textureView) {
+        private VideoViewHolder(TextureView textureView, int index) {
             this.textureView = textureView;
+            this.index = index;
             textureView.setSurfaceTextureListener(this);
             mediaPlayer.setOnPreparedListener(this);
             mediaPlayer.setOnSeekCompleteListener(this);
@@ -599,7 +603,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                         .setDuration(fadeInDuration)
                         .alpha(1);
                 stopInactiveVideo(fadeInDuration + 100); // make sure it stops after fade ends
-                setNowPlaying(url);
+                setNowPlaying(url, index);
             }
         };
 
@@ -607,7 +611,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             @Override
             public void run() {
                 Log.d(TAG, "stopVideoRunnable running for " + url);
-                clearNowPlaying(url);
+                clearNowPlaying(url, index);
                 url = null;
                 textureView.setAlpha(0);
                 if (mediaPlayer.isPlaying()) {
@@ -619,7 +623,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
             Log.d(TAG, "onCompletion called for " + url);
-            clearNowPlaying(url);
+            clearNowPlaying(url, index);
             url = null;
         }
 

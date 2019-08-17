@@ -49,14 +49,14 @@ window.setLastOSCMessage = function (msg) {
 };
 
 window.setNowPlaying = function (np) {
-    console.log("set now playing: " + np.path);
+    console.log("set now playing " + np.playerIndex + ":" + np.path);
     nowPlaying = np;
     fadeLogo(false);
 };
 
 window.clearNowPlaying = function (np) {
-    console.log("clear now playing: " + np.path + "; currently: " + nowPlaying.path);
-    if (nowPlaying.path == np.path) {
+    console.log("clear now playing " + np.playerIndex + ":" + np.path + "; currently " + nowPlaying.playerIndex + ":" + nowPlaying.path);
+    if (nowPlaying.path === np.path && nowPlaying.playerIndex === np.playerIndex) {
         nowPlaying = {};
         fadeLogo(true);
     }
