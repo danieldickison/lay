@@ -58,7 +58,8 @@ window.clearNowPlaying = function (np) {
     console.log("clear now playing " + np.playerIndex + ":" + np.path + "; currently " + nowPlaying.playerIndex + ":" + nowPlaying.path);
     if (nowPlaying.path === np.path && nowPlaying.playerIndex === np.playerIndex) {
         nowPlaying = {};
-        fadeLogo(true);
+        // Don't fade in the logo so last frame of video remains visible.
+        //fadeLogo(true);
     }
 };
 
