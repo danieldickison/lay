@@ -50,7 +50,15 @@
         </form>
 
         <form id="cue-form" class="director-form">
-            <label>Cue #: <input name="cue" type="number" value="500"></label>
+            <label>Cue #: <input list="cue-data-list" name="cue" value="500 Ghosting"></label>
+            <datalist id="cue-data-list">
+                <option value="500 Ghosting">
+                <option value="700 Geek Trio">
+                <option value="800 Exterminator">
+                <option value="1200 Off the Rails">
+                <option value="1300 Product Launch">
+                <option value="9000 tablet cross-fade test">
+            </datalist>
             <input type="submit" value="Start">
         </form>
 
