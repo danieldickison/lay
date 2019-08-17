@@ -37,7 +37,7 @@ class TablettesController < ApplicationController
 
     @show_time = true
 
-    skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :start_cue, :assets, :update_patron, :stats]
+    skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :start_cue, :stop_cue, :assets, :update_patron, :stats]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
@@ -73,6 +73,12 @@ class TablettesController < ApplicationController
         # Kind of a roundabaout way to trigger the cue sequence since it's currently only implemneted in the osc listener in application.rb
         client = OSC::Client.new('127.0.0.1', 53000)
         msg = OSC::Message.new('/cue', params[:cue])
+        client.send(msg)
+    end
+
+    def stop_cue
+        client = OSC::Client.new('127.0.0.1', 53000)
+        msg = OSC::Message.new('/stop')
         client.send(msg)
     end
 

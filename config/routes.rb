@@ -10,6 +10,7 @@ Rails.application.routes.draw do
   post 'tablettes/play_timecode'
   post 'tablettes/queue_tablet_command'
   post 'tablettes/start_cue'
+  post 'tablettes/stop_cue'
   post 'tablettes/assets'
   post 'tablettes/update_patron'
 

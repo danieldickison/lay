@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", event => {
 
     document.getElementById('stop-tablets-button').addEventListener('click', event => {
         event.preventDefault();
-        queueTabletCommand('stop', '/tablet/stop');
+        fetch('/tablettes/stop_cue.json', {method: 'POST'});
     });
 
     document.getElementById('reload-tablets-button').addEventListener('click', event => {

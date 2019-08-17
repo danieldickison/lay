@@ -152,6 +152,7 @@ module Lay
       @server.add_method('/stop') do |message|
         puts "#{message.inspect}"
         @current_seq.stop if @current_seq
+        TablettesController.queue_command(nil, 'stop')
         TablettesController.send_osc('/tablet/stop')
         #tablets = message.to_a.collect {|t| t.to_i}
         #TablettesController.stop_cue(tablets)
