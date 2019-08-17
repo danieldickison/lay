@@ -280,9 +280,6 @@ function sendPing() {
             // scheduleCueTick();
             let path = uriEscapePath(nextCueFile);
             layNativeInterface.setVideoCue(path, nextCueTime, nextSeekTime);
-            if (layNativeInterface.setAudioCue) {
-                layNativeInterface.setAudioCue(path && path.replace('.mp4', '.wav'), nextCueTime);
-            }
         }
 
         (json.commands || []).forEach((cmd) => {
