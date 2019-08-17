@@ -12,6 +12,7 @@ $:.unshift(MAIN_DIR)
 require('SeqGhosting')
 require('SeqOffTheRails')
 require('SeqLaunch')
+require('SeqTabletCrossFadeTest')
 
 module Lay
   class Application < Rails::Application
@@ -104,6 +105,8 @@ module Lay
             @current_seq = SeqOffTheRails.new
         when 1300
             @current_seq = SeqLaunch.new
+        when 9000
+            @current_seq = SeqTabletCrossFadeTest.new
         end
 
         @current_seq.start_time = start_time
