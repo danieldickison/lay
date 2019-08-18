@@ -158,6 +158,7 @@ function preShowInit() {
     let preShow = document.getElementById('tablettes-pre-show');
     let intro = document.getElementById('intro-button-container');
     let dataEntry = document.getElementById('pre-show-data-entry');
+    let loginForm = document.getElementById('login-form');
     let loginID = document.getElementById('login-id-input');
     let loginContinue = document.getElementById('login-continue-button')
     let agePanel = document.getElementById('age-button-panel');
@@ -180,7 +181,15 @@ function preShowInit() {
         let valid = loginID.value.trim().length >= 3;
         loginContinue.disabled = !valid;
     });
-    loginContinue.addEventListener('click', event => {
+    loginID.addEventListener('keydown', event => {
+        //log("got keydown " + event.keyCode);
+        if (event.keyCode === 9) {
+            event.preventDefault();
+            loginID.blur();
+            agePanel.style.display = 'block';
+        }
+    });
+    loginForm.addEventListener('submit', event => {
         event.preventDefault();
         loginID.blur();
         agePanel.style.display = 'block';
