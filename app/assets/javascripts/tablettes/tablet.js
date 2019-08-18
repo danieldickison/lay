@@ -66,6 +66,34 @@ window.clearNowPlaying = function (np) {
 let TABLET_NUMBER = layNativeInterface.getTabletNumber();
 let BUILD_NAME = layNativeInterface.getBuildName();
 
+let EMPLOYEE_ID_PREFIXES = {
+    1: 'AA',
+    2: 'BB',
+    3: 'CC',
+    4: 'DD',
+    5: 'EE',
+    6: 'FF',
+    7: 'GG',
+    8: 'HH',
+    9: 'II',
+    10: 'JJ',
+    11: 'KK',
+    12: 'LL',
+    13: 'MM',
+    14: 'NN',
+    15: 'OO',
+    16: 'PP',
+    17: 'QQ',
+    18: 'RR',
+    19: 'SS',
+    20: 'TT',
+    21: 'UU',
+    22: 'VV',
+    23: 'WW',
+    24: 'XX',
+    25: 'YY',
+};
+
 let PING_INTERVAL = 1000;
 let PING_TIMEOUT = 3000;
 var pingStartTime = null;
@@ -137,6 +165,8 @@ function preShowInit() {
     let optOutButton = document.getElementById('opt-out-button');
     let optInButton = document.getElementById('opt-in-button');
     let popup = document.getElementById('consent-popup');
+
+    document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || 'ZZ';
 
     preShow.addEventListener('click', event => {
         if (dataEntry.style.display === 'block') return;
