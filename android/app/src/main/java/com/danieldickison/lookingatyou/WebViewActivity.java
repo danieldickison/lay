@@ -475,7 +475,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             holder.prepareCue(filePath, seekTime, fadeDuration, loop);
 
             String audioPath = path.replace(".mp4", ".wav");
-            prepareNextAudioCue(audioPath, startTimestamp);
+            prepareNextAudioCue(audioPath, seekTime, startTimestamp);
 
             if (startTimestamp >= 0) {
                 holder.startCueAt(startTimestamp);
@@ -484,7 +484,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     @MainThread
-    private void prepareNextAudioCue(String path, long startTimestamp) {
+    private void prepareNextAudioCue(String path, int seekTime, long startTimestamp) {
         if (path == null) {
             audioPlayer.stopAudio();
         } else {
@@ -492,7 +492,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             if (filePath == null) return;
 
             boolean loop = path.contains("loop");
-            audioPlayer.prepareAudio(filePath, loop);
+            audioPlayer.prepareAudio(filePath, seekTime, loop);
 
             if (startTimestamp >= 0) {
                 audioPlayer.startAudio(startTimestamp - AUDIO_LAG);
@@ -647,6 +647,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         private MediaPlayer mediaPlayer = new MediaPlayer();
         private String url;
         private boolean playingSilence = false;
+        private int seekTime;
 
         AudioPlayer() {
             mediaPlayer.setOnPreparedListener(this);
@@ -660,7 +661,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
                 Log.d(TAG, "starting to play silence-loop.wav");
                 mediaPlayer.start();
             } else {
-                mediaPlayer.seekTo(0);
+                mediaPlayer.seekTo(seekTime);
             }
         }
 
@@ -675,11 +676,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             playSilence();
         }
 
-        private void prepareAudio(String url, boolean loop) {
+        private void prepareAudio(String url, int seekTime, boolean loop) {
             this.url = url;
 
             mediaPlayer.reset();
             playingSilence = false;
+            this.seekTime = seekTime;
             try {
                 mediaPlayer.setDataSource(url);
                 mediaPlayer.setLooping(loop);
