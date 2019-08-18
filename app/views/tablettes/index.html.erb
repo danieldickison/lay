@@ -15,15 +15,14 @@
     </div>
 
     <div id="pre-show-data-entry" style="display: none;">
-        <!--label>
-            <input id="name-input" type="text" placeholder="Name">
-        </label-->
-        <label>
-            Enter your email address to begin:
-            <br>
-            <input id="email-input" type="email" placeholder="Email">
-        </label>
-        <button id="email-continue-button" disabled>Continue</button>
+        <form>
+            <label>
+                Enter your Employee ID to begin:
+                <br>
+                <span id="employee-id-prefix"></span>-<input id="login-id-input" type="number" placeholder="Employee ID">
+            </label>
+            <button id="login-continue-button" disabled>Continue</button>
+        </form>
 
         <div id="age-button-panel" style="display: none;">
             <p>Are you over 21?</p>
@@ -36,7 +35,7 @@
         <ul id="drink-menu" style="display: none;">
             <li><button class="alcoholic">Red Wine</button>
             <li><button class="alcoholic">White Wine</button>
-            <li><button>Water</button>
+            <li><button>Seltzer</button>
             <li><button>No Drink</button>
         </ul>
     </div>

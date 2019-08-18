@@ -99,8 +99,6 @@ var batteryPercent = -2;
 
 var currentSequence = null;
 
-let EMAIL_REGEX = /^\s*[^@]+@[^@]+\.[^@]+\s*$/
-
 document.addEventListener("DOMContentLoaded", event => {
     let isIndexPage = document.getElementById('tablettes-index');
     if (!isIndexPage) return;
@@ -132,9 +130,8 @@ function preShowInit() {
     let preShow = document.getElementById('tablettes-pre-show');
     let intro = document.getElementById('intro-button-container');
     let dataEntry = document.getElementById('pre-show-data-entry');
-    //let name = document.getElementById('name-input');
-    let email = document.getElementById('email-input');
-    let emailContinue = document.getElementById('email-continue-button')
+    let loginID = document.getElementById('login-id-input');
+    let loginContinue = document.getElementById('login-continue-button')
     let agePanel = document.getElementById('age-button-panel');
     let drinkMenu = document.getElementById('drink-menu');
     let optOutButton = document.getElementById('opt-out-button');
@@ -147,13 +144,15 @@ function preShowInit() {
         params = new URLSearchParams();
         intro.style.display = 'none';
         dataEntry.style.display = 'block';
-        email.focus();
+        loginID.focus();
     });
-    email.addEventListener('input', () => {
-        let valid = email.value.match(EMAIL_REGEX);
-        emailContinue.disabled = !valid;
+    loginID.addEventListener('input', () => {
+        let valid = loginID.value.trim().length >= 3;
+        loginContinue.disabled = !valid;
     });
-    emailContinue.addEventListener('click', () => {
+    loginContinue.addEventListener('click', event => {
+        event.preventDefault();
+        loginID.blur();
         agePanel.style.display = 'block';
     });
     document.getElementById('not-21-button').addEventListener('click', () => {
@@ -194,42 +193,48 @@ function preShowInit() {
         optOutButton.disabled = true;
 
         params.set('tablet', TABLET_NUMBER);
-        //params.set('name', name.value);
-        params.set('email', email.value);
+        params.set('login_id', loginID.value);
         fetch('/tablettes/update_patron.json', {method: 'POST', body: params})
         .then(response => {
             return response.json();
+        })
+        .then(json => {
+            if (json.error) throw json.error;
+            else sing();
+        })
+        .catch(error => {
+            log("login submit error: ", error);
+            alert("Please double check your Employee ID number and try again.");
+            reset();
         });
-        // Don't wait for fetch to complete. Fail silently.
-        reset();
     }
 
-    function failed() {
-        alert("Please double check your program number and try again.");
-        optInButton.disabled = false;
-        optOutButton.disabled = false;
-        popup.style.display = 'none';
-    }
-
-    function reset() {
-        // TODO: play singing server tablette video then reset.
-        layNativeInterface.setVideoCue('/playback/media_tablets/105-Ghosting/105-011-C62-Ghosting_all.mp4', serverNow() + 1000, 3000);
+    function sing() {
+        // TODO: get real videos
+        if (params.get('opt') === 'Y') {
+            //layNativeInterface.setVideoCue('/playback/media_tablets/112-OTR/112-201-C60-OTR_All.mp4', serverNow() + 2000, 91000);
+            layNativeInterface.setVideoCue('/tablet-util/tc.mp4', serverNow() + 1000, 0);
+        } else {
+            layNativeInterface.setVideoCue('/playback/media_tablets/112-OTR/112-201-C60-OTR_All.mp4', serverNow() + 2000, 122000);
+        }
         setTimeout(() => preShow.style.opacity = 0, 1000);
         setTimeout(() => {
             layNativeInterface.setVideoCue(null, 0, 0);
-            intro.style.display = 'block';
-            preShow.style.opacity = 1
-        }, 5000)
+            reset();
+        }, 8000);
+    }
 
+    function reset() {
+        preShow.style.opacity = 1
+        intro.style.display = 'block';
         optInButton.disabled = false;
         optOutButton.disabled = false;
         popup.style.display = 'none';
         dataEntry.style.display = 'none';
         agePanel.style.display = 'none';
         drinkMenu.style.display = 'none';
-        //name.value = '';
-        email.value = '';
-        emailContinue.disabled = true;
+        loginID.value = '';
+        loginContinue.disabled = true;
         document.getElementById('consent-popup-box').scrollTop = 0;
     }
 }

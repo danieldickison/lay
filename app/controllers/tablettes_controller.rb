@@ -234,18 +234,19 @@ class TablettesController < ApplicationController
     def update_patron
         begin
             tablet = params[:tablet]
-            name = params[:name]
-            email = params[:email]
+            login_id = params[:login_id]
             drink = params[:drink]
             drink = 'none' if !drink || drink == ''
-            Lay::OSCApplication::Patrons.update(tablet, name, email, drink, params[:opt])
+            opt = params[:opt]
+            puts "update_patron: #{params.inspect}"
+            #Lay::OSCApplication::Patrons.update(tablet, login_id, drink, opt)
             render json: {
                 :error => false
             }
         rescue
             puts "failed to update patron: #{$!}"
             render json: {
-                :error => true
+                :error => $!.to_s
             }
         end
     end

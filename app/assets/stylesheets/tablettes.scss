@@ -34,6 +34,7 @@ a {
     height: 100%;
     text-align: center;
     font-size: 20px;
+    color: #6699ff;
     transition: opacity ease-in-out 1000ms;
 
     button {
@@ -52,7 +53,7 @@ a {
         font-style: italic;
     }
 
-    #email-input, #name-input {
+    #login-id-input {
         font-size: 20px;
     }
 
