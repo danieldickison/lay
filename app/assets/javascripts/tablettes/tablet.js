@@ -500,6 +500,34 @@ function Ghosting(time, duration, srcs) {
     }
 }
 
+function GeekTrio(start_time, interval, duration, images) {
+    log("GeekTrio starting in " + (start_time - serverNow()) + " ms");
+
+    let div = document.createElement('div');
+    div.classList.add('geek-trio-set');
+    document.body.appendChild(div);
+
+    images.forEach((src, i) => {
+        let img = document.createElement('img');
+        img.src = src;
+        img.style.transitionDelay = (i * interval) + 'ms';
+        div.appendChild(img);
+    });
+
+    let timeout = setTimeout(() => {
+        div.classList.add('geek-trio-set--active');
+    }, start_time - serverNow());
+
+    setTimeout(() => this.stop(), start_time + duration - serverNow());
+
+    this.stop = function () {
+        if (div.parentNode === document.body) {
+            document.body.removeChild(div);
+        }
+        clearTimeout(timeout);
+    };
+}
+
 function OffTheRails(items) {
     log("OffTheRails start with " + items.length + " feed items");
 
@@ -664,6 +692,9 @@ function handleCommand(cmd, args) {
             break;
         case 'ghosting':
             triggerSequence(Ghosting, args);
+            break;
+        case 'geektrio':
+            triggerSequence(GeekTrio, args);
             break;
         case 'offtherails':
             triggerSequence(OffTheRails, args);

@@ -10,6 +10,7 @@ Bundler.require(*Rails.groups)
 MAIN_DIR = File.expand_path('../yal', __dir__)
 $:.unshift(MAIN_DIR)
 require('SeqGhosting')
+require('SeqGeekTrio')
 require('SeqOffTheRails')
 require('SeqLaunch')
 require('SeqTabletCrossFadeTest')
@@ -101,6 +102,8 @@ module Lay
         case cue
         when 500
             @current_seq = SeqGhosting.new
+        when 700
+            @current_seq = SeqGeekTrio.new
         when 1200
             @current_seq = SeqOffTheRails.new
         when 1300
@@ -115,6 +118,7 @@ module Lay
             @current_seq.start_time = start_time
             @current_seq.start
         else
+            # Proxy unknown cues directly to isadora
             @isadora.send('/channel/1', cue.to_s)
         end
       end

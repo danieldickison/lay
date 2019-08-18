@@ -44,8 +44,11 @@ module PlaybackData
         :instagram_image_names => Hash.new('placeholder.jpg'),
         :travel_image_names => Hash.new('placeholder.jpg'),
         :food_image_names => Hash.new('placeholder.jpg'),
-        :facebooks => 30.times.collect {|i| {:photo => i + 1, :caption => ""}},
-        :instagrams => 30.times.collect {|i| {:photo => i + 1, :caption => ""}},
+        
+         # person_id => array of {:photo, :caption}
+        :facebooks => Hash.new {30.times.collect {|i| {:photo => i + 1, :caption => ""}}},
+        :instagrams => Hash.new {30.times.collect {|i| {:photo => i + 1, :caption => ""}}},
+
         :tweets => [
             # {:profile => 1, :tweet => 'hi i ate a sandwich adn it was good'},
             # {:profile => 2, :tweet => 'look at me im on social media'},
