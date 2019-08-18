@@ -1,5 +1,9 @@
 {
-  "isadora_ip": "172.16.1.200",
+  "isadora_ips": [
+    "172.16.1.221",
+    "172.16.1.222",
+    "172.16.1.223",
+  ],
   "isadora_port": 1234,
   "isadora_enabled": false,
   "table_locations": {

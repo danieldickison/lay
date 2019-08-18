@@ -107,11 +107,16 @@ module Lay
             @current_seq = SeqLaunch.new
         when 9000
             @current_seq = SeqTabletCrossFadeTest.new
+        else
+            @current_seq = nil
         end
 
-        @current_seq.start_time = start_time
-
-        @current_seq.start
+        if @current_seq
+            @current_seq.start_time = start_time
+            @current_seq.start
+        else
+            @isadora.send('/channel/1', cue.to_s)
+        end
       end
 
       @server.add_method('/isadora') do |message|
