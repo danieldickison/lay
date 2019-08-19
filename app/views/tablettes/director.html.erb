@@ -1,6 +1,23 @@
 <div id="p-director">
     <h1>Tablettes Director</h1>
 
+    <section>
+        <form id="director-controls-form" class="director-form">
+            <label class="pre-show-radio-label">
+                <input type="radio" name="director-pre-show-radio" <% if !@show_time %>checked<% end %>>
+                Pre-show
+            </label>
+            <label class="pre-show-radio-label">
+                <input type="radio" name="director-pre-show-radio" id="show-time-radio" <% if @show_time %>checked<% end %>>
+                Show time
+            </label>
+            <label class="volume-input-label">
+                Tablet Volume: <input id="volume-input" type="range" min="0" max="100" value=<%= @volume %>>
+            </label>
+            <a id="toggle-deets-link">toggle deets</a>
+        </form>
+    </section>
+
     <section id="director-messages">
     </section>
 
@@ -36,16 +53,8 @@
             <button id="play-timecode-button">Play Timecode</button>
             <button id="stop-tablets-button">Stop Tablets</button>
             <button id="reload-tablets-button">Reload Tablets</button>
-            <label class="volume-input-label">
-                Volume: <input id="volume-input" type="range" min="0" max="100" value=<%= @volume %>>
-            </label>
-            <br>
             <label>
                 Debug: <input id="debug-checkbox" type="checkbox" <% if @debug %>checked<% end %>>
-            </label>
-            <br>
-            <label>
-                Show Time: <input id="show-time-checkbox" type="checkbox" <% if @show_time %>checked<% end %>>
             </label>
         </form>
 

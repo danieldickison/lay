@@ -15,8 +15,12 @@ document.addEventListener("DOMContentLoaded", event => {
     messagesDiv = document.getElementById('director-messages');
     if (!messagesDiv) return;
 
-    let assetsForm = document.getElementById('assets-form');
+    document.getElementById('toggle-deets-link').addEventListener('click', event => {
+        event.preventDefault();
+        document.getElementById('director-deets').classList.toggle('director-deets--show');
+    });
 
+    let assetsForm = document.getElementById('assets-form');
     assetsForm.addEventListener('submit', event => {
         event.preventDefault();
         let assets = assetsForm.elements.assets.value;
@@ -65,7 +69,7 @@ function fetchStats() {
     let body = new URLSearchParams();
     body.append('volume', document.getElementById('volume-input').value);
     body.append('debug', document.getElementById('debug-checkbox').checked ? '1' : '0');
-    body.append('show_time', document.getElementById('show-time-checkbox').checked ? '1' : '0');
+    body.append('show_time', document.getElementById('show-time-radio').checked ? '1' : '0');
     fetch('/tablettes/stats.json', {method: 'POST', body: body})
     .then(response => {
         return response.json();
