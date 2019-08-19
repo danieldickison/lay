@@ -372,17 +372,16 @@ a {
         opacity: 0;
         transform: translateX(800px);
         position: absolute;
+        border: none;
         
         &.front {
-            border: solid 2px white;
-            border-radius: 20px;
+            border-radius: 22px;
             width: 600px;
             height: 600px;
             left: 100px;
             top: 306px;
         }
         &.back {
-            border: none;
             width: 800px;
             height: 600px;
             left: 0;
