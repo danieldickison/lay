@@ -142,6 +142,53 @@ a {
     opacity: 1;
 }
 
+.geek-trio-set {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+
+    > img {
+        opacity: 0;
+        transform: scale(0.9);
+        transition: opacity 30ms, transform ease-out 400ms;
+
+        width: 50%;
+        height: auto;
+        border: none;
+        position: absolute;
+
+        &:nth-child(1) {
+            left: 2%;
+            bottom: 48%;
+        }
+        &:nth-child(2) {
+            right: 5%;
+            bottom: 45%;
+        }
+        &:nth-child(3) {
+            left: 4%;
+            top: 47%;
+        }
+        &:nth-child(4) {
+            right: 2%;
+            top: 45%;
+        }
+    }
+
+    &--active {
+        > img {
+            opacity: 1;
+            transform: none;
+        }
+    }
+    &--fade-out {
+        opacity: 0;
+        transition: opacity 800ms;
+    }
+}
+
 #offtherails {
     z-index: -1;
     position: fixed;

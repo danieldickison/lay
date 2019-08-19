@@ -518,7 +518,10 @@ function GeekTrio(start_time, interval, duration, images) {
         div.classList.add('geek-trio-set--active');
     }, start_time - serverNow());
 
-    setTimeout(() => this.stop(), start_time + duration - serverNow());
+    setTimeout(() => {
+        div.classList.add('geek-trio-set--fade-out');
+        div.addEventListener('transitionend', () => this.stop());
+    }, start_time + duration - serverNow());
 
     this.stop = function () {
         if (div.parentNode === document.body) {
