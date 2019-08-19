@@ -44,7 +44,7 @@ class SeqGeekTrio
         enum.each do |t|
             people = pbdata[:people_at_tables][t] || [1, 2, 3, 4]  # default to first 4 people
             images = people.collect {|p| IMG_BASE + pbdata[:profile_image_names][p]}
-            @tablet_image_sets[t] = 4.times.collect do |i|
+            @tablet_image_sets[t] = CHORUS_OFFSETS.length.times.collect do |i|
                 people.collect do |pid|
                     fb = pbdata[:facebooks][pid][i]
                     IMG_BASE + pbdata[:facebook_image_names][fb[:photo]]
@@ -101,7 +101,8 @@ class SeqGeekTrio
         if now > next_tablet_chorus - TABLET_TRIGGER_PREROLL
             puts "triggering geek trio chorus #{@tablet_chorus_index} on tablets"
             start_time = (next_tablet_chorus.to_f * 1000).round
-            @tablet_image_sets.each do |t, images|
+            @tablet_image_sets.each do |t, image_sets|
+                images = image_sets[@tablet_chorus_index]
                 TablettesController.queue_command(t, 'geektrio', start_time, TABLET_IMAGE_INTERVAL, TABLET_CHORUS_DURATION, images)
             end
             @tablet_chorus_index += 1

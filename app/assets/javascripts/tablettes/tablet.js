@@ -452,7 +452,7 @@ function uriEscapePath(path) {
 }
 
 function triggerSequence(constructor, args) {
-    stop();
+    //stop(); // don't do this because server sends a stop command when necessary, and for geek trio we need next set of images to be sequenced while previous one is still finishing.
     args.unshift(constructor);
     currentSequence = new (constructor.bind.apply(constructor, args));
 }
