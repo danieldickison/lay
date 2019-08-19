@@ -67,31 +67,31 @@ let TABLET_NUMBER = layNativeInterface.getTabletNumber();
 let BUILD_NAME = layNativeInterface.getBuildName();
 
 let EMPLOYEE_ID_PREFIXES = {
-    1: 'AA',
-    2: 'BB',
-    3: 'CC',
-    4: 'DD',
-    5: 'EE',
-    6: 'FF',
-    7: 'GG',
-    8: 'HH',
-    9: 'II',
-    10: 'JJ',
-    11: 'KK',
-    12: 'LL',
-    13: 'MM',
-    14: 'NN',
-    15: 'OO',
-    16: 'PP',
-    17: 'QQ',
-    18: 'RR',
-    19: 'SS',
-    20: 'TT',
-    21: 'UU',
-    22: 'VV',
-    23: 'WW',
-    24: 'XX',
-    25: 'YY',
+    1: 'AV', // Applied Validation
+    2: 'BA', // Biofinity Architecture
+    3: 'CL', // Cell Logics
+    4: 'DR', // Disaster Recovery
+    5: 'ED', // Embedded Datamatics
+    6: 'FA', // Failure Analysis
+    7: 'GF', // Geoframeworking
+    8: 'HF', // Human Factors
+    9: 'IP', // Illocution Processing
+    10: 'JP', // Juice Platforming 
+    11: 'KV', // Ketogenesis Validation
+    12: 'LCM', // Life Cycle Metrics
+    13: 'ME', // Machine Evangelism
+    14: 'NLI', // Natural Language Illocution
+    15: 'OMV', // Orange Mandarin Visioning
+    16: 'PA', // Physiology Analytics
+    17: 'QR', // Quartermaster Research
+    18: 'RE', // Retrieval Environments
+    19: 'SR', // Substance Restriction
+    20: 'TFI', // Thin Film Interface
+    21: 'UXS', // UX Sculpting
+    22: 'VN', // Vibration & Noise
+    23: 'WR', // Wagonette Rendering
+    24: 'XG', // Xylographics
+    25: 'YA', // Yellowback Algoretrieval
 };
 
 let PING_INTERVAL = 1000;
