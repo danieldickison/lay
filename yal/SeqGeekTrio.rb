@@ -42,14 +42,7 @@ class SeqGeekTrio
             enum = 1..25
         end
         enum.each do |t|
-            people = pbdata[:people_at_tables][t] || [1, 2, 3, 4]  # default to first 4 people
-            images = people.collect {|p| IMG_BASE + pbdata[:profile_image_names][p]}
-            @tablet_image_sets[t] = CHORUS_OFFSETS.length.times.collect do |i|
-                people.collect do |pid|
-                    fb = pbdata[:facebooks][pid][i]
-                    IMG_BASE + pbdata[:facebook_image_names][fb[:photo]]
-                end
-            end
+            @tablet_image_sets[t] = pbdata[:geek_trio][t].collect {|set| set.collect {|img| IMG_BASE + img}}
         end
     end
 
