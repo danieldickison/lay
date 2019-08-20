@@ -11,6 +11,7 @@ MAIN_DIR = File.expand_path('../yal', __dir__)
 $:.unshift(MAIN_DIR)
 require('SeqGhosting')
 require('SeqGeekTrio')
+require('SeqExterminator')
 require('SeqOffTheRails')
 require('SeqLaunch')
 require('SeqTabletCrossFadeTest')
@@ -104,6 +105,8 @@ module Lay
             @current_seq = SeqGhosting.new
         when 700
             @current_seq = SeqGeekTrio.new
+        when 800
+            @current_seq = SeqExterminator.new
         when 1200
             @current_seq = SeqOffTheRails.new
         when 1300

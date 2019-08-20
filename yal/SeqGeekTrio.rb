@@ -100,10 +100,10 @@ class SeqGeekTrio
         next_tablet_chorus = @start_time + CHORUS_OFFSETS[@tablet_chorus_index]
         if now > next_tablet_chorus - TABLET_TRIGGER_PREROLL
             puts "triggering geek trio chorus #{@tablet_chorus_index} on tablets"
-            start_time = (next_tablet_chorus.to_f * 1000).round
+            tablet_start_time = (next_tablet_chorus.to_f * 1000).round
             @tablet_image_sets.each do |t, image_sets|
                 images = image_sets[@tablet_chorus_index]
-                TablettesController.queue_command(t, 'geektrio', start_time, TABLET_IMAGE_INTERVAL, TABLET_CHORUS_DURATION, images)
+                TablettesController.queue_command(t, 'geektrio', tablet_start_time, TABLET_IMAGE_INTERVAL, TABLET_CHORUS_DURATION, images)
             end
             @tablet_chorus_index += 1
         end

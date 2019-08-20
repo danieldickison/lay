@@ -531,6 +531,50 @@ function GeekTrio(start_time, interval, duration, images) {
     };
 }
 
+function Exterminator(start_time, params) {
+    log("Exterminator starting in " + (start_time - serverNow()) + " ms");
+
+    let div = document.createElement('div');
+    div.classList.add('exterminator-layer');
+    document.body.appendChild(div);
+
+    params.srcs.forEach((src, i) => {
+        let img = document.createElement('div');
+        img.classList.add('exterminator-layer__img');
+        img.style.backgroundImage = 'url(' + src + ')';
+        img.style.transitionDelay = (i * params.scroll_interval) + 'ms';
+        if (i < 3) {
+            img.style.transitionDuration = params.scroll_duration + 'ms';
+        } else {
+            img.style.transitionDuration = Math.round(params.scroll_duration / 2) + 'ms';
+            img.classList.add('exterminator-layer__img--last');
+        }
+        div.appendChild(img);
+    });
+
+    let conclusion = document.createElement('div');
+    conclusion.innerText = params.conclusion;
+    conclusion.classList.add('exterminator-layer__conclusion');
+    conclusion.style.transitionDelay = params.conclusion_offset + 'ms';
+    div.appendChild(conclusion);
+
+    let timeout = setTimeout(() => {
+        div.classList.add('exterminator-layer--active');
+    }, start_time - serverNow());
+
+    setTimeout(() => {
+        div.classList.add('exterminator-layer--fade-out');
+        div.addEventListener('transitionend', () => this.stop());
+    }, start_time + params.conclusion_offset + params.conclusion_duration - serverNow());
+
+    this.stop = function () {
+        if (div.parentNode === document.body) {
+            document.body.removeChild(div);
+        }
+        clearTimeout(timeout);
+    };
+}
+
 function OffTheRails(items) {
     log("OffTheRails start with " + items.length + " feed items");
 
@@ -698,6 +742,9 @@ function handleCommand(cmd, args) {
             break;
         case 'geektrio':
             triggerSequence(GeekTrio, args);
+            break;
+        case 'exterminator':
+            triggerSequence(Exterminator, args);
             break;
         case 'offtherails':
             triggerSequence(OffTheRails, args);
