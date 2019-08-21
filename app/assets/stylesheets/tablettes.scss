@@ -191,19 +191,21 @@ a {
 
 .exterminator-layer {
     position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
+    top: 140px;
+    left: 24px;
+    bottom: 24px;
+    right: 24px;
+    overflow: hidden;
 
     > .exterminator-layer__img {
         transform: translateX(-800px);
         transition: transform linear 4000ms; /* duration overridden by server-side params */
 
         position: absolute;
-        top: 100px;
-        bottom: 100px;
-        width: 800px;
+        top: 0;
+        bottom: 120px;
+        left: 26px;
+        width: 700px;
         background-size: contain;
         background-position: center;
         background-repeat: no-repeat;
@@ -217,8 +219,9 @@ a {
         left: 0;
         right: 0;
         text-align: center;
-        font-size: 30px;
-        color: #6699ff;
+        font-size: 60px;
+        color: #01DAFF;
+        text-shadow: #01A3BF 0 0 40px;
         opacity: 0;
         transition: opacity ease-in-out 100ms;
     }
