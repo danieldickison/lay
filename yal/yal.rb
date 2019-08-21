@@ -79,9 +79,27 @@ class Yal
             while @line = Readline.readline('> ', true)
                 line = @line.split(" ")
                 cmd = "cli_#{line[0].downcase}".to_sym
-                __send__(cmd, *line[1..-1])
+                begin
+                    __send__(cmd, *line[1..-1])
+                rescue
+                    puts $!.inspect
+                end
             end
         end
+    end
+
+    def cli_help(*args)
+        puts "import <sequence>"
+        puts "config"
+        puts "config <key>"
+        puts "config <key> <value>"
+        puts "config -<key>"
+        puts "seq <sequence>"
+        puts "seq start|stop|pause|unpause|load|kill|debug"
+        puts "osc <msg>"
+        puts "osc <ip> ... <msg>"
+        puts "scrub <file>"
+        puts "quit"
     end
 
     # config x
@@ -147,7 +165,7 @@ class Yal
         end
     end
 
-    def cli_osc_send(*args)
+    def cli_osc(*args)
         clients = []
         while args.first =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
             ip = args.shift
@@ -178,7 +196,7 @@ class Yal
         # JSON.parse(pbdata)
     end
 
-    def cli_gm_scrub(file)
+    def cli_scrub(file)
         GraphicsMagick.scrub(file, file + ".jpg", "jpg", 85)
     end
 
