@@ -14,7 +14,7 @@
             <label class="volume-input-label">
                 Tablet Volume: <input id="volume-input" type="range" min="0" max="100" value=<%= @volume %>>
             </label>
-            <a id="toggle-deets-link">toggle deets</a>
+            <a id="toggle-deets-link" href="#">toggle deets</a>
         </form>
     </section>
 
@@ -42,7 +42,7 @@
             <label>Assets (one per line):
                 <textarea name="assets" type="text">
         <% for @asset in @assets -%>
-        <%= @asset %>
+<%= @asset %>
         <% end -%>
         </textarea>
             </label>
