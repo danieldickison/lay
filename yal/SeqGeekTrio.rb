@@ -19,7 +19,7 @@ class SeqGeekTrio
         167.6,
     ].freeze
 
-    def self.import
+    def self.export
     end
 
     attr_accessor(:state, :start_time)

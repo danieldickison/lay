@@ -96,18 +96,20 @@ class Yal
     end
 
     def cli_help(*args)
-        puts "import <sequence>"
-        puts "config"
-        puts "config <key>"
-        puts "config <key> <value>"
-        puts "config -<key>"
+        puts "export <sequence>"
         puts "seq <sequence>"
         puts "seq start|stop|pause|unpause|load|kill|debug"
         puts "osc <msg>"
         puts "osc <ip> ... <msg>"
+        puts "config"
+        puts "config <key>"
+        puts "config <key> <value>"
+        puts "config -<key>"
         puts "scrub <file>"
         puts "quit"
     end
+
+    alias :cli_? :cli_help
 
     # config x
     # config x 12
@@ -159,7 +161,7 @@ class Yal
             @seq.debug
         else
             if args.empty?
-                puts @seqs.inspect
+                puts @seqs.join(" ")
             else
                 seqclass = Object.const_get("Seq#{args[0]}".to_sym)
                 if @seq
@@ -186,9 +188,19 @@ class Yal
         end
     end
 
-    def cli_import(*args)
-        seqclass = Object.const_get("Seq#{args[0]}".to_sym)
-        seqclass.import
+    def cli_export(*args)
+        if args.empty?
+            puts @seqs.join(" ")
+            print "Export all sequences (y/n)? "
+            return if STDIN.readline.strip.downcase[0,1] != "y"
+            args = @seqs
+        end
+
+        args.each do |seq|
+            puts "#{seq}..."
+            seqclass = Object.const_get("Seq#{seq}".to_sym)
+            # seqclass.import
+        end
 
         # SeqGhosting.import
         # GraphicsMagick.thumbnail(MEDIA_DB + "/profile-1.jpg", MEDIA_PB + "/media_dynamic/ghosting/profile-1.jpg", 180, 180, "jpg", 85)

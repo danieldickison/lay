@@ -21,7 +21,7 @@ class SeqGhosting
     IMG_BASE      = Media::IMG_PATH + "/media_dynamic/s_410-Ghosting_profile/"
     DATABASE      = Media::DATABASE
 
-    def self.import
+    def self.export
         pbdata = {}
 
         used = []

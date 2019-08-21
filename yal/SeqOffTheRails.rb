@@ -26,7 +26,7 @@ class SeqOffTheRails
     DATA_DIR        = Media::PLAYBACK + "/data_dynamic/112-OTR/"
     DATABASE        = Media::DATABASE
 
-    def self.import
+    def self.export
         pbdata = {}
 
         # profiles

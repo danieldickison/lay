@@ -21,6 +21,9 @@ class SeqTabletCrossFadeTest
     IMG_BASE      = Media::IMG_PATH + "/media_dynamic/s_410-Ghosting_profile/"
     DATABASE      = Media::DATABASE
 
+    def self.export
+    end
+
     attr_accessor(:state, :start_time)
 
     def initialize

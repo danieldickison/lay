@@ -10,7 +10,7 @@ class SeqLaunch
     IMG_BASE      = Media::IMG_PATH + "/media_dynamic/113-Launch/"
     DATABASE      = Media::DATABASE
 
-    def self.import
+    def self.export
         pbdata = {}
 
         PlaybackData.write(DATA_DYNAMIC, pbdata)

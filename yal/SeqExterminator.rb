@@ -48,7 +48,7 @@ class SeqExterminator
         },
     }
 
-    def self.import
+    def self.export
     end
 
     attr_accessor(:state, :start_time)
