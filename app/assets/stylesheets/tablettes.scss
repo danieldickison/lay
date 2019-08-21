@@ -252,6 +252,78 @@ a {
     }
 }
 
+.exterminator-lite {
+    position: absolute;
+    top: 140px;
+    left: 24px;
+    bottom: 24px;
+    right: 24px;
+    overflow: hidden;
+
+    > .img {
+        transform: translateX(-800px);
+
+        position: absolute;
+        top: 0;
+        bottom: 120px;
+        left: 26px;
+        width: 700px;
+        background-size: contain;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    > .conclusion {
+        position: absolute;
+        top: 0;
+        bottom: 20px;
+        left: 0;
+        width: 0;
+        overflow: hidden;
+
+        > div {
+            position: absolute;
+            left: 0;
+            width: 752px;
+            bottom: 0;
+            text-align: center;
+            font-size: 60px;
+            color: #01DAFF;
+            text-shadow: #01A3BF 0 0 40px;
+        }
+    }
+
+    &--in {
+        > .img {
+            transition: transform ease-out 4000ms;
+            transform: none;
+        }
+    }
+
+    &--conclusion {
+        > .conclusion {
+            transition: width linear 1000ms;
+            width: 100%;
+        }
+    }
+
+    &--out {
+        > .img {
+            transition: transform ease-in 2000ms;
+            transform: translateX(800px);
+        }
+        > .conclusion {
+            transition: opacity ease-in 1000ms;
+            opacity: 0;
+        }
+    }
+
+    &--fade-out {
+        opacity: 0;
+        transition: opacity ease-in 1000ms;
+    }
+}
+
 #offtherails {
     z-index: -1;
     position: fixed;

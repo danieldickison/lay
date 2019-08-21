@@ -24,6 +24,30 @@ class SeqExterminator
         :shared     => 91.13,
     }.freeze
 
+    # ExterminatorLite tablet js variant params
+    TABLET_LITE_TIMING = {
+        :travel => {
+            :in         =>  9.6,
+            :conclusion => 21.0,
+            :out        => 30.2,
+        },
+        :interest => {
+            :in         => 31.2,
+            :conclusion => 38.33,
+            :out        => 56.7,
+        },
+        :friend => {
+            :in         => 57.7,
+            :conclusion => 76.2,
+            :out        => 85.33,
+        },
+        :shared => {
+            :in         => 86.33,
+            :conclusion => 91.13,
+            :fade_out   => 136.0,
+        },
+    }
+
     def self.import
     end
 
@@ -39,26 +63,22 @@ class SeqExterminator
 
         pbdata = PlaybackData.read(DATA_DYNAMIC)
 
-        @tablet_categories = {}
-        if defined?(TablettesController)
-            enum = TablettesController.tablet_enum(nil)
-        else
-            enum = 1..25
-        end
-        enum.each do |t|
-            tablet_data = pbdata[:exterminator_tablets][t]
-            @tablet_categories[t] = {}
-            CATEGORIES.each do |category|
-                @tablet_categories[t][category] = tablet_data[category].merge(
-                    :category => category,
-                    :srcs => tablet_data[category][:srcs].collect {|img| IMG_BASE + img},
-                    :scroll_interval => TABLET_SCROLL_INTERVAL,
-                    :scroll_duration => TABLET_SCROLL_DURATION,
-                    :conclusion_offset => TABLET_CONCLUSION_OFFSET,
-                    :conclusion_duration => TABLET_CONCLUSION_DURATION
-                )
-            end
-        end
+        @tablet_pbdata = pbdata[:exterminator_tablets]
+        # @tablet_categories = {}
+        # enum.each do |t|
+        #     tablet_data = pbdata[:exterminator_tablets][t]
+        #     @tablet_categories[t] = {}
+        #     CATEGORIES.each do |category|
+        #         @tablet_categories[t][category] = tablet_data[category].merge(
+        #             :category => category,
+        #             :srcs => tablet_data[category][:srcs].collect {|img| IMG_BASE + img},
+        #             :scroll_interval => TABLET_SCROLL_INTERVAL,
+        #             :scroll_duration => TABLET_SCROLL_DURATION,
+        #             :conclusion_offset => TABLET_CONCLUSION_OFFSET,
+        #             :conclusion_duration => TABLET_CONCLUSION_DURATION
+        #         )
+        #     end
+        # end
     end
 
     def start
@@ -68,6 +88,34 @@ class SeqExterminator
             TablettesController.send_osc_cue(TABLET_VIDEO, @start_time + @prepare_sleep)
             sleep(@start_time + @prepare_sleep + @isadora_delay - Time.now)
             @is.send('/isadora/1', '800')
+
+            if defined?(TablettesController)
+                enum = TablettesController.tablet_enum(nil)
+            else
+                enum = 1..25
+            end
+            @tablet_triggers = CATEGORIES.collect do |cat|
+                timing = TABLET_LITE_TIMING[cat]
+                tablets = {
+                    :trigger_time => @start_time + timing[:in] - TABLET_TRIGGER_PREROLL
+                }
+                enum.each do |t|
+                    tablets[t] = {
+                        :src => IMG_BASE + @tablet_pbdata[t][cat][:srcs].last,
+                        :conclusion => @tablet_pbdata[t][cat][:conclusion],
+                        :in_time => (1000 * (@start_time.to_f + timing[:in])).round,
+                        :conclusion_time => (1000 * (@start_time.to_f + timing[:conclusion])).round,
+                    }
+                    if timing[:fade_out]
+                        tablets[t][:fade_out_time] = (1000 * (@start_time.to_f + timing[:fade_out])).round
+                    else
+                        tablets[t][:out_time] = (1000 * (@start_time.to_f + timing[:out])).round
+                    end
+                end
+                tablets
+            end
+            @next_tablet_trigger = @tablet_triggers.shift
+            @next_tablet_trigger_time = @next_tablet_trigger.delete(:trigger_time)
 
             while @run
                 run
@@ -100,21 +148,31 @@ class SeqExterminator
     end
 
     def run
-        category = CATEGORIES[@tablet_category_index]
-        if !category
+        if !@next_tablet_trigger
             @run = false
             return
         end
 
         now = Time.now.utc
-        next_category_start = @start_time + CONCLUSION_OFFSETS[category] - 0.001*TABLET_CONCLUSION_OFFSET
-        if now > next_category_start - TABLET_TRIGGER_PREROLL
-            puts "triggering exterminator category #{category} on tablets"
-            tablet_start_time = (next_category_start.to_f * 1000).round
-            @tablet_categories.each do |t, hash|
-                TablettesController.queue_command(t, 'exterminator', tablet_start_time, hash[category])
+        if now > @next_tablet_trigger_time
+            puts "triggering exterminator_lite"
+            @next_tablet_trigger.each do |t, params|
+                TablettesController.queue_command(t, 'exterminator_lite', params)
             end
-            @tablet_category_index += 1
+
+            if @next_tablet_trigger = @tablet_triggers.shift
+                @next_tablet_trigger_time = @next_tablet_trigger.delete(:trigger_time)
+            end
         end
+
+        # next_category_start = @start_time + CONCLUSION_OFFSETS[category] - 0.001*TABLET_CONCLUSION_OFFSET
+        # if now > next_category_start - TABLET_TRIGGER_PREROLL
+        #     puts "triggering exterminator category #{category} on tablets"
+        #     tablet_start_time = (next_category_start.to_f * 1000).round
+        #     @tablet_categories.each do |t, hash|
+        #         TablettesController.queue_command(t, 'exterminator', tablet_start_time, hash[category])
+        #     end
+        #     @tablet_category_index += 1
+        # end
     end
 end

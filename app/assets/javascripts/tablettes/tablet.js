@@ -577,6 +577,54 @@ function Exterminator(start_time, params) {
     };
 }
 
+// "low motion" variation of exterminator: just show one image with conclusion text.
+// params: in_time, conclusion_time, [out_time OR fade_out_time], src, conclusion
+function ExterminatorLite(params) {
+    log("ExterminatorLite starting in " + (params.in_time - serverNow()) + " ms");
+
+    let div = document.createElement('div');
+    div.classList.add('exterminator-lite');
+    document.body.appendChild(div);
+
+    let img = document.createElement('div');
+    img.classList.add('img');
+    img.style.backgroundImage = 'url(' + params.src + ')';
+    div.appendChild(img);
+
+    let conclusionOuter = document.createElement('div');
+    conclusionOuter.classList.add('conclusion');
+    div.appendChild(conclusionOuter);
+    let conclusionInner = document.createElement('div');
+    conclusionInner.innerText = params.conclusion;
+    conclusionOuter.appendChild(conclusionInner);
+
+    setTimeout(() => {
+        div.classList.add('exterminator-lite--in');
+    }, params.in_time - serverNow());
+
+    setTimeout(() => {
+        div.classList.add('exterminator-lite--conclusion');
+    }, params.conclusion_time - serverNow());
+
+    if (params.out_time) {
+        setTimeout(() => {
+            div.classList.add('exterminator-lite--out');
+            img.addEventListener('transitionend', () => this.stop());
+        }, params.out_time - serverNow());
+    } else {
+        setTimeout(() => {
+            div.classList.add('exterminator-lite--fade-out');
+            div.addEventListener('transitionend', () => this.stop());
+        }, params.fade_out_time - serverNow());
+    }
+
+    this.stop = function () {
+        if (div.parentNode === document.body) {
+            document.body.removeChild(div);
+        }
+    };
+}
+
 function OffTheRails(items) {
     log("OffTheRails start with " + items.length + " feed items");
 
@@ -747,6 +795,8 @@ function handleCommand(cmd, args) {
             break;
         case 'exterminator':
             triggerSequence(Exterminator, args);
+        case 'exterminator_lite':
+            triggerSequence(ExterminatorLite, args);
             break;
         case 'offtherails':
             triggerSequence(OffTheRails, args);
