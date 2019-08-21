@@ -22,13 +22,20 @@ require('ushell')
 require('Config')
 require('Isadora')
 require('Media')
-require('SeqGhosting')
-require('SeqOffTheRails')
 
 
 class Yal
     def start
         Config.load
+
+        @seqs = []
+        Dir.glob("#{MAIN_DIR}/Seq*.rb").each do |seq_file|
+            require(seq_file)
+            @seqs << File.basename(seq_file, ".rb")[3..-1]
+        end
+        @seqs.sort!
+        @seq = nil
+
         run_osc
         run_db
         run_cli
@@ -133,8 +140,6 @@ class Yal
         end
     end
 
-    @seq = nil
-
     def cli_seq(*args)
         case args[0]
         when 'start'
@@ -154,7 +159,7 @@ class Yal
             @seq.debug
         else
             if args.empty?
-                @seq.debug
+                puts @seqs.inspect
             else
                 seqclass = Object.const_get("Seq#{args[0]}".to_sym)
                 if @seq
