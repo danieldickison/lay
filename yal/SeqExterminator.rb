@@ -9,6 +9,8 @@ class SeqExterminator
     IMG_BASE      = Media::IMG_PATH + "/media_dynamic/108-Exterminator/"
     DATABASE      = Media::DATABASE
 
+    TABLET_VIDEO = '/playback/media_tablets/108-Exterminator/108-011-C60-Exterminator.mp4'
+
     TABLET_TRIGGER_PREROLL = 10 # seconds; give them enough time to load dynamic images before presenting.
     TABLET_SCROLL_INTERVAL = 3000 # ms delay betwee each of the 4 images to start scrolling
     TABLET_SCROLL_DURATION = 4000 # ms to scroll one image all the way across (half that for last one to stop @ center)
@@ -63,8 +65,9 @@ class SeqExterminator
         @run = true
         @tablet_category_index = 0
         Thread.new do
-            #TablettesController.send_osc_cue(@video, @start_time + @prepare_sleep)
-            #sleep(@start_time + @prepare_sleep + @isadora_delay - Time.now)
+            TablettesController.send_osc_cue(TABLET_VIDEO, @start_time + @prepare_sleep)
+            sleep(@start_time + @prepare_sleep + @isadora_delay - Time.now)
+            @is.send('/isadora/1', '800')
 
             while @run
                 run

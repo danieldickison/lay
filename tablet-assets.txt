@@ -16,6 +16,7 @@
 /playback/media_tablets/105-Ghosting/105-011-C67-Ghosting_all.wav
 /playback/media_tablets/105-Ghosting/105-011-C68-Ghosting_all.mp4
 /playback/media_tablets/105-Ghosting/105-011-C68-Ghosting_all.wav
+/playback/media_tablets/108-Exterminator/108-011-C60-Exterminator.mp4
 /playback/media_tablets/112-OTR/112-201-C60-OTR_All.mp4
 /playback/media_tablets/112-OTR/112-201-C60-OTR_All.wav
 /playback/media_tablets/113-Launch/113-511-C60-Launch_all.mp4
