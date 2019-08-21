@@ -261,7 +261,8 @@ a {
     overflow: hidden;
 
     > .img {
-        transform: translateX(-800px);
+        transform: translateX(-800px) scale(0.8);
+        opacity: 0;
 
         position: absolute;
         top: 0;
@@ -295,8 +296,9 @@ a {
 
     &--in {
         > .img {
-            transition: transform ease-out 4000ms;
+            transition: transform ease-out 4000ms, opacity ease-out 2000ms;
             transform: none;
+            opacity: 1;
         }
     }
 
@@ -309,8 +311,9 @@ a {
 
     &--out {
         > .img {
-            transition: transform ease-in 2000ms;
-            transform: translateX(800px);
+            transition: transform ease-in 2000ms, opacity ease-in 500ms 1500ms;
+            transform: translateX(800px) scale(0.8);
+            opacity: 0;
         }
         > .conclusion {
             transition: opacity ease-in 1000ms;
