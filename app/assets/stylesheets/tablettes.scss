@@ -197,7 +197,7 @@ a {
     right: 24px;
     overflow: hidden;
 
-    > .exterminator-layer__img {
+    > .img {
         transform: translateX(-800px);
         transition: transform linear 4000ms; /* duration overridden by server-side params */
 
@@ -213,7 +213,7 @@ a {
         outline: solid 1px red; /*debug*/
     }
 
-    > .exterminator-layer__conclusion {
+    > .conclusion {
         position: absolute;
         bottom: 20px;
         left: 0;
@@ -227,7 +227,7 @@ a {
     }
 
     &--active {
-        > .exterminator-layer__img {
+        > .img {
             transform: translateX(800px);
 
             &--last {
@@ -235,7 +235,7 @@ a {
             }
         }
 
-        > .exterminator-layer__conclusion {
+        > .conclusion {
             opacity: 1;
         }
     }
