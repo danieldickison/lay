@@ -552,11 +552,13 @@ function Exterminator(start_time, params) {
         div.appendChild(img);
     });
 
-    let conclusion = document.createElement('div');
-    conclusion.innerText = params.conclusion;
-    conclusion.classList.add('conclusion');
-    conclusion.style.transitionDelay = params.conclusion_offset + 'ms';
-    div.appendChild(conclusion);
+    let conclusionOuter = document.createElement('div');
+    conclusionOuter.classList.add('conclusion');
+    conclusionOuter.style.transitionDelay = params.conclusion_offset + 'ms';
+    div.appendChild(conclusionOuter);
+    let conclusionInner = document.createElement('div');
+    conclusionInner.innerText = params.conclusion;
+    conclusionOuter.appendChild(conclusionInner);
 
     let timeout = setTimeout(() => {
         div.classList.add('exterminator-layer--active');
