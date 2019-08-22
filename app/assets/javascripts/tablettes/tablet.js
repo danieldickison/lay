@@ -350,6 +350,7 @@ function sendPing() {
         if (json.show_time) {
             if (preShow.style.display !== 'none') {
                 layNativeInterface.hideChrome();
+                fadeLogo(true);
             }
             preShow.style.display = 'none';
         } else {

@@ -21,7 +21,7 @@
     <section id="director-messages">
     </section>
 
-    <section id="director-deets">
+    <section id="director-deets" class="director-deets--show">
         <table id="tablet-stats">
             <thead>
                 <th>tablet</th>
@@ -38,7 +38,7 @@
             </thead>
         </table>
 
-        <form id="assets-form" class="director-form">
+        <form id="assets-form" class="director-form" style="display: none"> <!-- hiding because it's easy to screw something up by accidental editing here -->
             <label>Assets (one per line):
                 <textarea name="assets" type="text">
         <% for @asset in @assets -%>
