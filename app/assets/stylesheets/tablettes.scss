@@ -358,7 +358,7 @@ a {
     > div {
         position: absolute;
         top: 100%;
-        width: 80%;
+        width: 90%;
         margin: 0;
         padding: 0;
         
@@ -369,9 +369,9 @@ a {
             color: #6699ff;
 
             > img {
-                width: 100px;
-                height: 100px;
-                border-radius: 50px;
+                width: 140px;
+                height: 140px;
+                border-radius: 70px;
                 margin-right: 20px;
                 flex-shrink: 0;
             }
@@ -383,13 +383,13 @@ a {
 
         &.depth-0 {
             animation-name: text-feed-translate-1, text-feed-fade-1;
-            animation-duration: 30s;
+            animation-duration: 50s;
             z-index: 10;
         }
 
         &.depth-1 {
             animation-name: text-feed-translate-2, text-feed-fade-2;
-            animation-duration: 40s;
+            animation-duration: 50s;
             z-index: 9;
         }
 
@@ -407,7 +407,7 @@ a {
         animation-timing-function: linear;
     }
     to {
-        transform: translateY(-1600px) scale(1);
+        transform: translateY(-2000px) scale(1);
     }
 }
 
@@ -437,10 +437,10 @@ a {
         animation-timing-function: ease-in;
     }
     10% {
-        opacity: 1;
+        opacity: 0.9;
     }
     70% {
-        opacity: 1;
+        opacity: 0.9;
         animation-timing-function: ease-out;
     }
     to {

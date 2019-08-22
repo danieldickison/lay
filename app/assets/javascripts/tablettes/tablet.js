@@ -666,10 +666,10 @@ function OffTheRails(items) {
     div.setAttribute('id', 'offtherails');
     document.body.appendChild(div);
 
-    let count = 10; // on screen at a time
+    let count = 2; // on screen at a time
     var i = 0;
     for (var j = 0; j < count; j++) {
-        triggerOneItem(j * 3);
+        triggerOneItem(j * 25); // seconds before triggering, based on preading them out with each one taking 30-60s to complete
     }
 
     function triggerOneItem(delay) {
@@ -701,11 +701,11 @@ function OffTheRails(items) {
         } else {
             log("unknown OTR item format");
         }
-        let depth = Math.floor(3 * Math.random());
+        let depth = Math.floor(2 * Math.random());
         container.classList.add('depth-' + depth);
-        delay = delay || 0;
-        container.style.animationDelay = delay * 1000 + Math.floor(3000 * Math.random()) + 'ms';
-        container.style.left = Math.round(300 * Math.random() - 50) + 'px';
+        delay = 1000 * (delay || 0);
+        container.style.animationDelay = delay + 'ms';
+        container.style.left = Math.round(200 * Math.random() - 50) + 'px';
         div.appendChild(container);
         container.addEventListener('animationend', () => {
             if (container.parentNode === div) {
