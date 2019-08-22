@@ -111,6 +111,18 @@ a {
     }
 }
 
+#pre-show-thank-you {
+    opacity: 0;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 50px;
+    text-align: center;
+    font-size: 28px;
+    color: #6699ff;
+    transition: opacity ease-in-out 1000ms;
+}
+
 
 #tablettes-video {
     width: 100%;

@@ -1,5 +1,6 @@
 /tablet-util/tc.mp4
 /tablet-util/tc.wav
+/playback/media_tablets/000-Preshow/thank-you-placeholder.mp4
 /playback/media_tablets/105-Ghosting/105-011-C61-Ghosting_all.mp4
 /playback/media_tablets/105-Ghosting/105-011-C61-Ghosting_all.wav
 /playback/media_tablets/105-Ghosting/105-011-C62-Ghosting_all.mp4

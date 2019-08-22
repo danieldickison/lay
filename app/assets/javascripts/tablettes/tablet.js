@@ -193,6 +193,7 @@ function preShowInit() {
     let optOutButton = document.getElementById('opt-out-button');
     let optInButton = document.getElementById('opt-in-button');
     let popup = document.getElementById('consent-popup');
+    let thankYou = document.getElementById('pre-show-thank-you');
 
     document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || 'ZZ';
     document.getElementById('pre-show-table-title').innerText = TABLE_TITLES[TABLET_NUMBER] || 'Zebra Genomics';
@@ -279,20 +280,24 @@ function preShowInit() {
     function sing() {
         // TODO: get real videos
         if (params.get('opt') === 'Y') {
-            //layNativeInterface.setVideoCue('/playback/media_tablets/112-OTR/112-201-C60-OTR_All.mp4', serverNow() + 2000, 91000);
-            layNativeInterface.setVideoCue('/tablet-util/tc.mp4', serverNow() + 1000, 0);
+            layNativeInterface.setVideoCue('/playback/media_tablets/000-Preshow/thank-you-placeholder.mp4', serverNow() + 1000, 0);
+            setTimeout(() => {
+                thankYou.style.opacity = 1;
+                preShow.style.opacity = 0;
+            }, 1000);
+            setTimeout(() => {
+                layNativeInterface.setVideoCue(null, 0, 0);
+                reset();
+            }, 5000);
         } else {
-            layNativeInterface.setVideoCue('/playback/media_tablets/112-OTR/112-201-C60-OTR_All.mp4', serverNow() + 2000, 122000);
-        }
-        setTimeout(() => preShow.style.opacity = 0, 1000);
-        setTimeout(() => {
-            layNativeInterface.setVideoCue(null, 0, 0);
+            // A sadface video for opt-outs?
             reset();
-        }, 8000);
+        }
     }
 
     function reset() {
         preShow.style.opacity = 1
+        thankYou.style.opacity = 0;
         intro.style.display = 'block';
         optInButton.disabled = false;
         optOutButton.disabled = false;
