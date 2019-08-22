@@ -74,14 +74,89 @@ class SeqLaunch
         @end_time = Time.now
         @prepare_delay = 1.0
 
-        person_1 = 1 # TODO: pbdata[:product_launch_target_1] or something like that
+        person_1 = 1 # TODO: pbdata[:product_launch_profile_1] or something like that
         facebook_1a = 1
         facebook_1b = 2
-        person_2 = 2 # TODO: pbdata[:product_launch_target_2]
+        person_2 = 2 # TODO: pbdata[:product_launch_profile_2]
         facebook_2a = 3
-        person_3 = 3 # TODO: pbdata[:product_launch_target_3]
+        person_3 = 3 # TODO: pbdata[:product_launch_profile_3]
         facebook_3a = 4
-        person_4 = 4 # the target person
+        person_4 = 4 # the target person profile image
+
+        @tv_osc_messages = [
+            # First part of sequence with 3 selected audience members:
+            {
+                :channel => '/isadora-multi/2',
+                :args => [
+                    person_1,       # profile image id
+                    facebook_1a,    # with loved one image
+                    facebook_1a,    # pet pic image
+                ]
+            },
+            {
+                :channel => '/isadora-multi/3',
+                :args => [
+                    person_2,       # profile image id
+                    facebook_2a,    # workplace image
+                ]
+            },
+            {
+                :channel => '/isadora-multi/4',
+                :args => [
+                    person_3,       # profile image id
+                    facebook_3a,    # child image
+                ]
+            },
+
+            # For latter part of sequence with target person:
+            {
+                :channel => '/isadora/10',
+                :args => [
+                    person_4,       # profile image id
+                ]
+            },
+            {
+                :channel => '/isadora/11',
+                :args => ['daniel'], # target name
+            },
+            # other target text items
+            {
+                :channel => '/isadora/12',
+                :args => ['foo'],
+            },
+            {
+                :channel => '/isadora/13',
+                :args => ['bar'],
+            },
+            #...
+            # target person tweets
+            {
+                :channel => '/isadora/30',
+                :args => ['this is tweet 1'],
+            },
+            {
+                :channel => '/isadora/31',
+                :args => ['this is tweet 2'],
+            },
+            {
+                :channel => '/isadora/32',
+                :args => ['this is tweet 3'],
+            },
+            # target person images
+            {
+                :channel => '/isadora/50',
+                :args => [1], # image id
+            },
+            {
+                :channel => '/isadora/52',
+                :args => [2], # image id
+            },
+            {
+                :channel => '/isadora/53',
+                :args => [3], # image id
+            },
+        ]
+
         @tablet_images = [
             # Person 1
             {
@@ -164,6 +239,11 @@ class SeqLaunch
             TablettesController.send_osc_cue('/playback/media_tablets/113-Launch/113-511-C60-Launch_all.mp4', @start_time + @prepare_delay)
             sleep(@start_time + @prepare_delay - Time.now)
             @is.send('/isadora/1', '1300')
+
+            # Fire off all the data bits to isadora:
+            @tv_osc_messages.each do |msg|
+                @is.send(msg[:channel], *msg[:args])
+            end
 
             img_start_time = @start_time + @prepare_delay
             @tablet_images.each do |i|
