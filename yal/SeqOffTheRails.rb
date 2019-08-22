@@ -246,14 +246,17 @@ class SeqOffTheRails
                 rails.each(&:run)
                 sleep(0.1)
             end
-            stop if @run
+            TablettesController.queue_command(nil, 'stop') if @run
+            @run = false
         end
     end
 
     def stop
-        @run = false
-        TablettesController.queue_command(nil, 'stop')
-        TablettesController.send_osc('/tablet/stop')
+        if @run
+            @run = false
+            TablettesController.queue_command(nil, 'stop')
+            TablettesController.send_osc('/tablet/stop')
+        end
     end
 
     def pause
@@ -325,6 +328,7 @@ class SeqOffTheRails
                 @state = :pre
             when :pre
                 if Time.now >= @time
+                    @is.send("/isadora-multi/#{@channel}", @item[1], @item[2])
                     @is.send("/isadora/#{20 + @channel}", @item[1])
                     @is.send("/isadora/#{30 + @channel}", @item[2])
                     @state = :anim
