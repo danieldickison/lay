@@ -25,6 +25,8 @@ require('Media')
 
 
 class Yal
+    OSC_PORT = 53001
+
     def start
         Config.load
 
@@ -43,7 +45,7 @@ class Yal
     end
 
     def run_osc
-        @osc = OSC::Server.new(53000)
+        @osc = OSC::Server.new(OSC_PORT)
 
         # I think there's a bug in osc-ruby's parsing of * in OSC addresses in address_pattern.rb:
         # https://github.com/aberant/osc-ruby/blob/master/lib/osc-ruby/address_pattern.rb#L31
@@ -176,10 +178,10 @@ class Yal
         clients = []
         while args.first =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
             ip = args.shift
-            clients.push(OSC::Client.new(ip, 53000))
+            clients.push(OSC::Client.new(ip, OSC_PORT))
         end
         if clients.empty?
-            clients.push(OSC::BroadcastClient.new(53000))
+            clients.push(OSC::BroadcastClient.new(OSC_PORT))
             puts "sent multicast"
         end
         msg = OSC::Message.new(*args)
