@@ -26,6 +26,23 @@ class SeqOffTheRails
     DATA_DIR        = Media::PLAYBACK + "/data_dynamic/112-OTR/"
     DATABASE        = Media::DATABASE
 
+    TV_ADDRESS = {
+        '21' => '/isadora-multi/2',
+        '22' => '/isadora-multi/3',
+        '23' => '/isadora-multi/4',
+        '31' => '/isadora-multi/5',
+        '32' => '/isadora-multi/6',
+        '33' => '/isadora-multi/7',
+    }.freeze
+    TV_TYPE_ID = {
+        :tweet => 1,
+        :fb => 2,
+        :ig => 3,
+    }.freeze
+    FIRST_TV_ITEM_MAX_DELAY = 5
+    TV_ITEM_INTERVAL_RANGE = 14..25
+    TV_FEED_DELAY = 30
+
     def self.export
         pbdata = {}
 
@@ -160,12 +177,6 @@ class SeqOffTheRails
     CARE_ABOUT_DATE = true
     CARE_ABOUT_OPT = true
 
-    NUM_RAILS = 8
-    TWEET_DURATION = 25
-    FB_DURATION = 18
-    IG_DURATION = 18
-    RANDOM_OFFSET_RANGE = 5..12
-
     attr_accessor(:start_time)
 
     def initialize
@@ -178,10 +189,23 @@ class SeqOffTheRails
 
         pbdata = PlaybackData.read(DATA_DIR)
 
-        @tweets = pbdata[:tweets].collect {|h| [:tweet, h[:profile], h[:tweet]]}
-        @fb = pbdata[:facebooks].collect {|h| [:fb, h[:photo], h[:caption]]}
-        @ig = pbdata[:instagrams].collect {|h| [:ig, h[:photo], h[:caption]]}
-        @mutex = Mutex.new
+        # We want 4 element arrays:
+        # [type, profile_pic_id, photo_id (nil for tweets), tweet/caption]
+        @tweets = pbdata[:tweets].collect {|h| [:tweet, h[:profile], h[:photo], h[:tweet]]}
+        @fb = pbdata[:facebooks].collect {|h| [:fb, h[:profile], h[:photo], h[:caption]]}
+        @ig = pbdata[:instagrams].collect {|h| [:ig, h[:profile], h[:photo], h[:caption]]}
+
+        # Maps isadora channel number to the items we want to show on that TV.
+        # for debug, i'm just shuffling all items together and throwing them at all tvs
+        tmp_tv_items = (@tweets + @fb + @ig).shuffle
+        @tv_items = {
+            '21' => tmp_tv_items,
+            '22' => tmp_tv_items,
+            '23' => tmp_tv_items,
+            '31' => tmp_tv_items,
+            '32' => tmp_tv_items,
+            '33' => tmp_tv_items,
+        }
 
         @tablet_items = {}
         if defined?(TablettesController)
@@ -200,13 +224,13 @@ class SeqOffTheRails
                         tweets_shuffled = @tweets.dup.shuffle
                     end
                     i = tweets_shuffled.pop
-                    {:profile_img => IMG_PROFILE + "/" + pbdata[:profile_image_names][i[1]], :tweet => i[2]}
+                    {:profile_img => IMG_PROFILE + "/" + pbdata[:profile_image_names][i[1]], :tweet => i[3]}
                 when 1
                     i = @fb.sample
-                    {:photo => IMG_FACEBOOK + "/" + pbdata[:facebook_image_names][i[1]]}
+                    {:photo => IMG_FACEBOOK + "/" + pbdata[:facebook_image_names][i[2]]}
                 when 2
                     i = @ig.sample
-                    {:photo => IMG_INSTAGRAM + "/" + pbdata[:instagram_image_names][i[1]]}
+                    {:photo => IMG_INSTAGRAM + "/" + pbdata[:instagram_image_names][i[2]]}
                 end
             end
         end
@@ -225,7 +249,7 @@ class SeqOffTheRails
                 TablettesController.queue_command(t, 'offtherails', items)
             end
 
-            sleep(30) #quick and dirty pre-delay for isadora tweets
+            sleep(TV_FEED_DELAY) #quick and dirty pre-delay for isadora tweets
 
             tweet_queue = []
             fb_queue = []
@@ -239,7 +263,7 @@ class SeqOffTheRails
                 :ig => (6..8).to_a,
             }
 
-            rails = 6.times.collect {|i| Runner.new(i, @is, all_items, item_queue, channel_queues, @mutex)}
+            rails = @tv_items.collect {|tv, items| TVRunner.new(tv, TV_ADDRESS[tv], @is, items)}
 
             end_time = @start_time + @prepare_delay + @duration
             while @run && Time.now < end_time
@@ -290,59 +314,44 @@ class SeqOffTheRails
         puts self.inspect
     end
 
-    class Runner
-        def initialize(index, is, all_items, item_queue, channel_queues, mutex)
-            @index = index
+    class TVRunner
+        def initialize(tv, osc_address, is, all_items)
+            @tv = tv
+            @osc_address = osc_address
             @is = is
             @all_items = all_items
-            @item_queue = item_queue
-            @channel_queues = channel_queues
-            @state = :idle
-            @mutex = mutex
+
             @first_time = true
-            @channel = nil
+            @state = :idle
+            @item_queue = []
         end
 
         def run
             case @state
             when :idle
                 if @first_time
-                    @time = Time.now + @index * rand * (RANDOM_OFFSET_RANGE.max - RANDOM_OFFSET_RANGE.min)
+                    @time = Time.now + rand * FIRST_TV_ITEM_MAX_DELAY
                     @first_time = false
                 else
-                    @time = Time.now + 2*rand
+                    @time = Time.now + TV_ITEM_INTERVAL_RANGE.min + rand * (TV_ITEM_INTERVAL_RANGE.max - TV_ITEM_INTERVAL_RANGE.min)
                 end
-                @mutex.synchronize do
-                    if @channel
-                        @channel_queues[@item[0]].push(@channel)
-                    end
-                    @channel = nil
-                    while @channel == nil
-                        if @item_queue.empty?
-                            @item_queue = @all_items.dup.shuffle
-                        end
-                        @item = @item_queue.pop
-                        @channel = @channel_queues[@item[0]].pop
-                    end
+                if @item_queue.empty?
+                    @item_queue = @all_items.dup.shuffle
                 end
+                @item = @item_queue.pop
                 @state = :pre
             when :pre
                 if Time.now >= @time
-                    @is.send("/isadora-multi/#{@channel}", @item[1], @item[2])
-                    @is.send("/isadora/#{20 + @channel}", @item[1])
-                    @is.send("/isadora/#{30 + @channel}", @item[2])
-                    @state = :anim
-                    duration = case @item[0]
-                    when :tweet then TWEET_DURATION
-                    when :fb then FB_DURATION
-                    when :ig then IG_DURATION
-                    end
-                    @time = Time.now + duration
+                    @state = :trigger
                 end
-            when :anim
-                if Time.now > @time
-                    @state = :idle
-                end
+            when :trigger
+                @is.send(@osc_address,
+                    @item[1],                   # profile pic
+                    @item[2] || -1,             # photo
+                    TV_TYPE_ID[@item[0]] || 0,  # type
+                    @item[3]                    # text
+                )
+                @state = :idle
             end
         end
     end
