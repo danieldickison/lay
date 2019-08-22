@@ -93,6 +93,33 @@ let EMPLOYEE_ID_PREFIXES = {
     24: 'XG', // Xylographics
     25: 'YA', // Yellowback Algoretrieval
 };
+let TABLE_TITLES = {
+    1: 'Applied Validation',
+    2: 'Biofinity Architecture',
+    3: 'Cell Logics',
+    4: 'Disaster Recovery',
+    5: 'Embedded Datamatics',
+    6: 'Failure Analysis',
+    7: 'Geoframeworking',
+    8: 'Human Factors',
+    9: 'Illocution Processing',
+    10: 'Juice Platforming ',
+    11: 'Ketogenesis Validation',
+    12: 'Life Cycle Metrics',
+    13: 'Machine Evangelism',
+    14: 'Natural Language Illocution',
+    15: 'Orange Mandarin Visioning',
+    16: 'Physiology Analytics',
+    17: 'Quartermaster Research',
+    18: 'Retrieval Environments',
+    19: 'Substance Restriction',
+    20: 'Thin Film Interface',
+    21: 'UX Sculpting',
+    22: 'Vibration & Noise',
+    23: 'Wagonette Rendering',
+    24: 'Xylographics',
+    25: 'Yellowback Algoretrieval',
+};
 
 let PING_INTERVAL = 1000;
 let PING_TIMEOUT = 3000;
@@ -168,6 +195,7 @@ function preShowInit() {
     let popup = document.getElementById('consent-popup');
 
     document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || 'ZZ';
+    document.getElementById('pre-show-table-title').innerText = TABLE_TITLES[TABLET_NUMBER] || 'Zebra Genomics';
 
     preShow.addEventListener('click', event => {
         if (dataEntry.style.display === 'block') return;
