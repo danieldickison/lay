@@ -330,6 +330,9 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     @Override
+    public void onBackPressed() { }
+
+    @Override
     protected void onPause() {
         super.onPause();
         if (ntpSync != null) {
