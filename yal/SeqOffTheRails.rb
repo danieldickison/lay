@@ -290,21 +290,6 @@ class SeqOffTheRails
     end
 
     def load
-        db = SpectatorsDB.new
-        @tweets = []
-        (FIRST_SPECTATOR_ROW .. db.ws.num_rows).each do |r|
-          INTERESTING_COLUMNS.each do |col_name|
-            if CARE_ABOUT_OPT && db.ws[r, db.col["Accept Terms? Y/N (auto)"]] != "Y"
-              next
-            end
-
-            col = db.col[col_name]
-            if db.ws[r, col] != ""
-              @tweets.push(db.ws[r, col])
-            end
-          end
-        end
-        puts "got #{@tweets.length} tweets"
     end
 
     def kill

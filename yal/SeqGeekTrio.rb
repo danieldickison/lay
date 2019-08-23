@@ -69,18 +69,6 @@ class SeqGeekTrio
         end
     end
 
-    def pause
-    end
-
-    def unpause
-    end
-
-    def load
-    end
-
-    def kill
-    end
-
     def debug
         puts self.inspect
     end
