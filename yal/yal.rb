@@ -25,7 +25,7 @@ require('Media')
 
 
 class Yal
-    OSC_PORT = 53001
+    OSC_PORT = 53000
 
     def start
         Config.load
@@ -45,7 +45,19 @@ class Yal
     end
 
     def run_osc
-        @osc = OSC::Server.new(OSC_PORT)
+        offset = 0
+        port = Config['osc_port'] || OSC_PORT
+        begin
+            @osc = OSC::Server.new(Config['osc_port'] + offset)
+        rescue Errno::EADDRINUSE
+            port += 1
+            retry
+        end
+
+        if offset > 0
+            puts "WARN: using non-standard OSC port #{Config['osc_port'] + offset}"
+        end
+
 
         # I think there's a bug in osc-ruby's parsing of * in OSC addresses in address_pattern.rb:
         # https://github.com/aberant/osc-ruby/blob/master/lib/osc-ruby/address_pattern.rb#L31
@@ -188,6 +200,10 @@ class Yal
         clients.each do |c|
             c.send(msg)
         end
+    end
+
+    def cli_q(*args)
+        q = @line[/^[^\s]\s+(.+)/, 1]
     end
 
     def cli_export(*args)
