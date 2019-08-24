@@ -26,7 +26,7 @@ require('Media')
 
 class Yal
     OSC_PORT = 53000
-    SHOW_DB = "lookingAtYou/db.sqlite3"
+    DB_FILE = ENV["HOME"] + "/lookingAtYou/db.sqlite3"
 
     def start
         Config.load
@@ -205,7 +205,9 @@ class Yal
 
     def cli_q(*args)
         q = @line[/^[^\s]\s+(.+)/, 1]
-        db = SQLite3::Database.new("show.db")
+        db_file = Config['db_file'] || DB_FILE
+        db = SQLite3::Database.new(db_file)
+        puts db.execute(q).to_a.inspect
     end
 
     def cli_export(*args)
