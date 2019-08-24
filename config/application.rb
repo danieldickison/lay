@@ -1,7 +1,6 @@
 require_relative 'boot'
 
 require 'rails/all'
-require 'google_drive'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -9,6 +8,7 @@ Bundler.require(*Rails.groups)
 
 MAIN_DIR = File.expand_path('../yal', __dir__)
 $:.unshift(MAIN_DIR)
+require('runtime')
 require('SeqGhosting')
 require('SeqGeekTrio')
 require('SeqExterminator')

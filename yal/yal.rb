@@ -1,8 +1,6 @@
 #!/usr/bin/env ruby
 # bundle exec yal
 
-APP_LAUNCH_DATE = Time.now.utc
-
 require('pathname')
 require('fileutils')
 MAIN_DIR = Pathname.new(__FILE__).parent.realpath.to_s
@@ -15,22 +13,26 @@ require('rb-readline')
 require('json')
 
 # our utils
+require('runtime')
 require('gm')
 require('ushell')
 
 # the goods
-require('Config')
 require('Isadora')
 require('Media')
 
 
 class Yal
     OSC_PORT = 53000
-    DB_FILE = ENV["HOME"] + "/lookingAtYou/db.sqlite3"
+    if PRODUCTION
+        DB_FILE = "/Users/blackwidow/lookingAtYou/db.sqlite3"
+    elsif JOE_DEVELOPMENT
+        DB_FILE = Media::VOLUME + "/db.sqlite3"
+    else
+        raise "Daniel, need a db file"
+    end
 
     def start
-        Config.load
-
         @seqs = []
         Dir.glob("#{MAIN_DIR}/Seq*.rb").each do |seq_file|
             require(seq_file)
@@ -46,7 +48,7 @@ class Yal
     end
 
     def run_osc
-        port = Config['osc_port'] || OSC_PORT
+        port = OSC_PORT
         offset = 0
         begin
             @osc = OSC::Server.new(port + offset)
@@ -75,22 +77,10 @@ class Yal
     end
 
     def run_db
-        # if !File.exist?(Media::VOL)
-        #     # open "media.alias"
-        #     raise "media volume not mounted"
-        # end
-
-        @db = SQLite3::Database.new("show.db")
-        # # Create a table
-        # rows = @db.execute(<<~SQL)
-        #   create table numbers (
-        #     name varchar(30),
-        #     val int
-        #   );
-        # SQL
-
+        # db = SQLite3::Database.new(DB_FILE)
         Thread.new do
             while true
+                # nothing...
                 sleep(1)
             end
         end
@@ -116,10 +106,10 @@ class Yal
         puts "seq start|stop|pause|unpause|load|kill|debug"
         puts "osc <msg>"
         puts "osc <ip> ... <msg>"
-        puts "config"
-        puts "config <key>"
-        puts "config <key> <value>"
-        puts "config -<key>"
+        # puts "config"
+        # puts "config <key>"
+        # puts "config <key> <value>"
+        # puts "config -<key>"
         puts "scrub <file>"
         puts "quit"
     end
@@ -130,32 +120,32 @@ class Yal
     # config x 12
     # config -x
     # config x fred
-    def cli_config(*args)
-        if args.empty?
-            puts Config.inspect
-        else
-            key = args[0]
-            args = args[1..-1]
-            if args.empty?
-                if key[0,1] == '-'
-                    key = key[1..-1]
-                    Config.delete(key)
-                    Config.save
-                else
-                    puts Config[key].inspect
-                end
-            else
-                args = @line.split(" ", 3)[-1]  # everything after "config <key> "
-                v = begin
-                    eval(args)
-                rescue ScriptError, StandardError
-                    args
-                end
-                Config[key] = v
-                Config.save
-            end
-        end
-    end
+    # def cli_config(*args)
+    #     if args.empty?
+    #         pp(Config)
+    #     else
+    #         key = args[0]
+    #         args = args[1..-1]
+    #         if args.empty?
+    #             if key[0,1] == '-'
+    #                 key = key[1..-1]
+    #                 Config.delete(key)
+    #                 Config.save
+    #             else
+    #                 pp(Config[key])
+    #             end
+    #         else
+    #             args = @line.split(" ", 3)[-1]  # everything after "config <key> "
+    #             v = begin
+    #                 eval(args)
+    #             rescue ScriptError, StandardError
+    #                 args
+    #             end
+    #             Config[key] = v
+    #             Config.save
+    #         end
+    #     end
+    # end
 
     def cli_seq(*args)
         case args[0]
@@ -205,8 +195,7 @@ class Yal
 
     def cli_q(*args)
         q = @line[/^[^\s]\s+(.+)/, 1]
-        db_file = Config['db_file'] || DB_FILE
-        db = SQLite3::Database.new(db_file)
+        db = SQLite3::Database.new(DB_FILE)
         puts db.execute(q).to_a.inspect
     end
 
@@ -221,7 +210,7 @@ class Yal
         args.each do |seq|
             puts "#{seq}..."
             seqclass = Object.const_get("Seq#{seq}".to_sym)
-            # seqclass.import
+            seqclass.export
         end
 
         # SeqGhosting.import

@@ -1,23 +1,24 @@
 require('Config')
 
 class Isadora
-  # defaults
-  Config["isadora_ips"] = ['172.16.1.221']
-  Config["isadora_port"] = 1234
-  Config["isadora_enabled"] = true
+    IPS = ["172.16.1.221", "172.16.1.222", "172.16.1.223"]
+    PORT = 1234
+    ENABLED = true
 
-  attr_accessor(:cl)
+    attr_accessor(:clients)
 
-  def initialize
-    @clients = Config["isadora_ips"].collect {|ip| OSC::Client.new(ip, Config["isadora_port"])}
-  end
+    def initialize
+        @clients = IPS.collect {|ip| OSC::Client.new(ip, PORT)}
+    end
 
-  def send(msg, *args)
-    puts "IZ #{Config["isadora_enabled"] ? 'send' : 'fake'} #{msg} - #{args.inspect}"
-    osc_msg = OSC::Message.new(msg, *args)
-    @clients.each {|c| c.send(osc_msg)} if Config["isadora_enabled"]
-  rescue
-    puts "error sending isadora: #{$!}"
-    puts $!.backtrace
-  end
+    def send(msg, *args)
+        puts "IZ #{ENABLED ? 'send' : 'fake'} #{msg} - #{args.inspect}"
+        osc_msg = OSC::Message.new(msg, *args)
+        if ENABLED
+            @clients.each {|c| c.send(osc_msg)}
+        end
+    rescue
+        puts "error sending isadora: #{$!}"
+        puts $!.backtrace
+    end
 end
