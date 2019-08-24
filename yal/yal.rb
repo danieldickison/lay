@@ -45,17 +45,17 @@ class Yal
     end
 
     def run_osc
-        offset = 0
         port = Config['osc_port'] || OSC_PORT
+        offset = 0
         begin
-            @osc = OSC::Server.new(Config['osc_port'] + offset)
+            @osc = OSC::Server.new(port + offset)
         rescue Errno::EADDRINUSE
-            port += 1
+            offset += 1
             retry
         end
 
         if offset > 0
-            puts "WARN: using non-standard OSC port #{Config['osc_port'] + offset}"
+            puts "WARN: using non-standard OSC port #{port + offset}"
         end
 
 
