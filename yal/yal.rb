@@ -184,7 +184,7 @@ class Yal
         clients = []
         while args.first =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
             ip = args.shift
-            clients.push(OSC::Client.new(ip, OSC_PORT))
+            clients.push(OSC::Client.new(ip, 1234))
         end
         if clients.empty?
             clients.push(OSC::BroadcastClient.new(OSC_PORT))
