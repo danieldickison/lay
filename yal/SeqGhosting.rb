@@ -41,9 +41,10 @@ Slots correspond to zones as follows: (8 per zone)
             SELECT Category, ID FROM "PhotoCategory"
         SQL
         photo_categories = Hash[photo_categories]
-
         friends_category = photo_categories["friend"]
 
+        # select all the friend photos of audience members at this performance
+        # also grab the seatings, so that we can distribute the photos to the proper tablets and TVs
         photos = db.execute(<<~SQL).to_a
             SELECT photo.Image, member."Table"
             FROM FacebookPhoto AS photo
@@ -79,24 +80,6 @@ Slots correspond to zones as follows: (8 per zone)
             slot_base += 8
         end
         pbdata[:profile_image_names] = profile_image_names
-
-        # used = []
-        # profile_image_names = {}
-        # debug_images = `find "#{DATABASE}/facebook profile images" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
-        # 16.times do |i|
-        #     begin
-        #         r = rand(debug_images.length)
-        #         f = debug_images.delete_at(r).strip
-        #         name = "410-#{'%03d' % (i + 1)}-R01-Ghosting_profile.jpg"
-        #         GraphicsMagick.thumbnail(f, MEDIA_DYNAMIC + name, 180, 180, "jpg", 85)
-        #         profile_image_names[i + 1] = name
-        #     rescue
-        #         puts $!.inspect
-        #         puts "retrying"
-        #         retry
-        #     end
-        # end
-        # pbdata[:profile_image_names] = profile_image_names
 
         people_at_tables = {}
         # people_at_tables[1] -> [1,2,3]  - people at table 1
