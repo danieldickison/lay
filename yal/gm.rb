@@ -9,6 +9,7 @@ module GraphicsMagick
     def self.gm(*args)
         if !@@gm
             @@gm = ['/usr/local/bin/gm', '/usr/bin/gm'].find {|bb| File.executable?(bb)}
+            raise "no gm" if !@@gm
         end
         return U.sh(@@gm, args)
     end

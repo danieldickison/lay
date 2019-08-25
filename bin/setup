@@ -39,6 +39,10 @@ chdir APP_ROOT do
   puts "\n== Preparing nginx =="
   system! "bin/install-nginx"
 
+  puts "\n== Installing GraphicsMagick and friends =="
+  system! "brew install graphicsmagick"
+  system! "brew install ghostscript"
+
   puts "\n== Restarting application server =="
   system! 'bin/rails restart'
 end

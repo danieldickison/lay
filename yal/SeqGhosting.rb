@@ -31,7 +31,7 @@ Slots correspond to zones as follows: (8 per zone)
     def self.export(performance_date = nil)
         pbdata = {}
 
-        `mkdir -p #{MEDIA_DYNAMIC}`
+        `mkdir -p '#{MEDIA_DYNAMIC}'`
 
         db = SQLite3::Database.new(Yal::DB_FILE)
 
