@@ -1,20 +1,3 @@
-=begin
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("B3", 7,  "Nic (7)", "Benacerraf", "", 1, NULL);
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("B4", 8,  "Nic (8)", "Benacerraf", "", 1, NULL);
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("C1", 9,  "Nic (9)", "Benacerraf", "", 1, NULL);
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("C2", 10, "Nic (10)", "Benacerraf", "", 1, NULL);
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("C3", 11, "Nic (11)", "Benacerraf", "", 1, NULL);
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("C4", 12, "Nic (12)", "Benacerraf", "", 1, NULL);
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("D1", 13, "Nic (13)", "Benacerraf", "", 1, NULL);
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("D2", 14, "Nic (14)", "Benacerraf", "", 1, NULL);
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("D3", 15, "Nic (15)", "Benacerraf", "", 1, NULL);
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("D4", 16, "Nic (16)", "Benacerraf", "", 1, NULL);
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("E1", 17, "Nic (17)", "Benacerraf", "", 1, NULL);
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("E2", 18, "Nic (18)", "Benacerraf", "", 1, NULL);
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("E3", 19, "Nic (19)", "Benacerraf", "", 1, NULL);
-INSERT INTO datastore_person (seat, employee_id, firstName, lastName, email, show, opt_in) VALUES ("E4", 20, "Nic (20)", "Benacerraf", "", 1, NULL);
-
-=end
 
 module PlaybackData
     FILENAME = "pbdata.json"

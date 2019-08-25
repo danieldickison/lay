@@ -11,6 +11,7 @@ require('sqlite3')
 require('osc-ruby')
 require('rb-readline')
 require('json')
+require('pp')
 
 # our utils
 require('runtime')
@@ -20,6 +21,7 @@ require('ushell')
 # the goods
 require('Isadora')
 require('Media')
+require('Fake')
 
 
 class Yal
@@ -95,6 +97,7 @@ class Yal
                     __send__(cmd, *line[1..-1])
                 rescue
                     puts $!.inspect
+                    pp $!.backtrace
                 end
             end
         end

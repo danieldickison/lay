@@ -1,0 +1,222 @@
+
+CREATE TABLE IF NOT EXISTS "Performance" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"PerformanceDate" integer);
+
+CREATE TABLE IF NOT EXISTS "PurchaserInfo" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"Title" varchar(250),
+"Email" varchar(250),
+"FirstName" varchar(250),
+"LastName" varchar(250),
+"Address1" varchar(250),
+"Address2" varchar(250),
+"City" varchar(250),
+"State" varchar(250),
+"ZIP" varchar(250),
+"Country" varchar(250),
+"ShippingLastName" varchar(250),
+"ShippingFirstName" varchar(250),
+"ShippingAddress1" varchar(250),
+"ShippingAddress2" varchar(250),
+"ShippingCity" varchar(250),
+"ShippingState" varchar(250),
+"ShippingZIP" varchar(250),
+"ShippingCountry" varchar(250),
+"Institution" varchar(250),
+"PhoneNumber" varchar(250));
+
+CREATE TABLE IF NOT EXISTS "GuestInfo" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"FirstName" varchar(250),
+"LastName" varchar(250),
+"Email" varchar(250),
+"TicketBuyerID" integer);
+
+
+CREATE TABLE IF NOT EXISTS "SpecialInfo" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"PurchaserID" integer,
+"Birthday" integer,
+"TraveledTo" varchar(250),
+"PartnerFirstName" varchar(250));
+
+
+
+
+CREATE TABLE IF NOT EXISTS "TicketPurchase" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"PurchaseDate" integer,
+"PerformanceID" integer,
+"PurchaserID" integer,
+"Quantity" integer,
+"Amount" float,
+"PaymentMethod" varchar(250),
+"Category" varchar(250),
+"SaleType" varchar(250));
+
+
+CREATE TABLE IF NOT EXISTS "TicketAssignment" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"PurchaseID" integer,
+"TicketNbr" varchar(250));
+
+
+CREATE TABLE IF NOT EXISTS "AudienceMember" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"TicketID" integer,
+"FacePhoto" varchar(250),
+"Table" integer,
+"FirstName" varchar(250),
+"LastName" varchar(250),
+"Email" varchar(250),
+"Dataconsent" integer,
+"EmployeeID" integer);  -- added
+
+
+CREATE TABLE IF NOT EXISTS "LinkedAudienceMember" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"AudienceMemberID" integer,
+"MatchedPersonID" integer,
+"FaceRecognitionMatch" float,
+"GreeterMatch" float);
+
+CREATE TABLE IF NOT EXISTS "OnlinePerson" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"TwitterID" integer,
+"FacebookID" integer,
+"InstagramID" integer);
+
+CREATE TABLE IF NOT EXISTS "CCOnlinePersonMatch" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"DerivedFromTicket" integer,
+"DerivedFromGuest" integer,
+"OnlinePersonID" integer,
+"MatchLikelihood" float );
+
+CREATE TABLE IF NOT EXISTS "TwitterProfile" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"Handle" varchar(250), 
+"FirstName" varchar(250),
+"LastName" varchar(250),
+"Location" varchar(250), 
+"Link" varchar(250));
+
+
+CREATE TABLE IF NOT EXISTS "Tweets" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"ProfileID" integer,
+"Date" integer,
+"Text" varchar(250));
+
+
+CREATE TABLE IF NOT EXISTS "City" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT, IDENTITY
+"Name" varchar(250),
+"Image" varchar(250));
+
+CREATE TABLE IF NOT EXISTS "FacebookProfile" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"FirstName" varchar(250),
+"LastName" varchar(250),
+"Birthday" varchar(250),
+"Location" integer,
+"Hometown" integer,
+"RelationshipStatus" integer);
+
+
+CREATE TABLE IF NOT EXISTS "RelationShipStatus" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"Status" varchar(250));
+
+CREATE TABLE IF NOT EXISTS "PhotoCategory" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"Category" varchar(250));
+
+CREATE TABLE IF NOT EXISTS "FacebookPhoto" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"FacebookID" integer,
+"Date" integer,
+"Category" integer,
+"Image" varchar(250));
+
+
+CREATE TABLE IF NOT EXISTS "FacebookPost" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"FacebookID" integer,
+"Date" integer,
+"Text" varchar(250),
+"Image" varchar(250));
+
+CREATE TABLE IF NOT EXISTS "Pet" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"Name" varchar(250),
+"Photo" varchar(250),
+"OnlinePersonID" integer);
+
+
+CREATE TABLE IF NOT EXISTS "HighSchool" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"Name" varchar(250),
+"Address1" varchar(250),
+"Address2" varchar(250),
+"CityID" integer,
+"ZIP" varchar(250),
+"Country" varchar(250),
+"LogoPhoto" varchar(250));
+
+
+CREATE TABLE IF NOT EXISTS "University" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"Name" varchar(250),
+"Address1" varchar(250),
+"Address2" varchar(250),
+"CityID" integer,
+"ZIP" varchar(250),
+"Country" varchar(250),
+"LogoPhoto" varchar(250));
+
+CREATE TABLE IF NOT EXISTS "Company" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"Name" varchar(250),
+"Address1" varchar(250),
+"Address2" varchar(250),
+"CityID" integer,
+"ZIP" varchar(250),
+"Country" varchar(250),
+"LogoPhoto" varchar(250));
+
+CREATE TABLE IF NOT EXISTS "SecondaryEducation" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"OnlinePersonID" integer,
+"HighSchoolID" integer);
+
+CREATE TABLE IF NOT EXISTS "HigherEducation" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"OnlinePersonID" integer,
+"UniversityID" integer,
+"Degree" varchar(250),
+"Subject" varchar(250));
+
+CREATE TABLE IF NOT EXISTS "Employment" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"OnlinePersonID" integer,
+"CompanyID" integer,
+"Position" varchar(250));
+
+CREATE TABLE IF NOT EXISTS "InstagramProfile" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"Handle" varchar(250),
+"FirstName" varchar(250),
+"LastName" varchar(250));
+
+CREATE TABLE IF NOT EXISTS "InstagramPost" (
+"ID" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+"ProfileID" integer,
+"Category" integer,
+"Date" integer,
+"Image" varchar(250), 
+"Text" varchar(250));
+
+
+
