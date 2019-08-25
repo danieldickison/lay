@@ -172,7 +172,7 @@ module GraphicsMagick
     #   format          JPEG or PNG, defaults to JPEG
     # Will center and crop the resized image within the thumbnail if the aspect ratios aren't the same.
     # Note: adding the optional add_opaque_bg flag to support transparent artist headers --marcelle 03/2016
-    def self.thumbnail(src, dst, width, height = width, format = nil, quality = nil, add_opaque_bg = true)
+    def self.thumbnail(src, dst, width, height = width, format = nil, quality = nil, add_opaque_bg = true, annotate = nil)
         src_info, src = info_and_src(src)
         if format == 'GIF' && src_info && src_info[:format] == 'GIF'
             # FIX ME
@@ -183,12 +183,44 @@ module GraphicsMagick
                 "--output", dst
             )
         else
+            if annotate
+                line_width = (width - 10) / 8  # approx pixels per char at 12 point
+                words = annotate.split(" ")
+                lines = []
+                line = []
+                while !words.empty?
+                    if (line + words[0..0]).join(" ").length <= line_width
+                        line << words.shift
+                    else
+                        if line.empty?
+                            lines << words.shift
+                        else
+                            lines << line.join(" ")
+                            line = []
+                        end
+                    end
+                end
+                if !line.empty?
+                    lines << line.join(" ")
+                end
+                draw = []
+                y = -((lines.length - 1) * 15 / 2)
+                lines.length.times do |i|
+                    draw << "text 0,#{y} '#{lines[i]}'"
+                    y += 15
+                end
+                draw_arg = draw.join(" ")
+                anno_args = ["-font", "courier", "-pointsize", "12", "-fill", "blue", "-draw", draw_arg]
+            else
+                anno_args = []
+            end
             convert(
                "#{src}[0]",            
                 "-auto-orient",
                 "-resize", "#{width}x#{height}^",       # okay if one dimension overflows...
                 "-gravity", "center",                   # because we'll center it...
                 "-crop", "#{width}x#{height}+0+0",      # and crop it.
+                anno_args,
                 format_args(dst, format, quality, add_opaque_bg)
             )
         end

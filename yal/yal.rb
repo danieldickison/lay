@@ -231,6 +231,11 @@ class Yal
         GraphicsMagick.scrub(file, file + ".jpg", "jpg", 85)
     end
 
+    def cli_gm
+        db_photo = Media::PLAYBACK + "/media_dummy/person.png"
+        GraphicsMagick.thumbnail(db_photo, MAIN_DIR + "/test.jpg", 180, 180, "jpg", 85, true, "FacebookPhoto self 1 Performance 1 by EmployeeID 1 at A1.jpg")
+    end
+
     def cli_quit
         exit(0)
     end

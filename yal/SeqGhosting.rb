@@ -71,8 +71,8 @@ Slots correspond to zones as follows: (8 per zone)
                 if File.exist?(db_photo)
                     GraphicsMagick.thumbnail(db_photo, MEDIA_DYNAMIC + name, 180, 180, "jpg", 85)
                 else
-                    db_photo = Media::PLAYBACK + "/media_dummy/person.png"
-                    GraphicsMagick.thumbnail(db_photo, MEDIA_DYNAMIC + name, 180, 180, "jpg", 85)
+                    f = Media::PLAYBACK + "/media_dummy/person.png"
+                    GraphicsMagick.thumbnail(f, MEDIA_DYNAMIC + name, 180, 180, "jpg", 85, true, db_photo)
                 end
                 profile_image_names[slot_base + i] = name
             end
