@@ -4,7 +4,7 @@ class Media
     elsif JOE_DEVELOPMENT
         VOLUME = ENV["HOME"] + "/lay-media"
     else
-        raise "Daniel, need a media dir"
+        VOLUME = ENV["HOME"] + "/lay-media"
     end
 
     DATABASE = VOLUME + "/db"
