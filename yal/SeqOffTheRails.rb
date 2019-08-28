@@ -27,12 +27,15 @@ class SeqOffTheRails
     DATABASE        = Media::DATABASE
 
     TV_ADDRESS = {
+        # TVs:
         '21' => '/isadora-multi/2',
         '22' => '/isadora-multi/3',
         '23' => '/isadora-multi/4',
         '31' => '/isadora-multi/5',
         '32' => '/isadora-multi/6',
         '33' => '/isadora-multi/7',
+        # center projector:
+        '01' => '/isadora-multi/8',
     }.freeze
     TV_TYPE_ID = {
         :tweet => 1,
@@ -198,6 +201,7 @@ class SeqOffTheRails
         # Maps isadora channel number to the items we want to show on that TV.
         # for debug, i'm just shuffling all items together and throwing them at all tvs
         tmp_tv_items = (@tweets + @fb + @ig).shuffle
+        tmp_projector_items = tmp_tv_items.dup
         @tv_items = {
             '21' => tmp_tv_items,
             '22' => tmp_tv_items,
@@ -205,6 +209,7 @@ class SeqOffTheRails
             '31' => tmp_tv_items,
             '32' => tmp_tv_items,
             '33' => tmp_tv_items,
+            '01' => tmp_projector_items,
         }
 
         @tablet_items = {}
