@@ -101,7 +101,7 @@ Slots correspond to zones as follows: (8 per zone)
 
         @profile_delay = 67_800 # ms
         @profile_duration = 18_000 # ms
-        @video = '/playback/media_tablets/105-Ghosting/105-011-C6?-Ghosting_all.mp4' # '?' replaced by tablet group
+        @video = '/playback/media_tablets/105-Ghosting/105-011-C6?-Ghosting.mp4' # '?' replaced by tablet group
         @prepare_sleep = 1 # second
         @isadora_delay = 2 # seconds
 

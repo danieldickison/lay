@@ -236,7 +236,7 @@ class SeqLaunch
     def start
         @@run = true
         Thread.new do
-            TablettesController.send_osc_cue('/playback/media_tablets/113-Launch/113-511-C60-Launch_all.mp4', @start_time + @prepare_delay)
+            TablettesController.send_osc_cue('/playback/media_tablets/113-Launch/113-411-C60-ProductLaunch_HERE.mp4', @start_time + @prepare_delay)
             sleep(@start_time + @prepare_delay - Time.now)
             @is.send('/isadora/1', '1300')
 
