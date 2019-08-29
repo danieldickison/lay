@@ -534,12 +534,12 @@ a {
         left: 0;
         overflow: hidden;
         z-index: 1;
-        background: no-repeat left url(/playback/media_tablets/113-Launch/113-455-C60-RedX_pt1.png);
+        background: no-repeat top left url(/playback/media_tablets/113-Launch/113-455-C60-RedX_pt1.png);
         width: 0;
 
         &::after {
             content: ' ';
-            background: no-repeat right url(/playback/media_tablets/113-Launch/113-456-C60-RedX_pt2.png);
+            background: no-repeat top right url(/playback/media_tablets/113-Launch/113-456-C60-RedX_pt2.png);
             position: absolute;
             top: 0;
             bottom: 0;
@@ -554,11 +554,11 @@ a {
 
         > .target-x {
             transition: width linear 333ms;
-            width: 100%;
+            width: 800px;
 
             &::after {
                 transition: width linear 333ms 333ms;
-                width: 100%;
+                width: 800px;
             }
         }
         
@@ -580,10 +580,10 @@ a {
         
         &.front {
             border-radius: 22px;
-            width: 600px;
-            height: 600px;
+            width: 601px;
+            height: 601px;
             left: 100px;
-            top: 306px;
+            top: 308px;
         }
         &.back {
             width: 800px;
