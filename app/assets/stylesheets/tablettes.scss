@@ -529,22 +529,22 @@ a {
     > .target-x {
         display: block;
         position: absolute;
-        width: 500px;
-        height: 0;
-        left: 150px;
-        bottom: 420px;
+        top: 0;
+        bottom: 0;
+        left: 0;
         overflow: hidden;
         z-index: 1;
+        background: no-repeat left url(/playback/media_tablets/113-Launch/113-455-C60-RedX_pt1.png);
+        width: 0;
 
         &::after {
             content: ' ';
-            background: no-repeat center url(/tablet-util/x.png);
+            background: no-repeat right url(/playback/media_tablets/113-Launch/113-456-C60-RedX_pt2.png);
             position: absolute;
+            top: 0;
             bottom: 0;
-            left: 0;
-            width: 500px;
-            height: 500px;
-            opacity: 0.75;
+            right: 0;
+            width: 0;
         }
     }
 
@@ -553,8 +553,13 @@ a {
         transition: opacity ease-in-out 1000ms;
 
         > .target-x {
-            transition: height linear 1630ms;
-            height: 500px;
+            transition: width linear 333ms;
+            width: 100%;
+
+            &::after {
+                transition: width linear 333ms 333ms;
+                width: 100%;
+            }
         }
         
         &.final-fade-out {
