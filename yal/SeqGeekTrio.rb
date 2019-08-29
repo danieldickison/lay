@@ -13,10 +13,10 @@ class SeqGeekTrio
     TABLET_IMAGE_INTERVAL = 800 # ms; 2 beats @ 150 bpm
     TABLET_CHORUS_DURATION = 12_800 # ms; 8 bars of 4 beats @ 150 bpm
     CHORUS_OFFSETS = [
-        63.6,
-        110.0,
-        154.8,
-        167.6,
+        25.6,
+        72.0,
+        116.8,
+        155.2,
     ].freeze
 
     def self.export

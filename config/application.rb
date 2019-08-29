@@ -103,7 +103,7 @@ module Lay
         case cue
         when 500
             @current_seq = SeqGhosting.new
-        when 700
+        when 710
             @current_seq = SeqGeekTrio.new
         when 800
             @current_seq = SeqExterminator.new
