@@ -34,7 +34,7 @@ class Yal
         raise "Daniel, need a db file"
     end
 
-    def start
+    def start(args)
         @seqs = []
         Dir.glob("#{MAIN_DIR}/Seq*.rb").each do |seq_file|
             require(seq_file)
@@ -45,6 +45,12 @@ class Yal
 
         run_osc
         run_db
+
+        if !args.empty?
+            call_cmd(args)
+            return
+        end
+
         run_cli
         sleep
     end
@@ -92,14 +98,18 @@ class Yal
         Thread.new do
             while @line = Readline.readline('> ', true)
                 line = @line.split(" ")
-                cmd = "cli_#{line[0].downcase}".to_sym
-                begin
-                    __send__(cmd, *line[1..-1])
-                rescue
-                    puts $!.inspect
-                    pp $!.backtrace
-                end
+                call_cmd(line)
             end
+        end
+    end
+
+    def call_cmd(args)
+        cmd = "cli_#{args[0].downcase}".to_sym
+        begin
+            __send__(cmd, *args[1..-1])
+        rescue
+            puts $!.inspect
+            pp $!.backtrace
         end
     end
 
@@ -241,4 +251,4 @@ class Yal
     end
 end
 
-Yal.new.start
+Yal.new.start(ARGV)
