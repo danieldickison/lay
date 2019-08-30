@@ -41,6 +41,8 @@ module Lay
     LAY_IP = ENV['LAY_IP'] || '172.16.1.2'
     puts "LAY_IP=#{LAY_IP} for multicast sending. Set LAY_IP env var to customize the local IP of the ethernet interface the tablets are on"
 
+    RIX_LOGO_VIDEO = '/playback/media_tablets/100-General/100-015-C60-RixLogo_Black_Glow.mp4'.freeze
+
     class Testem
       @@run = false
 
@@ -102,10 +104,20 @@ module Lay
         cue = message.to_a[0].to_i
         puts "received cue #{cue}"
         @current_seq = case cue
+        when 50
+            SeqSimpleVideo.new(50, RIX_LOGO_VIDEO)
+        when 100
+            SeqSimpleVideo.new(100, '/playback/media_tablets/101-Opening/101-201-C6?-OpeningSeq_tablettes_cue01.mp4')
+        when 120
+            SeqSimpleVideo.new(120, '/playback/media_tablets/101-Opening/101-202-C6?-OpeningSeq_tablettes_cue02.mp4')
+        when 140
+            SeqSimpleVideo.new(140, '/playback/media_tablets/101-Opening/101-091-C60-LeakernetLoad.mp4')
+        when 150
+            SeqSimpleVideo.new(150, '/playback/media_tablets/101-Opening/101-111-C60-EthanFeed.mp4')
         when 500
             SeqGhosting.new
         when 700
-            SeqSimpleVideo.new(700, '/playback/media_tablets/100-General/100-015-C60-RixLogo_Black_Glow.mp4')
+            SeqSimpleVideo.new(700, RIX_LOGO_VIDEO)
         when 710
             SeqGeekTrio.new
         when 800
