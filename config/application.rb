@@ -9,6 +9,7 @@ Bundler.require(*Rails.groups)
 MAIN_DIR = File.expand_path('../yal', __dir__)
 $:.unshift(MAIN_DIR)
 require('runtime')
+require('SeqSimpleVideo')
 require('SeqGhosting')
 require('SeqGeekTrio')
 require('SeqExterminator')
@@ -100,21 +101,23 @@ module Lay
 
         cue = message.to_a[0].to_i
         puts "received cue #{cue}"
-        case cue
+        @current_seq = case cue
         when 500
-            @current_seq = SeqGhosting.new
+            SeqGhosting.new
+        when 700
+            SeqSimpleVideo.new(700, '/playback/media_tablets/100-General/100-015-C60-RixLogo_Black_Glow.mp4')
         when 710
-            @current_seq = SeqGeekTrio.new
+            SeqGeekTrio.new
         when 800
-            @current_seq = SeqExterminator.new
+            SeqExterminator.new
         when 1200
-            @current_seq = SeqOffTheRails.new
+            SeqOffTheRails.new
         when 1300
-            @current_seq = SeqLaunch.new
+            SeqLaunch.new
         when 9000
-            @current_seq = SeqTabletCrossFadeTest.new
+            SeqTabletCrossFadeTest.new
         else
-            @current_seq = nil
+            nil
         end
 
         if @current_seq
