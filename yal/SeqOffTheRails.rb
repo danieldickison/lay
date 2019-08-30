@@ -248,7 +248,7 @@ class SeqOffTheRails
 
             TablettesController.send_osc_cue('/playback/media_tablets/112-OTR/112-201-C60-OTR_All.mp4', @start_time + @prepare_delay)
             sleep(@start_time + @prepare_delay - Time.now)
-            @is.send('/isadora/1', '1200')
+            @is.send('/isadora/1', '1100')
             
             @tablet_items.each do |t, items|
                 TablettesController.queue_command(t, 'offtherails', items)

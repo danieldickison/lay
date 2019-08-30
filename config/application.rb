@@ -145,9 +145,9 @@ module Lay
             SeqSimpleVideo.new(1030, '/playback/media_tablets/110-ExecOffice/110-021-C60-ExecOffice.mp4')
         when 1040
             SeqSimpleVideo.new(1040, '/playback/media_tablets/110-ExecOffice/110-051-C60-Algorithm_neutral-loop.mp4')
-        when 1200
+        when 1100
             SeqOffTheRails.new
-        when 1300
+        when 1200
             SeqLaunch.new
         when 9000
             SeqTabletCrossFadeTest.new

@@ -238,7 +238,7 @@ class SeqLaunch
         Thread.new do
             TablettesController.send_osc_cue('/playback/media_tablets/113-Launch/113-411-C60-ProductLaunch_HERE.mp4', @start_time + @prepare_delay)
             sleep(@start_time + @prepare_delay - Time.now)
-            @is.send('/isadora/1', '1300')
+            @is.send('/isadora/1', '1200')
 
             # Fire off all the data bits to isadora:
             @tv_osc_messages.each do |msg|
