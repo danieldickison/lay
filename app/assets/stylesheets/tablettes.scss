@@ -229,7 +229,7 @@ a {
     > .conclusion {
         position: absolute;
         top: 0;
-        bottom: 20px;
+        bottom: 0;
         left: 0;
         width: 0;
         transition: width linear 1000ms;
@@ -239,7 +239,7 @@ a {
             position: absolute;
             left: 0;
             width: 752px;
-            bottom: 0;
+            bottom: 30px;
             text-align: center;
             font-size: 60px;
             color: #01DAFF;
@@ -292,7 +292,7 @@ a {
     > .conclusion {
         position: absolute;
         top: 0;
-        bottom: 20px;
+        bottom: 0;
         left: 0;
         width: 0;
         overflow: hidden;
@@ -301,7 +301,7 @@ a {
             position: absolute;
             left: 0;
             width: 752px;
-            bottom: 0;
+            bottom: 30px;
             text-align: center;
             font-size: 60px;
             color: #01DAFF;
