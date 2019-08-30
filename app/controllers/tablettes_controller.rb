@@ -399,7 +399,7 @@ class TablettesController < ApplicationController
         return nil
     end
 
-    def self.send_osc_cue(video_path, start_time, fade_duration = 0)
+    def self.send_osc_cue(video_path, start_time, fade_duration = 1)
         start_time = (start_time.to_f * 1000).to_i.to_s # ms since epoch; string since OSC ints are only 32 bits
         fade_duration = (1000 * fade_duration).to_i
         @tablets.each_value do |tablet|
