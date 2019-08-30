@@ -99,7 +99,8 @@ module Lay
       @server.add_method('/cue') do |message|
         start_time = Time.now
 
-        @current_seq.stop if @current_seq
+        # This is useful during testing, but IRL we get intermediate cues while tablets continue playing a longer video/effect and we don't want to abort those.
+        # @current_seq.stop if @current_seq
 
         cue = message.to_a[0].to_i
         puts "received cue #{cue}"
@@ -114,14 +115,36 @@ module Lay
             SeqSimpleVideo.new(140, '/playback/media_tablets/101-Opening/101-091-C60-LeakernetLoad.mp4')
         when 150
             SeqSimpleVideo.new(150, '/playback/media_tablets/101-Opening/101-111-C60-EthanFeed.mp4')
+        when 200
+            TablettesController.send_osc_fade_out
+        when 300
+            SeqSimpleVideo.new(300, '/playback/media_tablets/103-FirstDay/103-401-C6?-FirstDay_tablettes_cue01.mp4')
+        when 320
+            SeqSimpleVideo.new(320, RIX_LOGO_VIDEO)
+        when 330
+            SeqSimpleVideo.new(330, '/playback/media_tablets/103-FirstDay/103-402-C6?-FirstDay_tablettes_cue02.mp4')
+        when 350
+            SeqSimpleVideo.new(350, '/playback/media_tablets/103-FirstDay/103-403-C6?-FirstDay_tablettes_cue03.mp4')
+        when 400
+            TablettesController.send_osc_fade_out
         when 500
             SeqGhosting.new
+        when 600
+            TablettesController.send_osc_fade_out
         when 700
             SeqSimpleVideo.new(700, RIX_LOGO_VIDEO)
         when 710
             SeqGeekTrio.new
         when 800
             SeqExterminator.new
+        when 850
+            SeqSimpleVideo.new(850, RIX_LOGO_VIDEO)
+        when 1020
+            SeqSimpleVideo.new(1020, '/playback/media_tablets/110-ExecOffice/110-011-C6?-ExecOffice_tablettes_cue01.mp4')
+        when 1030
+            SeqSimpleVideo.new(1030, '/playback/media_tablets/110-ExecOffice/110-021-C60-ExecOffice.mp4')
+        when 1040
+            SeqSimpleVideo.new(1040, '/playback/media_tablets/110-ExecOffice/110-051-C60-Algorithm_neutral-loop.mp4')
         when 1200
             SeqOffTheRails.new
         when 1300
