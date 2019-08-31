@@ -3,7 +3,7 @@ require('Media')
 class Isadora
     IPS = ["172.16.1.221", "172.16.1.222", "172.16.1.223"]
     USERS = ["hereuser", "hereuser", "hereuser"]
-    DST_DIRS = ["Desktop/LAY_Video_221/LAY_HERE/2_Current/media_from_pbs", "Desktop/LAY_Video_222/LAY_HERE/2_Current/media_from_pbs", "Desktop/LAY_Video_223/LAY_HERE/2_Current/media_from_pbs"]
+    DST_DIRS = ["Desktop/LAY_Video_221/LAY_HERE/2_Current/test_media_from_pbs", "Desktop/LAY_Video_222/LAY_HERE/2_Current/test_media_from_pbs", "Desktop/LAY_Video_223/LAY_HERE/2_Current/test_media_from_pbs"]
 
     PORT = 1234
     ENABLED = true
