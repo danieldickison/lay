@@ -16,7 +16,7 @@ require('SeqExterminator')
 require('SeqOffTheRails')
 require('SeqLaunch')
 require('SeqTabletCrossFadeTest')
-require('YalRunner')
+# require('YalRunner')
 
 module Lay
   class Application < Rails::Application
