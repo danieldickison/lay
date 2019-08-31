@@ -261,7 +261,7 @@ class Yal
     end
 
     def cli_push_opt_out
-        Isadora.cli_push_opt_out
+        Isadora.push_opt_out
     end
 
     def cli_quit
