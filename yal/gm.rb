@@ -253,6 +253,7 @@ module GraphicsMagick
                 "#{src}[0]",
                 "-auto-orient",
                 "-resize", "#{width}x#{height}",        # use maximum sizes
+                "-gravity", "center",
                 anno_args(annotate, width),
                 format_args(dst, format, quality)
             )

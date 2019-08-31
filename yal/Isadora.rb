@@ -25,7 +25,7 @@ class Isadora
 
 
     USERS = ["hereuser", "hereuser", "hereuser"]
-    DST_DIRS = ["Desktop/LAY_Video_221/LAY_HERE/2_Current/test_media_from_pbs", "Desktop/LAY_Video_222/LAY_HERE/2_Current/test_media_from_pbs", "Desktop/LAY_Video_223/LAY_HERE/2_Current/test_media_from_pbs"]
+    DST_DIRS = ["Desktop/LAY_Video_221/LAY_HERE/2_Current/media", "Desktop/LAY_Video_222/LAY_HERE/2_Current/media", "Desktop/LAY_Video_223/LAY_HERE/2_Current/media"]
 
     def self.push_media
         IPS.each_with_index do |addr, i|

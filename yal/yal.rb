@@ -252,8 +252,8 @@ class Yal
     end
 
     def cli_gm
-        db_photo = Media::YAL + "/patron.png"
-        GraphicsMagick.thumbnail(db_photo, YAL_DIR + "/test.jpg", 180, 180, "jpg", 85, true, "FacebookPhoto self 1 Performance 1 by EmployeeID 1 at A1.jpg")
+        f = Media::YAL + "/photo.png"
+        GraphicsMagick.fit(f, Media::PLAYBACK + "/test.jpg", 640, 640, "jpg", 85, "images/blahblah.jpg, employeeID 12, table X")
     end
 
     def cli_push_media
