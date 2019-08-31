@@ -53,6 +53,14 @@ document.addEventListener("DOMContentLoaded", event => {
         fetch('/tablettes/start_cue.json', {method: 'POST', body: body});
     });
 
+    document.querySelectorAll('[name="director-pre-show-radio"]').forEach(el => {
+        el.addEventListener('change', event => {
+            let body = new URLSearchParams();
+            body.append('show_time', el.value);
+            fetch('/tablettes/set_show_time', {method: 'POST', body: body});
+        });
+    });
+
     setInterval(fetchStats, STATS_INTERVAL);
 });
 
@@ -69,7 +77,6 @@ function fetchStats() {
     let body = new URLSearchParams();
     body.append('volume', document.getElementById('volume-input').value);
     body.append('debug', document.getElementById('debug-checkbox').checked ? '1' : '0');
-    body.append('show_time', document.getElementById('show-time-radio').checked ? '1' : '0');
     fetch('/tablettes/stats.json', {method: 'POST', body: body})
     .then(response => {
         return response.json();
@@ -80,6 +87,9 @@ function fetchStats() {
 
         unresponsiveTablets = [];
         serverError = null;
+
+        document.getElementById('pre-show-radio').checked = !json.show_time;
+        document.getElementById('show-time-radio').checked = json.show_time;
 
         let table = document.getElementById('tablet-stats');
         let oldTbody = document.getElementById('tablet-stats-body');
