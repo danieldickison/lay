@@ -108,7 +108,19 @@ a {
 
     #consent-text {
         text-align: left;
-        white-space: pre-wrap;
+
+        dt {
+            font-weight: bold;
+            margin: 1em 0;
+        }
+
+        dd {
+            margin-left: 1em;
+        }
+
+        ol {
+            list-style: lower-latin;
+        }
     }
 }
 
