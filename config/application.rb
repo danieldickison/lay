@@ -106,11 +106,23 @@ module Lay
         puts "received cue #{cue}"
         @current_seq = case cue
         when 50
-            SeqSimpleVideo.new(50, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
+            #SeqSimpleVideo.new(50, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
+            TablettesController.show_time = false
+            nil
+        when 55
+            TablettesController.show_time = true
+            # Joe: we need to write out the opt-out file now
+            nil
         when 100
-            SeqSimpleVideo.new(100, '/playback/media_tablets/101-Opening/101-201-C6?-OpeningSeq_tablettes_cue01.mp4')
+            SeqSimpleVideo.new(100, '/playback/media_tablets/101-Opening/101-201-C6?-OpeningSeq_tablettes_cue01.mp4').tap do |s|
+                s.isadora_delay = 2
+            end
         when 120
-            SeqSimpleVideo.new(120, '/playback/media_tablets/101-Opening/101-202-C6?-OpeningSeq_tablettes_cue02.mp4')
+            SeqSimpleVideo.new(120, '/playback/media_tablets/101-Opening/101-202-C6?-OpeningSeq_tablettes_cue02.mp4').tap do |s|
+                s.isadora_delay = 1.846 # 4 beats at 130bpm for previous section tempo
+                s.tablet_delay = 1.846
+                s.tablet_fade = 0
+            end
         when 140
             SeqSimpleVideo.new(140, '/playback/media_tablets/101-Opening/101-091-C60-LeakernetLoad.mp4')
         when 150
