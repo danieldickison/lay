@@ -4,9 +4,9 @@ require('PlaybackData')
 
 class SeqGeekTrio
 
-    MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/107-GeekTrio/"
+    MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/s_420-GeekTrio/"
     DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/107-GeekTrio/"
-    IMG_BASE      = Media::IMG_PATH + "/media_dynamic/107-GeekTrio/"
+    IMG_BASE      = Media::IMG_PATH + "/media_dynamic/s_420-GeekTrio/"
     DATABASE      = Media::DATABASE
 
     TABLET_TRIGGER_PREROLL = 10 # seconds; give them enough time to load dynamic images before presenting.
@@ -19,8 +19,119 @@ class SeqGeekTrio
         155.2,
     ].freeze
 
-    def self.export
+
+=begin
+http://projectosn.heinz.cmu.edu:8000/admin/datastore/patron/
+https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/edit
+
+Content: Facebook/Instagram photos
+Audience Folder: s_420-GeekTrio
+    420-001-R03-GeekTrio.jpg
+Fallback Folder: s_421-GeekTrio_fallback
+    421-001-R03-GeekTrio_fallback.jpg
+Details
+Longest dimension 640 px
+224 images total
+Slots correspond to zones as follows: (32 per zone)
+001-032: TV 21
+033-064: TV 22
+065-096: TV 23
+097-128: TV 31
+129-160: TV 32
+161-192: TV 33
+193-224: C01 (projector)
+=end
+
+    Photo = Struct.new(:path, :category, :employee_id, :table)
+
+    # export <performance #> GeekTrio
+    # Generates s_410-s_420-GeekTrio Isadora directory, 105-Ghosting pbdata
+
+    # Updated Saturday afternoon, 2019-08-31
+    def self.export(performance_id)
+        `mkdir -p '#{MEDIA_DYNAMIC}'`
+        pbdata = {}
+        db = SQLite3::Database.new(Yal::DB_FILE)
+
+
+        # General query for selecting all the photos in a performance
+        # row elements:
+        #   0..11: image names
+        #  12..23: image categories
+        #    24..: extra
+        rows = db.execute(<<~SQL).to_a
+            SELECT
+                fbPostImage_1, fbPostImage_2, fbPostImage_3, fbPostImage_4, fbPostImage_5, fbPostImage_6,
+                igPostImage_1, igPostImage_2, igPostImage_3, igPostImage_4, igPostImage_5, igPostImage_6,
+
+                fbPostCat_1, fbPostCat_2, fbPostCat_3, fbPostCat_4, fbPostCat_5, fbPostCat_6,
+                igPostCat_1, igPostCat_2, igPostCat_3, igPostCat_4, igPostCat_5, igPostCat_6,
+
+                employeeID, "table"
+            FROM datastore_patron
+            WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+        SQL
+
+        photos = []
+        rows.each do |r|
+            # pull out extra columns
+            employeeID = r[-2].to_i
+            table = r[-1]
+            if !table || table == ""
+                puts "warn: patron without a table"
+                table = "A"
+            end
+
+            # collect photos
+            (0..11).each do |i|
+                path = r[i]
+                category = r[i+12]
+                if path && path != ""
+                    photos << Photo.new(path, category, employeeID, table)
+                end
+            end
+        end
+
+        fn_pids = {}  # for updating LAY_filename_pids.txt
+
+
+        # select photos for this sequence
+        # photos = photos.find_all {|p| p.category == "friend" || p.category == "friends"}
+
+        photo_names = {}
+
+        # group photos by TV zone
+        tv_photos = photos.group_by {|p| Media::TABLE_INFO[p.table]["zone"]}
+
+        slot_base = 1
+        Media::TV_ZONES.each do |zone|
+            # 8 random photos for each zone
+            ph = tv_photos[zone].shuffle
+            (0..31).each do |i|
+                pp = ph[i]
+                break if !pp
+
+                slot = "%03d" % (slot_base + i)
+                dst = "s_420-#{slot}-R03-GeekTrio.jpg"
+                db_photo = Media::DATABASE + "/" + pp.path
+                # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
+                f, note = File.exist?(db_photo) ? [db_photo, nil] : [Media::YAL + "/photo.png", "#{pp.path}, employeeID #{pp.employee_id}, table #{pp.table}"]
+
+                GraphicsMagick.fit(f, MEDIA_DYNAMIC + dst, 640, 640, "jpg", 85, note)
+                photo_names[slot_base + i] = dst
+                fn_pids[dst] = pp.employee_id
+            end
+            slot_base += 32
+        end
+
+        pbdata[:photo_names] = photo_names
+
+        # any more pbdata ?
+
+        PlaybackData.write(DATA_DYNAMIC, pbdata)
+        PlaybackData.merge_filename_pids(fn_pids)
     end
+
 
     attr_accessor(:state, :start_time)
 

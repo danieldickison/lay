@@ -43,6 +43,12 @@ Slots correspond to zones as follows: (8 per zone)
         db = SQLite3::Database.new(Yal::DB_FILE)
 
 
+        performance_number = db.execute(<<~SQL).first[0]
+            SELECT performance_number FROM datastore_performance WHERE id = #{performance_id}
+        SQL
+        is_fake = (performance_number < 0)
+
+
         # General query for selecting all the photos in a performance
         # row elements:
         #   0..24: image names
@@ -66,7 +72,7 @@ Slots correspond to zones as follows: (8 per zone)
         photos = []
         rows.each do |r|
             # pull out extra columns
-            employeeID = r[-2]
+            employeeID = r[-2].to_i
             table = r[-1]
             if !table || table == ""
                 puts "warn: patron without a table"
@@ -78,7 +84,7 @@ Slots correspond to zones as follows: (8 per zone)
                 path = r[i]
                 category = r[i+25]
                 if path && path != ""
-                    photos << Photo.new(path, category, employeeID.to_i, table)
+                    photos << Photo.new(path, category, employeeID, table)
                 end
             end
         end
@@ -87,15 +93,17 @@ Slots correspond to zones as follows: (8 per zone)
 
 
         # select photos for this sequence
-        photos = photos.find_all {|p| p.category == "friend" || p.category == "friends"}
+        if !is_fake
+            photos = photos.find_all {|p| p.category == "friend" || p.category == "friends"}
+        end
 
         photo_names = {}
 
         # group photos by TV zone
-        tv_photos = photos.group_by {|p| Media::TABLE_INFO[p.table]["zone"]}
+        tv_photos = photos.group_by {|p| Media::TABLE_INFO_NO_CENTER[p.table]["zone"]}
 
         slot_base = 1
-        Media::TV_ZONES.each do |zone|
+        Media::TV_ZONES_NO_CENTER.each do |zone|
             # 8 random photos for each zone
             ph = tv_photos[zone].shuffle
             (0..7).each do |i|
@@ -109,7 +117,7 @@ Slots correspond to zones as follows: (8 per zone)
                 f, note = File.exist?(db_photo) ? [db_photo, nil] : [Media::YAL + "/patron.png", "#{pp.path}, employeeID #{pp.employee_id}, table #{pp.table}"]
                 GraphicsMagick.thumbnail(f, MEDIA_DYNAMIC + dst, 180, 180, "jpg", 85, true, note)
                 photo_names[slot_base + i] = dst
-                fn_pids[dst] = pp.employeeID
+                fn_pids[dst] = pp.employee_id
             end
             slot_base += 8
         end
@@ -127,6 +135,7 @@ Slots correspond to zones as follows: (8 per zone)
         pbdata[:people_at_tables] = people_at_tables
 
         PlaybackData.write(DATA_DYNAMIC, pbdata)
+        PlaybackData.merge_filename_pids(fn_pids)
     end
 
 

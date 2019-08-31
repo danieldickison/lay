@@ -39,6 +39,32 @@ module PlaybackData
         end
     end
 
+    FILENAME_PIDS_FILE = Media::DATA_DIR + "/LAY_filename_pids.txt"
+
+    def self.merge_filename_pids(fn_pids)
+        `mkdir -p '#{Media::DATA_DIR}'`
+
+        filenames = {}
+        if File.exist?(FILENAME_PIDS_FILE)
+            File.read(FILENAME_PIDS_FILE).lines do |line|
+                fn, pid = line.strip.split("\t")
+                filenames[fn] = pid.to_i
+            end
+        end
+
+        filenames.merge!(fn_pids)
+
+        File.open(FILENAME_PIDS_FILE, "w") do |f|
+            o = filenames.collect do |fn, pid|
+                pid = "%03d" % pid
+                fn + "\t" + pid
+            end
+            o = o.join("\n")
+            f.puts(o)
+        end
+
+    end
+
     DEV_DATA = {
         :people_at_tables => {},
         :profile_image_names => Hash.new('placeholder.jpg'),

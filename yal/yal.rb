@@ -256,6 +256,10 @@ class Yal
         GraphicsMagick.thumbnail(db_photo, YAL_DIR + "/test.jpg", 180, 180, "jpg", 85, true, "FacebookPhoto self 1 Performance 1 by EmployeeID 1 at A1.jpg")
     end
 
+    def cli_push_media
+        Isadora.push_media
+    end
+
     def cli_quit
         exit(0)
     end

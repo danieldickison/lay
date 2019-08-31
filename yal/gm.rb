@@ -167,6 +167,42 @@ module GraphicsMagick
         end
     end
 
+    def self.anno_args(annotate, width)
+        if annotate
+            line_width = (width - 10) / 8  # approx pixels per char at 12 point
+            words = annotate.split(/[\/ ]/)
+            lines = []
+            line = []
+            while !words.empty?
+                if (line + words[0..0]).join(" ").length <= line_width
+                    line << words.shift
+                else
+                    if line.empty?
+                        lines << words.shift
+                    else
+                        lines << line.join(" ")
+                        line = []
+                    end
+                end
+            end
+            if !line.empty?
+                lines << line.join(" ")
+            end
+            draw = []
+            y = -((lines.length - 1) * 15 / 2)
+            lines.length.times do |i|
+                draw << "text 0,#{y} '#{lines[i]}'"
+                y += 15
+            end
+            draw_arg = draw.join(" ")
+            args = ["-font", "courier", "-pointsize", "12", "-fill", "blue", "-draw", draw_arg]
+        else
+            args = []
+        end
+
+        return args
+    end
+
     # Create a thumbnail for an image file.
     #   src, dst        input image file, output name (paths)
     #   width, height   dimensions of thumbnail, height defaults to width
@@ -184,44 +220,13 @@ module GraphicsMagick
                 "--output", dst
             )
         else
-            if annotate
-                line_width = (width - 10) / 8  # approx pixels per char at 12 point
-                words = annotate.split(/[\/ ]/)
-                lines = []
-                line = []
-                while !words.empty?
-                    if (line + words[0..0]).join(" ").length <= line_width
-                        line << words.shift
-                    else
-                        if line.empty?
-                            lines << words.shift
-                        else
-                            lines << line.join(" ")
-                            line = []
-                        end
-                    end
-                end
-                if !line.empty?
-                    lines << line.join(" ")
-                end
-                draw = []
-                y = -((lines.length - 1) * 15 / 2)
-                lines.length.times do |i|
-                    draw << "text 0,#{y} '#{lines[i]}'"
-                    y += 15
-                end
-                draw_arg = draw.join(" ")
-                anno_args = ["-font", "courier", "-pointsize", "12", "-fill", "blue", "-draw", draw_arg]
-            else
-                anno_args = []
-            end
             convert(
                "#{src}[0]",            
                 "-auto-orient",
                 "-resize", "#{width}x#{height}^",       # okay if one dimension overflows...
                 "-gravity", "center",                   # because we'll center it...
                 "-crop", "#{width}x#{height}+0+0",      # and crop it.
-                anno_args,
+                anno_args(annotate, width),
                 format_args(dst, format, quality, add_opaque_bg)
             )
         end
@@ -234,7 +239,7 @@ module GraphicsMagick
     #   width, height   dimensions of new image, height defaults to width
     #   format          JPEG or PNG, defaults to JPEG
     #
-    def self.fit(src, dst, width, height = width, format = nil, quality = nil)
+    def self.fit(src, dst, width, height = width, format = nil, quality = nil, annotate = nil)
         src_info, src = info_and_src(src)
         if format == 'GIF' && src_info && src_info[:format] == 'GIF'
             gifconvert(
@@ -248,6 +253,7 @@ module GraphicsMagick
                 "#{src}[0]",
                 "-auto-orient",
                 "-resize", "#{width}x#{height}",        # use maximum sizes
+                anno_args(annotate, width),
                 format_args(dst, format, quality)
             )
         end
