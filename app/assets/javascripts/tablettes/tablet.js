@@ -803,7 +803,7 @@ function ProductLaunch(images, targetXTime) {
 
 function updateBatteryStatus() {
     batteryPercent = layNativeInterface.getBatteryPercent();
-    log('batteryPercent updated to ' + batteryPercent);
+    document.getElementById('battery-level').innerText = batteryPercent + '%';
 }
 
 function handleCommand(cmd, args) {
