@@ -114,7 +114,7 @@ module Lay
             TablettesController.show_time = true
             # TODO
             # YalRunner.sh("export", performance_number, "OptOut")
-            nil
+            SeqSimpleVideo.new(55, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
         when 100
             SeqSimpleVideo.new(100, '/playback/media_tablets/101-Opening/101-201-C6?-OpeningSeq_tablettes_cue01.mp4').tap do |s|
                 s.isadora_delay = 2
