@@ -9,6 +9,20 @@ class SeqExterminator
     IMG_BASE      = Media::IMG_PATH + "/media_dynamic/108-Exterminator/"
     DATABASE      = Media::DATABASE
 
+=begin
+http://projectosn.heinz.cmu.edu:8000/admin/datastore/patron/
+https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/edit
+
+=end
+
+    # export <performance #> Exterminator
+    # Generates s_410-Ghosting_profile Isadora directory, 105-Ghosting pbdata
+
+    # Updated Saturday morning, 2019-08-31
+    def self.export
+    end
+
+
     TABLET_VIDEO = '/playback/media_tablets/108-Exterminator/108-011-C60-Exterminator.mp4'
 
     TABLET_TRIGGER_PREROLL = 10 # seconds; give them enough time to load dynamic images before presenting.
@@ -47,9 +61,6 @@ class SeqExterminator
             :fade_out   => 136.0,
         },
     }
-
-    def self.export
-    end
 
     attr_accessor(:state, :start_time)
 

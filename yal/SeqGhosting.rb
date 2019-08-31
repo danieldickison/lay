@@ -11,6 +11,7 @@ class SeqGhosting
 
 =begin
 http://projectosn.heinz.cmu.edu:8000/admin/datastore/patron/
+https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/edit
 
 Content: profile photos of friends
 Audience Folder: s_410-Ghosting_profile
@@ -77,17 +78,18 @@ Slots correspond to zones as follows: (8 per zone)
                 path = r[i]
                 category = r[i+25]
                 if path && path != ""
-                    photos << Photo.new(path, category, employeeID, table)
+                    photos << Photo.new(path, category, employeeID.to_i, table)
                 end
             end
         end
+
+        fn_pids = {}  # for updating LAY_filename_pids.txt
 
 
         # select photos for this sequence
         photos = photos.find_all {|p| p.category == "friend" || p.category == "friends"}
 
         photo_names = {}
-
 
         # group photos by TV zone
         tv_photos = photos.group_by {|p| Media::TABLE_INFO[p.table]["zone"]}
@@ -107,6 +109,7 @@ Slots correspond to zones as follows: (8 per zone)
                 f, note = File.exist?(db_photo) ? [db_photo, nil] : [Media::YAL + "/patron.png", "#{pp.path}, employeeID #{pp.employee_id}, table #{pp.table}"]
                 GraphicsMagick.thumbnail(f, MEDIA_DYNAMIC + dst, 180, 180, "jpg", 85, true, note)
                 photo_names[slot_base + i] = dst
+                fn_pids[dst] = pp.employeeID
             end
             slot_base += 8
         end

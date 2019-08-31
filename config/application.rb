@@ -16,6 +16,7 @@ require('SeqExterminator')
 require('SeqOffTheRails')
 require('SeqLaunch')
 require('SeqTabletCrossFadeTest')
+require('YalRunner')
 
 module Lay
   class Application < Rails::Application
@@ -111,7 +112,8 @@ module Lay
             nil
         when 55
             TablettesController.show_time = true
-            # Joe: we need to write out the opt-out file now
+            # TODO
+            # YalRunner.sh("export", performance_number, "OptOut")
             nil
         when 100
             SeqSimpleVideo.new(100, '/playback/media_tablets/101-Opening/101-201-C6?-OpeningSeq_tablettes_cue01.mp4').tap do |s|

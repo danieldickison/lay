@@ -19,8 +19,9 @@ require('gm')
 require('ushell')
 
 # the goods
-require('Isadora')
+require('Database')
 require('Media')
+require('Isadora')
 require('Fake')
 
 
@@ -117,8 +118,10 @@ class Yal
         puts "export <performance_number> [<sequence>]"
         puts "seq <sequence>"
         puts "seq start|stop|pause|unpause|load|kill|debug"
-        puts "osc <msg>"
-        puts "osc <ip> ... <msg>"
+        puts "osc <msg> - broadcast on port #{OSC_PORT}"
+        puts "osc <:port> <msg> - brodcast on given port"
+        puts "osc <ip> ... <msg> - send to list of ips on port #{OSC_PORT}"
+        puts "osc <ip:port> ... <msg> - send to list of ips/ports"
         # puts "config"
         # puts "config <key>"
         # puts "config <key> <value>"
@@ -192,14 +195,23 @@ class Yal
 
     def cli_osc(*args)
         clients = []
-        while args.first =~ /\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/
-            ip = args.shift
-            clients.push(OSC::Client.new(ip, 1234))
+        while true
+            m = args.first.match(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})*(:\d+)*/)
+            break if !m[1] && !m[2]
+
+            port = m[2] ? Integer(m[2][1..-1]) : OSC_PORT
+            if (ip = m[1])
+                clients.push(OSC::Client.new(ip, port))
+            else
+                clients.push(OSC::BroadcastClient.new(port))
+            end
+            args.shift
         end
+
         if clients.empty?
             clients.push(OSC::BroadcastClient.new(OSC_PORT))
-            puts "sent multicast"
         end
+
         msg = OSC::Message.new(*args)
         clients.each do |c|
             c.send(msg)
@@ -227,6 +239,7 @@ class Yal
             args = @seqs
         end
 
+        Database.prepare_export(performance_id)
         args.each do |seq|
             puts "#{seq}..."
             seqclass = Object.const_get("Seq#{seq}".to_sym)
