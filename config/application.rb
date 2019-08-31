@@ -106,7 +106,7 @@ module Lay
         puts "received cue #{cue}"
         @current_seq = case cue
         when 50
-            SeqSimpleVideo.new(50, RIX_LOGO_VIDEO)
+            SeqSimpleVideo.new(50, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
         when 100
             SeqSimpleVideo.new(100, '/playback/media_tablets/101-Opening/101-201-C6?-OpeningSeq_tablettes_cue01.mp4')
         when 120
@@ -120,7 +120,7 @@ module Lay
         when 300
             SeqSimpleVideo.new(300, '/playback/media_tablets/103-FirstDay/103-401-C6?-FirstDay_tablettes_cue01.mp4')
         when 320
-            SeqSimpleVideo.new(320, RIX_LOGO_VIDEO)
+            SeqSimpleVideo.new(320, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
         when 330
             SeqSimpleVideo.new(330, '/playback/media_tablets/103-FirstDay/103-402-C6?-FirstDay_tablettes_cue02.mp4')
         when 350
@@ -132,13 +132,13 @@ module Lay
         when 600
             TablettesController.send_osc_fade_out
         when 700
-            SeqSimpleVideo.new(700, RIX_LOGO_VIDEO)
+            SeqSimpleVideo.new(700, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
         when 710
             SeqGeekTrio.new
         when 800
             SeqExterminator.new
         when 850
-            SeqSimpleVideo.new(850, RIX_LOGO_VIDEO)
+            SeqSimpleVideo.new(850, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
         when 1020
             SeqSimpleVideo.new(1020, '/playback/media_tablets/110-ExecOffice/110-011-C6?-ExecOffice_tablettes_cue01.mp4')
         when 1030
