@@ -5,6 +5,10 @@ require('PlaybackData')
 class SeqOptOut
     OPT_OUT_FILE = Media::DATA_DIR + "/LAY_opt_outs.txt"
 
+    # export <performance #> OptOut
+    # Generates Media::DATA_DIR + "/LAY_opt_outs.txt
+
+    # Updated Saturday morning, 2019-08-31
     def self.export(performance_id)
         `mkdir -p '#{Media::DATA_DIR}'`
 

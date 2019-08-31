@@ -30,10 +30,12 @@ Slots correspond to zones as follows: (8 per zone)
 041-048: TV 33
 =end
 
-    # export the sequence
-
     Photo = Struct.new(:path, :category, :employee_id, :table)
 
+    # export <performance #> Ghosting
+    # Generates s_410-Ghosting_profile Isadora directory, 105-Ghosting pbdata
+
+    # Updated Saturday morning, 2019-08-31
     def self.export(performance_id)
         `mkdir -p '#{MEDIA_DYNAMIC}'`
         pbdata = {}
