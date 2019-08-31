@@ -115,8 +115,13 @@ Slots correspond to zones as follows: (32 per zone)
                 dst = "s_420-#{slot}-R03-GeekTrio.jpg"
                 db_photo = Media::DATABASE + "/" + pp.path
                 # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
-                f, note = File.exist?(db_photo) ? [db_photo, nil] : [Media::YAL + "/photo.png", "#{pp.path}, employeeID #{pp.employee_id}, table #{pp.table}"]
-
+                if File.exist?(db_photo)
+                    f = db_photo
+                    note = nil
+                else
+                    f = Media::YAL + "/photo#{rand(2)+1}.png"
+                    note = "#{pp.path}, employeeID #{pp.employee_id}, table #{pp.table}"
+                end
                 GraphicsMagick.fit(f, MEDIA_DYNAMIC + dst, 640, 640, "jpg", 85, note)
                 photo_names[slot_base + i] = dst
                 fn_pids[dst] = pp.employee_id

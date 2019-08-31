@@ -169,7 +169,7 @@ module GraphicsMagick
 
     def self.anno_args(annotate, width)
         if annotate
-            line_width = (width - 10) / 8  # approx pixels per char at 12 point
+            line_width = (width - 10) / 14  # approx pixels per char at 18 point
             words = annotate.split(/[\/ ]/)
             lines = []
             line = []
@@ -189,13 +189,13 @@ module GraphicsMagick
                 lines << line.join(" ")
             end
             draw = []
-            y = -((lines.length - 1) * 15 / 2)
+            y = -((lines.length - 1) * 22 / 2)
             lines.length.times do |i|
                 draw << "text 0,#{y} '#{lines[i]}'"
-                y += 15
+                y += 22
             end
             draw_arg = draw.join(" ")
-            args = ["-font", "courier", "-pointsize", "12", "-fill", "blue", "-draw", draw_arg]
+            args = ["-font", "courier-bold", "-pointsize", "18", "-fill", "blue", "-draw", draw_arg]
         else
             args = []
         end
