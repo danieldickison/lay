@@ -28,9 +28,9 @@ require('Fake')
 class Yal
     OSC_PORT = 53000
     if PRODUCTION
-        DB_FILE = "/Users/blackwidow/lookingAtYou/db.sqlite3"
+        DB_FILE = "/Users/blackwidow/Looking at You Media/db/db.sqlite3"
     elsif JOE_DEVELOPMENT
-        DB_FILE = Media::VOLUME + "/db.sqlite3"
+        DB_FILE = Media::VOLUME + "/db/db.sqlite3"
     else
         raise "Daniel, need a db file"
     end
