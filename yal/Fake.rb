@@ -160,35 +160,83 @@ class Yal
     def cli_fake(*args)
         db = SQLite3::Database.new(DB_FILE)
 
-        # create 14 performances
+        # create 15 performances
         c = db.execute(<<~SQL).first[0]
-            SELECT COUNT(*) FROM "datastore_performance"
+            SELECT COUNT(*) FROM datastore_performance
         SQL
         if c == 0
-            (0..14).each do |i|
+            (-1..14).each do |i|
                 db.execute(<<~SQL)
-                    INSERT INTO "datastore_performance" ("date", "performance_number") VALUES ("2019-01-01 00:00:00", #{i})
+                    INSERT INTO datastore_performance ("date", "performance_number") VALUES ("2019-01-01 00:00:00", #{i})
                 SQL
             end
         end
 
         # create 100 audience members for the dummy performance
+        row = db.execute(<<~SQL).first
+            SELECT id FROM datastore_performance WHERE performance_number = -1
+        SQL
+        if !row
+            db.execute(<<~SQL)
+                INSERT INTO datastore_performance ("date", "performance_number") VALUES ("2019-01-01 00:00:00", -1)
+            SQL
+            performance_id = db.execute("select last_insert_rowid()").first[0]
+        else
+            performance_id = row[0]
+        end
+
         c = db.execute(<<~SQL).first[0]
-            SELECT COUNT(*) FROM datastore_patron WHERE performance_1_id = 0
+            SELECT COUNT(*) FROM datastore_patron WHERE performance_1_id = #{performance_id}
         SQL
         if c == 0
             table = "A"
             seat_number = 1
             (1..100).each do |i|
-                firstName = "FirstName patron-#{i}"
-                lastName = "LastName patron-#{i}"
+                firstName = "firstName-#{i}"
+                lastName = "lastName-#{i}"
                 employeeID = i.to_s
+                email = "email-#{i}"
+                title = "title-#{i}"
+                phone = "phone-#{i}"
+                address1 = "address1-#{i}"
+                address2 = "address2-#{i}"
+                city = "city-#{i}"
+                zip = "zip-#{i}"
+                country = "country-#{i}"
+                institution = "institution-#{i}"
+                productionNote = "productionNote-#{i}"
+                minerNote = "minerNote-#{i}"
+
                 db.execute(<<~SQL)
-                    INSERT INTO datastore_patron
-                    ("performance_1_id", "table", "firstName", "lastName", "employeeID", "completed", "consented",
-                        patronID, fbPostCat_5, fbPostCat_6, fbPostImage_5, fbPostImage_6, fbPostText_5, fbPostText_6, spImage_13, greeterMatch)
-                    VALUES (0, "#{table}", "#{firstName}", "#{lastName}", #{employeeID}, 0, 0,
-                        "", "", "", "", "", "", "", "", 0)
+                    INSERT INTO datastore_patron (
+                        "performance_1_id", "table", "firstName", "lastName", "employeeID", "completed", "consented",
+                        "email",
+                        "title",
+                        "phone",
+                        "address1",
+                        "address2",
+                        "city",
+                        "zip",
+                        "country",
+                        "institution",
+                        "productionNote",
+                        "minerNote",
+                        patronID, fbPostCat_5, fbPostCat_6, fbPostImage_5, fbPostImage_6, fbPostText_5, fbPostText_6, spImage_13, greeterMatch
+                    ) VALUES (
+                        "#{performance_id}", "#{table}", "#{firstName}", "#{lastName}", "#{employeeID}", 0, 0,
+                        "#{email}",
+                        "#{title}",
+                        "#{phone}",
+                        "#{address1}",
+                        "#{address2}",
+                        "#{city}",
+                        "#{zip}",
+                        "#{country}",
+                        "#{institution}",
+                        "#{productionNote}",
+                        "#{minerNote}",
+                        "", "", "", "", "", "", "", "", 0
+                    )
                 SQL
 
                 id = db.execute("select last_insert_rowid()").first[0]
@@ -286,12 +334,149 @@ class Yal
                         fbProfilePhoto = "#{fbProfilePhoto}",
                         fbRelationshipStatus = "#{fbRelationshipStatus}",
                         fburl = "#{fburl}"
-
                     WHERE id = #{id}
                 SQL
 
 
+                # instagram
+                igPostCat_1 = ""
+                igPostCat_2 = ""
+                igPostCat_3 = ""
+                igPostCat_4 = ""
+                igPostCat_5 = ""
+                igPostCat_6 = ""
+                igPostImage_1 = "images/igPostImage_1-#{i}.png"
+                igPostImage_2 = "images/igPostImage_2-#{i}.png"
+                igPostImage_3 = "images/igPostImage_3-#{i}.png"
+                igPostImage_4 = "images/igPostImage_4-#{i}.png"
+                igPostImage_5 = "images/igPostImage_5-#{i}.png"
+                igPostImage_6 = "images/igPostImage_6-#{i}.png"
+                igPostTS_1 = "igPostTS_1-#{i}"
+                igPostTS_2 = "igPostTS_2-#{i}"
+                igPostTS_3 = "igPostTS_3-#{i}"
+                igPostTS_4 = "igPostTS_4-#{i}"
+                igPostTS_5 = "igPostTS_5-#{i}"
+                igPostTS_6 = "igPostTS_6-#{i}"
+                igPostText_1 = "igPostText_1 patron-#{i} at #{table}"
+                igPostText_2 = "igPostText_2 patron-#{i} at #{table}"
+                igPostText_3 = "igPostText_3 patron-#{i} at #{table}"
+                igPostText_4 = "igPostText_4 patron-#{i} at #{table}"
+                igPostText_5 = "igPostText_5 patron-#{i} at #{table}"
+                igPostText_6 = "igPostText_6 patron-#{i} at #{table}"
+                instagramHandle = "instagramHandle-#{i}"
+                instagramURL = "https://instagram.com/instagramURL-#{i}"
 
+                db.execute(<<~SQL)
+                    UPDATE datastore_patron
+                    SET
+                        igPostCat_1 = "#{igPostCat_1}",
+                        igPostCat_2 = "#{igPostCat_2}",
+                        igPostCat_3 = "#{igPostCat_3}",
+                        igPostCat_4 = "#{igPostCat_4}",
+                        igPostCat_5 = "#{igPostCat_5}",
+                        igPostCat_6 = "#{igPostCat_6}",
+                        igPostImage_1 = "#{igPostImage_1}",
+                        igPostImage_2 = "#{igPostImage_2}",
+                        igPostImage_3 = "#{igPostImage_3}",
+                        igPostImage_4 = "#{igPostImage_4}",
+                        igPostImage_5 = "#{igPostImage_5}",
+                        igPostImage_6 = "#{igPostImage_6}",
+                        igPostTS_1 = "#{igPostTS_1}",
+                        igPostTS_2 = "#{igPostTS_2}",
+                        igPostTS_3 = "#{igPostTS_3}",
+                        igPostTS_4 = "#{igPostTS_4}",
+                        igPostTS_5 = "#{igPostTS_5}",
+                        igPostTS_6 = "#{igPostTS_6}",
+                        igPostText_1 = "#{igPostText_1}",
+                        igPostText_2 = "#{igPostText_2}",
+                        igPostText_3 = "#{igPostText_3}",
+                        igPostText_4 = "#{igPostText_4}",
+                        igPostText_5 = "#{igPostText_5}",
+                        igPostText_6 = "#{igPostText_6}",
+                        instagramHandle = "#{instagramHandle}",
+                        instagramURL = "#{instagramURL}"
+                    WHERE id = #{id}
+                SQL
+
+
+                # special
+                spCat_1 = ""
+                spCat_2 = ""
+                spCat_3 = ""
+                spCat_4 = ""
+                spCat_5 = ""
+                spImage_1 = "images/spImage_1-#{i}"
+                spImage_2 = "images/spImage_2-#{i}"
+                spImage_3 = "images/spImage_3-#{i}"
+                spImage_4 = "images/spImage_4-#{i}"
+                spImage_5 = "images/spImage_5-#{i}"
+                spTS_1 = "spTS_1-#{i}"
+                spTS_2 = "spTS_2-#{i}"
+                spTS_3 = "spTS_3-#{i}"
+                spTS_4 = "spTS_4-#{i}"
+                spTS_5 = "spTS_5-#{i}"
+
+                db.execute(<<~SQL)
+                    UPDATE datastore_patron
+                    SET
+                        spCat_1 = "#{spCat_1}",
+                        spCat_2 = "#{spCat_2}",
+                        spCat_3 = "#{spCat_3}",
+                        spCat_4 = "#{spCat_4}",
+                        spCat_5 = "#{spCat_5}",
+                        spImage_1 = "#{spImage_1}",
+                        spImage_2 = "#{spImage_2}",
+                        spImage_3 = "#{spImage_3}",
+                        spImage_4 = "#{spImage_4}",
+                        spImage_5 = "#{spImage_5}",
+                        spTS_1 = "#{spTS_1}",
+                        spTS_2 = "#{spTS_2}",
+                        spTS_3 = "#{spTS_3}",
+                        spTS_4 = "#{spTS_4}",
+                        spTS_5 = "#{spTS_5}"
+                    WHERE id = #{id}
+                SQL
+
+
+                # random
+                company_City = "company_City-#{i}"
+                company_LogoImage = "images/company_LogoImage-#{i}.png"
+                company_Name = "company_Name-#{i}"
+                company_Position = "company_Position-#{i}"
+                highSchool_City = "highSchool_City-#{i}"
+                highSchool_LogoImage = "images/highSchool_LogoImage-#{i}.png"
+                highSchool_Name = "highSchool_Name-#{i}"
+                university_City = "university_City-#{i}"
+                university_LogoImage = "images/university_LogoImage-#{i}.png"
+                university_Name = "university_Name-#{i}"
+                university_subject = "university_subject-#{i}"
+                info_ListensTo = "info_ListensTo-#{i}"
+                info_PartnerFirstName = "info_PartnerFirstName-#{i}"
+                info_PetName = "info_PetName-#{i}"
+                info_Relationship = "info_Relationship-#{i}"
+                info_TraveledTo = "info_TraveledTo-#{i}"
+
+                db.execute(<<~SQL)
+                    UPDATE datastore_patron
+                    SET
+                        company_City = "#{company_City}",
+                        company_LogoImage = "#{company_LogoImage}",
+                        company_Name = "#{company_Name}",
+                        company_Position = "#{company_Position}",
+                        highSchool_City = "#{highSchool_City}",
+                        highSchool_LogoImage = "#{highSchool_LogoImage}",
+                        highSchool_Name = "#{highSchool_Name}",
+                        university_City = "#{university_City}",
+                        university_LogoImage = "#{university_LogoImage}",
+                        university_Name = "#{university_Name}",
+                        university_subject = "#{university_subject}",
+                        info_ListensTo = "#{info_ListensTo}",
+                        info_PartnerFirstName = "#{info_PartnerFirstName}",
+                        info_PetName = "#{info_PetName}",
+                        info_Relationship = "#{info_Relationship}",
+                        info_TraveledTo = "#{info_TraveledTo}"
+                    WHERE id = #{id}
+                SQL
 
 
                 seat_number += 1
@@ -301,130 +486,6 @@ class Yal
                 end
             end
         end
-
-
-        # # create twitter, facebook and instagram profiles
-        # c = db.execute(<<~SQL).first[0]
-        #     SELECT COUNT(*) FROM "TwitterProfile"
-        # SQL
-        # if c == 0
-        #     online_persons = db.execute(<<~SQL).collect {|r| r[0]}
-        #         SELECT ID FROM "OnlinePerson"
-        #     SQL
-        #     online_persons.each do |id|
-        #         handle = "Handle TwitterProfile OnlinePerson-#{id}"
-        #         first_name = "FirstName TwitterProfile OnlinePerson-#{id}"
-        #         last_name = "LastName TwitterProfile OnlinePerson-#{id}"
-        #         location = "Location TwitterProfile OnlinePerson-#{id}"
-        #         db.execute(<<~SQL)
-        #             INSERT INTO "TwitterProfile" ("Handle", "FirstName", "LastName", "Location") VALUES ("#{handle}", "#{first_name}", "#{last_name}", "#{location}")
-        #         SQL
-        #         twitter_id = db.execute("select last_insert_rowid()").first[0]
-
-        #         first_name = "FirstName FacebookProfile OnlinePerson-#{id}"
-        #         last_name = "LastName FacebookProfile OnlinePerson-#{id}"
-        #         birthday = "Birthday FacebookProfile OnlinePerson-#{id}"
-        #         db.execute(<<~SQL)
-        #             INSERT INTO "FacebookProfile" ("FirstName", "LastName", "Birthday") VALUES ("#{first_name}", "#{last_name}", "#{birthday}")
-        #         SQL
-        #         facebook_id = db.execute("select last_insert_rowid()").first[0]
-
-        #         handle = "Handle InstagramProfile OnlinePerson-#{id}"
-        #         first_name = "FirstName InstagramProfile OnlinePerson-#{id}"
-        #         last_name = "LastName InstagramProfile OnlinePerson-#{id}"
-        #         db.execute(<<~SQL)
-        #             INSERT INTO "InstagramProfile" ("Handle", "FirstName", "LastName") VALUES ("#{handle}", "#{first_name}", "#{last_name}")
-        #         SQL
-        #         instagram_id = db.execute("select last_insert_rowid()").first[0]
-
-        #         db.execute(<<~SQL)
-        #             UPDATE "OnlinePerson" SET "TwitterID" = #{twitter_id}, "FacebookID" = #{facebook_id}, "InstagramID" = #{instagram_id} WHERE "ID" = #{id}
-        #         SQL
-        #     end
-        # end
-
-
-        # # create tweets
-        # c = db.execute(<<~SQL).first[0]
-        #     SELECT COUNT(*) FROM "Tweets"
-        # SQL
-        # if c == 0
-        #     twitters = db.execute(<<~SQL).to_a
-        #         SELECT twitter.ID, performance.PerformanceDate, member.EmployeeID, member."Table"
-        #         FROM "TwitterProfile" AS twitter
-        #         JOIN "OnlinePerson" AS online ON online.TwitterID = twitter.ID
-        #         JOIN "LinkedAudienceMember" AS link ON link.MatchedPersonID = online.ID
-        #         JOIN "AudienceMember" AS member ON member.ID = link.AudienceMemberID
-        #         JOIN "TicketPurchase" AS ticket ON ticket.ID = member.TicketID
-        #         JOIN "Performance" AS performance ON performance.ID = ticket.PerformanceID
-        #     SQL
-
-        #     twitters.each do |tw|
-        #         id = tw[0]
-        #         date = tw[1]
-        #         employeeID = tw[2]
-        #         table = tw[3]
-        #         (1..5).each do |i|
-        #             text = "Tweet #{i} TwitterProfile-#{id} Performance #{date} by EmployeeID #{employeeID} at #{table}"
-        #             db.execute(<<~SQL)
-        #                 INSERT INTO "Tweets" ("ProfileID", "Date", "Text") VALUES ("#{id}", 0, "#{text}")
-        #             SQL
-        #         end
-        #     end
-        # end
-
-
-        # # create photo categories
-        # c = db.execute(<<~SQL).first[0]
-        #     SELECT COUNT(*) FROM "PhotoCategory"
-        # SQL
-        # if c == 0
-        #     ["self", "friend", "travel", "food"].each do |cat|
-        #         db.execute(<<~SQL)
-        #             INSERT INTO "PhotoCategory" ("Category") VALUES ("#{cat}")
-        #         SQL
-        #     end
-        # end
-
-
-        # create facebook photos
-        # c = db.execute(<<~SQL).first[0]
-        #     SELECT COUNT(*) FROM "FacebookPhoto"
-        # SQL
-        # if c == 0
-        #     categories = db.execute(<<~SQL).to_a
-        #         SELECT Category, ID FROM "PhotoCategory"
-        #     SQL
-        #     categories = Hash[categories]
-        #     quant = {"self" => 1, "friend" => 3, "travel" => 3, "food" => 3}
-
-        #     facebooks = db.execute(<<~SQL).to_a
-        #         SELECT facebook.ID, performance.PerformanceDate, member.EmployeeID, member."Table"
-        #         FROM "FacebookProfile" AS facebook
-        #         JOIN "OnlinePerson" AS online ON online.FacebookID = facebook.ID
-        #         JOIN "LinkedAudienceMember" AS link ON link.MatchedPersonID = online.ID
-        #         JOIN "AudienceMember" AS member ON member.ID = link.AudienceMemberID
-        #         JOIN "TicketPurchase" AS ticket ON ticket.ID = member.TicketID
-        #         JOIN "Performance" AS performance ON performance.ID = ticket.PerformanceID
-        #     SQL
-
-        #     facebooks.each do |fb|
-        #         id = fb[0]
-        #         date = fb[1]
-        #         employeeID = fb[2]
-        #         table = fb[3]
-        #         quant.each_pair do |cat, num|
-        #             cat_id = categories[cat]
-        #             raise if !cat_id
-        #             (1..num).each do |i|
-        #                 image = "FacebookPhoto #{cat} #{i} Performance #{date} by EmployeeID #{employeeID} at #{table}"
-        #                 db.execute(<<~SQL)
-        #                     INSERT INTO "FacebookPhoto" ("FacebookID", "Date", "Category", "Image") VALUES ("#{id}", 0, #{cat_id}, "#{image}")
-        #                 SQL
-        #             end
-        #         end
-        #     end
-        # end
 
     end
 end
