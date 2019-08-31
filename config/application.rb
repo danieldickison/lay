@@ -124,7 +124,9 @@ module Lay
                 s.tablet_fade = 0
             end
         when 140
-            SeqSimpleVideo.new(140, '/playback/media_tablets/101-Opening/101-091-C60-LeakernetLoad.mp4')
+            SeqSimpleVideo.new(140, '/playback/media_tablets/101-Opening/101-091-C60-LeakernetLoad.mp4').tap do |s|
+                s.tablet_fade = 0.3
+            end
         when 150
             SeqSimpleVideo.new(150, '/playback/media_tablets/101-Opening/101-111-C60-EthanFeed.mp4')
         when 200
