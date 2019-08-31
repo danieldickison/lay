@@ -2,7 +2,7 @@ require('fileutils')
 
 class ConfigClass < Hash
     def initialize
-        @file = MAIN_DIR + "/config.json"
+        @file = YAL_DIR + "/config.json"
     end
 
     def save

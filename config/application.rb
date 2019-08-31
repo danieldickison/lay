@@ -6,8 +6,8 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-MAIN_DIR = File.expand_path('../yal', __dir__)
-$:.unshift(MAIN_DIR)
+YAL_DIR = File.expand_path('../yal', __dir__)
+$:.unshift(YAL_DIR)
 require('runtime')
 require('SeqSimpleVideo')
 require('SeqGhosting')

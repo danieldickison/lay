@@ -9,6 +9,7 @@ class Media
 
     DATABASE = VOLUME + "/db"
     PLAYBACK = VOLUME + "/playback"
+    YAL = YAL_DIR + "/media"
 
     DYNAMIC = VOLUME + "/playback/media_dynamic"
     DATA_DYNAMIC = VOLUME + "/data_dynamic"

@@ -3,7 +3,7 @@ module PlaybackData
     FILENAME = "pbdata.json"
 
     def self.write(data_dynamic, pbdata)
-        `mkdir -p #{data_dynamic}`
+        `mkdir -p '#{data_dynamic}'`
         File.open(data_dynamic + FILENAME, "w") {|f| f.write(JSON.pretty_generate(pbdata))}
     end
 

@@ -3,8 +3,8 @@
 
 require('pathname')
 require('fileutils')
-MAIN_DIR = Pathname.new(__FILE__).parent.realpath.to_s
-$:.unshift(MAIN_DIR)
+YAL_DIR = Pathname.new(__FILE__).parent.realpath.to_s
+$:.unshift(YAL_DIR)
 
 # ruby
 require('sqlite3')
@@ -36,7 +36,7 @@ class Yal
 
     def start(args)
         @seqs = []
-        Dir.glob("#{MAIN_DIR}/Seq*.rb").each do |seq_file|
+        Dir.glob("#{YAL_DIR}/Seq*.rb").each do |seq_file|
             require(seq_file)
             @seqs << File.basename(seq_file, ".rb")[3..-1]
         end
@@ -114,7 +114,7 @@ class Yal
     end
 
     def cli_help(*args)
-        puts "export <sequence>"
+        puts "export <performance_number> [<sequence>]"
         puts "seq <sequence>"
         puts "seq start|stop|pause|unpause|load|kill|debug"
         puts "osc <msg>"
@@ -213,6 +213,13 @@ class Yal
     end
 
     def cli_export(*args)
+        performance_number = args.shift
+        raise "bad performance_number" if !performance_number
+        db = SQLite3::Database.new(DB_FILE)
+        performance_id = db.execute(<<~SQL).first[0]
+            SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
+        SQL
+
         if args.empty?
             puts @seqs.join(" ")
             print "Export all sequences (y/n)? "
@@ -223,18 +230,8 @@ class Yal
         args.each do |seq|
             puts "#{seq}..."
             seqclass = Object.const_get("Seq#{seq}".to_sym)
-            seqclass.export
+            seqclass.export(performance_id)
         end
-
-        # SeqGhosting.import
-        # GraphicsMagick.thumbnail(MEDIA_DB + "/profile-1.jpg", MEDIA_PB + "/media_dynamic/ghosting/profile-1.jpg", 180, 180, "jpg", 85)
-        # GraphicsMagick.thumbnail(MEDIA_DB + "/profile-2.jpg", MEDIA_PB + "/media_dynamic/ghosting/profile-2.jpg", 180, 180, "jpg", 85)
-        # GraphicsMagick.thumbnail(MEDIA_DB + "/profile-3.jpg", MEDIA_PB + "/media_dynamic/ghosting/profile-3.jpg", 180, 180, "jpg", 85)
-
-        # write ghosting data
-        # pbdata = {}
-        # File.open(MEDIA_PB + "/media_dynamic/ghosting/pbdata.json", "w") {|f| f.write(JSON.dump(pbdata))}
-        # JSON.parse(pbdata)
     end
 
     def cli_scrub(file)
@@ -242,8 +239,8 @@ class Yal
     end
 
     def cli_gm
-        db_photo = Media::PLAYBACK + "/media_dummy/person.png"
-        GraphicsMagick.thumbnail(db_photo, MAIN_DIR + "/test.jpg", 180, 180, "jpg", 85, true, "FacebookPhoto self 1 Performance 1 by EmployeeID 1 at A1.jpg")
+        db_photo = Media::YAL + "/patron.png"
+        GraphicsMagick.thumbnail(db_photo, YAL_DIR + "/test.jpg", 180, 180, "jpg", 85, true, "FacebookPhoto self 1 Performance 1 by EmployeeID 1 at A1.jpg")
     end
 
     def cli_quit

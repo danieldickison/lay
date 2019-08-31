@@ -28,54 +28,64 @@ Slots correspond to zones as follows: (8 per zone)
 041-048: TV 33
 =end
 
-    def self.export(performance_date = nil)
+    Photo = Struct.new(:employee_id, :table, :path, :category)
+
+    def self.export(performance_id)
         pbdata = {}
 
         `mkdir -p '#{MEDIA_DYNAMIC}'`
 
         db = SQLite3::Database.new(Yal::DB_FILE)
 
-        performance_date = 1  # DEBUG
 
-        photo_categories = db.execute(<<~SQL).to_a
-            SELECT Category, ID FROM "PhotoCategory"
+        # row elements 0..24: image names, 25..49: image categories
+        rows = db.execute(<<~SQL).to_a
+            SELECT
+                fbPostImage_1, fbPostImage_2, fbPostImage_3, fbPostImage_4, fbPostImage_5, fbPostImage_6,
+                igPostImage_1, igPostImage_2, igPostImage_3, igPostImage_4, igPostImage_5, igPostImage_6,
+                spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
+
+                fbPostCat_1, fbPostCat_2, fbPostCat_3, fbPostCat_4, fbPostCat_5, fbPostCat_6,
+                igPostCat_1, igPostCat_2, igPostCat_3, igPostCat_4, igPostCat_5, igPostCat_6,
+                spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
+
+                employeeID, "table"
+            FROM datastore_patron
+            WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
         SQL
-        photo_categories = Hash[photo_categories]
-        friends_category = photo_categories["friend"]
+        photos = []
+        rows.each do |r|
+            employeeID = r[-2]
+            table = r[-1]
+            if !table || table == ""
+                puts "warn: patron without a table"
+                table = "A"
+            end
+            (0..24).each do |i|
+                path = r[i]
+                category = r[i+25]
+                if path && path != ""
+                    photos << Photo.new(employeeID, table, path, category)
+                end
+            end
+        end
 
-        # select all the friend photos of audience members at this performance
-        # also grab the seatings, so that we can distribute the photos to the proper tablets and TVs
-        photos = db.execute(<<~SQL).to_a
-            SELECT photo.Image, member."Table"
-            FROM FacebookPhoto AS photo
-            JOIN FacebookProfile AS profile ON photo.FacebookID = profile.ID
-            JOIN "OnlinePerson" AS online ON online.FacebookID = profile.ID
-            JOIN "LinkedAudienceMember" AS link ON link.MatchedPersonID = online.ID
-            JOIN "AudienceMember" AS member ON member.ID = link.AudienceMemberID
-            JOIN "TicketPurchase" AS ticket ON ticket.ID = member.TicketID
-            JOIN "Performance" AS performance ON performance.ID = ticket.PerformanceID
-            WHERE performance.PerformanceDate = #{performance_date}
-                AND photo.Category = #{friends_category}
-        SQL
 
-        photos = photos.group_by {|p| Media::TABLE_INFO[p[1][0, 1]]["zone"]}
+        photos = photos.group_by {|p| Media::TABLE_INFO[p.table]["zone"]}
 
         profile_image_names = {}
         slot_base = 1
         ["TV 21", "TV 22", "TV 23", "TV 31", "TV 32", "TV 33"].each do |zone|
-            pp = photos[zone].collect {|p| p[0]}.shuffle
+            ph = photos[zone].shuffle
             (0..7).each do |i|
+                pp = ph[i]
                 slot = "%03d" % (slot_base + i)
-                name = "410-#{slot}-R01-Ghosting_profile.jpg"
-                db_photo = pp[i]
-                puts "#{zone}-#{slot} '#{db_photo}', '#{name}'"
-                if File.exist?(db_photo)
-                    GraphicsMagick.thumbnail(db_photo, MEDIA_DYNAMIC + name, 180, 180, "jpg", 85)
-                else
-                    f = Media::PLAYBACK + "/media_dummy/person.png"
-                    GraphicsMagick.thumbnail(f, MEDIA_DYNAMIC + name, 180, 180, "jpg", 85, true, db_photo)
-                end
-                profile_image_names[slot_base + i] = name
+                dst = "410-#{slot}-R01-Ghosting_profile.jpg"
+                db_photo = Media::DATABASE + "/" + pp.path
+                # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
+                f, note = File.exist?(db_photo) ? [db_photo, nil] : [Media::YAL + "/patron.png", pp.path]
+                GraphicsMagick.thumbnail(f, MEDIA_DYNAMIC + dst, 180, 180, "jpg", 85, true, note)
+                profile_image_names[slot_base + i] = dst
             end
             slot_base += 8
         end

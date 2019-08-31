@@ -186,7 +186,7 @@ module GraphicsMagick
         else
             if annotate
                 line_width = (width - 10) / 8  # approx pixels per char at 12 point
-                words = annotate.split(" ")
+                words = annotate.split(/[\/ ]/)
                 lines = []
                 line = []
                 while !words.empty?
