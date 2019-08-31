@@ -138,11 +138,19 @@ module Lay
         when 300
             SeqSimpleVideo.new(300, '/playback/media_tablets/103-FirstDay/103-401-C6?-FirstDay_tablettes_cue01.mp4')
         when 320
-            SeqSimpleVideo.new(320, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
+            SeqSimpleVideo.new(320, RIX_LOGO_VIDEO).tap do |s|
+                s.isadora_delay = 0
+                s.tablet_fade = 4
+            end
         when 330
-            SeqSimpleVideo.new(330, '/playback/media_tablets/103-FirstDay/103-402-C6?-FirstDay_tablettes_cue02.mp4')
+            SeqSimpleVideo.new(330, '/playback/media_tablets/103-FirstDay/103-402-C6?-FirstDay_tablettes_cue02.mp4').tap do |s|
+                s.tablet_fade = 0.5
+            end
         when 350
-            SeqSimpleVideo.new(350, '/playback/media_tablets/103-FirstDay/103-403-C6?-FirstDay_tablettes_cue03.mp4')
+            SeqSimpleVideo.new(350, '/playback/media_tablets/103-FirstDay/103-403-C6?-FirstDay_tablettes_cue03.mp4').tap do |s|
+                s.isadora_delay = 0
+                s.tablet_fade = 0
+            end
         when 400
             TablettesController.send_osc_fade_out
         when 500
