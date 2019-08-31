@@ -6,10 +6,12 @@ class SeqGhosting
 
     MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/s_410-Ghosting_profile/"
     DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/105-Ghosting/"
-    IMG_BASE      = Media::IMG_PATH + "/media_dynamic/s_410-Ghosting_profile/"
+    IMG_URL       = Media::IMG_PATH + "/media_dynamic/s_410-Ghosting_profile/"
     DATABASE      = Media::DATABASE
 
 =begin
+http://projectosn.heinz.cmu.edu:8000/admin/datastore/patron/
+
 Content: profile photos of friends
 Audience Folder: s_410-Ghosting_profile
     410-001-R01-Ghosting_profile.jpg
@@ -28,17 +30,21 @@ Slots correspond to zones as follows: (8 per zone)
 041-048: TV 33
 =end
 
-    Photo = Struct.new(:employee_id, :table, :path, :category)
+    # export the sequence
+
+    Photo = Struct.new(:path, :category, :employee_id, :table)
 
     def self.export(performance_id)
-        pbdata = {}
-
         `mkdir -p '#{MEDIA_DYNAMIC}'`
-
+        pbdata = {}
         db = SQLite3::Database.new(Yal::DB_FILE)
 
 
-        # row elements 0..24: image names, 25..49: image categories
+        # General query for selecting all the photos in a performance
+        # row elements:
+        #   0..24: image names
+        #  25..49: image categories
+        #    50..: extra
         rows = db.execute(<<~SQL).to_a
             SELECT
                 fbPostImage_1, fbPostImage_2, fbPostImage_3, fbPostImage_4, fbPostImage_5, fbPostImage_6,
@@ -53,44 +59,60 @@ Slots correspond to zones as follows: (8 per zone)
             FROM datastore_patron
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
         SQL
+
         photos = []
         rows.each do |r|
+            # pull out extra columns
             employeeID = r[-2]
             table = r[-1]
             if !table || table == ""
                 puts "warn: patron without a table"
                 table = "A"
             end
-            (0..24).each do |i|
+
+            # collect photos
+            (0..24).each do |i|  # 25 images in the SELECT statement above, followed by 25 categories
                 path = r[i]
                 category = r[i+25]
                 if path && path != ""
-                    photos << Photo.new(employeeID, table, path, category)
+                    photos << Photo.new(path, category, employeeID, table)
                 end
             end
         end
 
 
-        photos = photos.group_by {|p| Media::TABLE_INFO[p.table]["zone"]}
+        # select photos for this sequence
+        photos = photos.find_all {|p| p.category == "friend" || p.category == "friends"}
 
-        profile_image_names = {}
+        photo_names = {}
+
+
+        # group photos by TV zone
+        tv_photos = photos.group_by {|p| Media::TABLE_INFO[p.table]["zone"]}
+
         slot_base = 1
-        ["TV 21", "TV 22", "TV 23", "TV 31", "TV 32", "TV 33"].each do |zone|
-            ph = photos[zone].shuffle
+        Media::TV_ZONES.each do |zone|
+            # 8 random photos for each zone
+            ph = tv_photos[zone].shuffle
             (0..7).each do |i|
                 pp = ph[i]
+                break if !pp
+
                 slot = "%03d" % (slot_base + i)
                 dst = "410-#{slot}-R01-Ghosting_profile.jpg"
                 db_photo = Media::DATABASE + "/" + pp.path
                 # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
-                f, note = File.exist?(db_photo) ? [db_photo, nil] : [Media::YAL + "/patron.png", pp.path]
+                f, note = File.exist?(db_photo) ? [db_photo, nil] : [Media::YAL + "/patron.png", "#{pp.path}, employeeID #{pp.employee_id}, table #{pp.table}"]
                 GraphicsMagick.thumbnail(f, MEDIA_DYNAMIC + dst, 180, 180, "jpg", 85, true, note)
-                profile_image_names[slot_base + i] = dst
+                photo_names[slot_base + i] = dst
             end
             slot_base += 8
         end
-        pbdata[:profile_image_names] = profile_image_names
 
+        pbdata[:photo_names] = photo_names
+
+
+        # FIX THIS
         people_at_tables = {}
         # people_at_tables[1] -> [1,2,3]  - people at table 1
         25.times do |i|
@@ -102,6 +124,8 @@ Slots correspond to zones as follows: (8 per zone)
         PlaybackData.write(DATA_DYNAMIC, pbdata)
     end
 
+
+    # run the sequence
     attr_accessor(:state, :start_time)
 
     def initialize
@@ -117,8 +141,8 @@ Slots correspond to zones as follows: (8 per zone)
 
         pbdata = PlaybackData.read(DATA_DYNAMIC)
 
-        @tablet_profile_images = {}
-        # 1 => [IMG_BASE + profile_image_name, IMG_BASE + profile_image_name, IMG_BASE + profile_image_name]
+        @tablet_images = {}
+        # 1 => [IMG_URL + photo_name, IMG_URL + photo_name, IMG_URL + photo_name]
         if defined?(TablettesController)
             enum = TablettesController.tablet_enum(nil)
         else
@@ -126,8 +150,8 @@ Slots correspond to zones as follows: (8 per zone)
         end
         enum.each do |t|
             people = pbdata[:people_at_tables][t] || [1, 2, 3]  # default to first 3 people
-            images = people.collect {|p| IMG_BASE + pbdata[:profile_image_names][p]}
-            @tablet_profile_images[t] = images
+            images = people.collect {|p| IMG_URL + pbdata[:photo_names][p]}
+            @tablet_images[t] = images
         end
     end
 
@@ -141,7 +165,7 @@ Slots correspond to zones as follows: (8 per zone)
 
             puts "triggering ghosting profiles in #{@profile_delay}ms"
             time = ((@start_time + @prepare_sleep).to_f * 1000).round + @profile_delay
-            @tablet_profile_images.each do |t, images|
+            @tablet_images.each do |t, images|
                 TablettesController.queue_command(t, 'ghosting', time, @profile_duration, images)
             end
 

@@ -20,6 +20,14 @@ class Media
     IMG_PATH = "/playback"
     IMG_DYNAMIC = "/playback/media_dynamic"
 
+
+    IMAGE_CATAGORIES = ["face", "friend", "friends", "travel", "love", "food", "pet", "child", "relevant"]
+    TWEET_CATEGORIES = ["interesting"]
+    FB_POST_CATEGORIES = ["political", "recent", "interesting"]
+    IG_POST_CATEGORIES = ["recent", "political"]
+
+    TV_ZONES = ["TV 21", "TV 22", "TV 23", "TV 31", "TV 32", "TV 33"]
+
     TABLE_INFO = {
         "A" => {"zone" => "TV 21"},
         "B" => {"zone" => "TV 21"},
