@@ -172,7 +172,7 @@ module Lay
             @current_seq.start
         else
             # Proxy unknown cues directly to isadora
-            @isadora.send('/channel/1', cue.to_s)
+            @isadora.send('/isadora/1', cue.to_s)
         end
       end
 
