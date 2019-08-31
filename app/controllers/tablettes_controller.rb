@@ -92,9 +92,10 @@ class TablettesController < ApplicationController
         osc_ping
         self.class.volume = params[:volume].to_i if params[:volume]
         self.class.debug = params[:debug] == '1' if params[:debug]
-        self.class.show_time = params[:show_time] == '1' if params[:show_time]
+        #self.class.show_time = params[:show_time] == '1' if params[:show_time]
         now = Time.now.utc
         render json: {
+            show_time: self.class.show_time,
             tablets: self.class.tablets.collect do |id, t|
                 {
                     id:         id,
@@ -313,6 +314,7 @@ class TablettesController < ApplicationController
     end
 
     def self.show_time=(bool)
+        puts "updating show_time = #{bool.inspect}"
         @show_time = !!bool
     end
 
