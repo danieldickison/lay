@@ -35,9 +35,9 @@ class TablettesController < ApplicationController
     @last_osc_ping_mutex = Mutex.new
     OSC_PING_INTERVAL = 5 # seconds
 
-    @show_time = true
+    @show_time = false
 
-    skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :start_cue, :stop_cue, :assets, :update_patron, :stats]
+    skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :set_show_time, :start_cue, :stop_cue, :assets, :update_patron, :stats]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
@@ -67,6 +67,10 @@ class TablettesController < ApplicationController
         if osc_message = params[:osc_message]
             self.class.send_osc(osc_message)
         end
+    end
+
+    def set_show_time
+        self.class.show_time = params[:show_time] == '1'
     end
 
     def start_cue

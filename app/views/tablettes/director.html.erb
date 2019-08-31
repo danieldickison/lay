@@ -4,11 +4,11 @@
     <section>
         <form id="director-controls-form" class="director-form">
             <label class="pre-show-radio-label">
-                <input type="radio" name="director-pre-show-radio" <% if !@show_time %>checked<% end %>>
+                <input type="radio" name="director-pre-show-radio" id="pre-show-radio" value="0" <% if !@show_time %>checked<% end %>>
                 Pre-show
             </label>
             <label class="pre-show-radio-label">
-                <input type="radio" name="director-pre-show-radio" id="show-time-radio" <% if @show_time %>checked<% end %>>
+                <input type="radio" name="director-pre-show-radio" id="show-time-radio" value="1" <% if @show_time %>checked<% end %>>
                 Show time
             </label>
             <label class="volume-input-label">

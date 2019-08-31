@@ -383,7 +383,6 @@ function sendPing() {
         if (json.show_time) {
             if (preShow.style.display !== 'none') {
                 layNativeInterface.hideChrome();
-                fadeLogo(true);
             }
             preShow.style.display = 'none';
         } else {
@@ -803,7 +802,7 @@ function ProductLaunch(images, targetXTime) {
 
 function updateBatteryStatus() {
     batteryPercent = layNativeInterface.getBatteryPercent();
-    log('batteryPercent updated to ' + batteryPercent);
+    document.getElementById('battery-level').innerText = batteryPercent + '%';
 }
 
 function handleCommand(cmd, args) {
