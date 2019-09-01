@@ -17,7 +17,7 @@ module U
         end
         cmd += " 2>&1"
         
-        puts cmd
+        # puts cmd
 
         if block
             pid, pin, pout, perror = POSIX::Spawn.popen4(cmd)
