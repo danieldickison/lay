@@ -226,8 +226,8 @@ Slots correspond to zones as follows: (32 per zone)
         @run = true
         @tablet_chorus_index = 0
         Thread.new do
-            #TablettesController.send_osc_cue(@video, @start_time + @prepare_sleep)
-            #sleep(@start_time + @prepare_sleep + @isadora_delay - Time.now)
+            # We're already on the rix logo before this scene, but this makes sure it shows up if we start here during rehearsal.
+            TablettesController.send_osc_cue(Lay::OSCApplication::RIX_LOGO_VIDEO, @start_time + @prepare_sleep)
 
             while @run
                 run
