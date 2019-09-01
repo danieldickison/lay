@@ -22,4 +22,8 @@ class SeqOptOut
             f.puts(o)
         end
     end
+
+    def self.opt_outs
+        return File.read(OPT_OUT_FILE).lines.collect {|l| l.to_i}
+    end
 end

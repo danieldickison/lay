@@ -6,7 +6,6 @@ class SeqExterminator
 
     MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/108-Exterminator/"
     DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/108-Exterminator/"
-    IMG_BASE      = Media::IMG_PATH + "/media_dynamic/108-Exterminator/"
     DATABASE      = Media::DATABASE
 
 =begin
@@ -112,7 +111,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                 }
                 enum.each do |t|
                     tablets[t] = {
-                        :src => IMG_BASE + @tablet_pbdata[t][cat][:srcs].last,
+                        :src => Media::TABLET_DYNAMIC + @tablet_pbdata[t][cat][:srcs].last,
                         :conclusion => @tablet_pbdata[t][cat][:conclusion],
                         :in_time => (1000 * (@start_time.to_f + timing[:in])).round,
                         :conclusion_time => (1000 * (@start_time.to_f + timing[:conclusion])).round,

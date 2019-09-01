@@ -5,8 +5,7 @@ require('PlaybackData')
 class SeqGhosting
 
     MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/s_410-Ghosting_profile/"
-    DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/105-Ghosting/"
-    IMG_URL       = Media::IMG_PATH + "/media_dynamic/s_410-Ghosting_profile/"
+    DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/ghosting/"
     DATABASE      = Media::DATABASE
 
 =begin
@@ -39,6 +38,7 @@ Slots correspond to zones as follows: (8 per zone)
     # Updated Saturday morning, 2019-08-31
     def self.export(performance_id)
         `mkdir -p '#{MEDIA_DYNAMIC}'`
+        `mkdir -p '#{Media::VOLUME + Media::TABLET_DYNAMIC}'`
         pbdata = {}
         db = SQLite3::Database.new(Yal::DB_FILE)
 
@@ -122,22 +122,54 @@ Slots correspond to zones as follows: (8 per zone)
             slot_base += 8
         end
 
-        pbdata[:photo_names] = photo_names
 
 
-        # FIX THIS
-        people_at_tables = {}
-        # people_at_tables[1] -> [1,2,3]  - people at table 1
-        25.times do |i|
-            # must ensure 3
-            people_at_tables[i + 1] = [rand(16) + 1, rand(16) + 1, rand(16) + 1]
+        employees = db.execute(<<~SQL).to_a
+            SELECT
+                employeeID, "table"
+            FROM datastore_patron
+            WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+        SQL
+
+        # group employees by table
+        employee_tables = {}
+        employees.each do |p|
+            t = p[1].ord - "A".ord + 1
+            employee_tables[t] ||= []
+            employee_tables[t] << p[0].to_i
         end
-        pbdata[:people_at_tables] = people_at_tables
+        pbdata[:employee_tables] = employee_tables
+
+        employee_photos = {}
+        photos.each_with_index do |pp, i|
+            dst = Media::TABLET_DYNAMIC + "/ghosting-#{i+1}.jpg"
+            db_photo = Media::DATABASE + "/" + pp.path
+            # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
+            f, note = File.exist?(db_photo) ? [db_photo, nil] : [Media::YAL + "/patron.png", "#{pp.path}, employeeID #{pp.employee_id}, table #{pp.table}"]
+            GraphicsMagick.thumbnail(f, Media::VOLUME + dst, 180, 180, "jpg", 85, true, note)
+            employee_photos[pp.employee_id] ||= []
+            employee_photos[pp.employee_id] << dst
+        end
+        pbdata[:employee_photos] = employee_photos
+
 
         PlaybackData.write(DATA_DYNAMIC, pbdata)
         PlaybackData.merge_filename_pids(fn_pids)
     end
 
+
+
+    # DANIEL NOTES:
+
+    # opt_outs = SeqOptOut.opt_outs  # array of employee ids who've opted out
+
+    # pbdata[:employee_photos] -> hash[employee_id] => [array of image paths]
+    # employee_id is 1..100
+    # image path is /playback/media_tablet_dynamic/ghosting-23.jpg
+    # the "23" is just a photo index, 1..however many photos
+
+    # bdata[:employee_tables] -> hash[table] => [array of employee_ids]
+    # table is 1..25
 
     # run the sequence
     attr_accessor(:state, :start_time, :debug)

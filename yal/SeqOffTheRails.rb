@@ -18,11 +18,11 @@ class SeqOffTheRails
     MEDIA_INSTAGRAM = Media::DYNAMIC + "/s_512-Instagram"
     MEDIA_TRAVEL    = Media::DYNAMIC + "/s_531-Travel"
     MEDIA_FOOD      = Media::DYNAMIC + "/s_532-Food"
-    IMG_PROFILE     = Media::IMG_DYNAMIC + "/s_510-OTR_profile"
-    IMG_FACEBOOK    = Media::IMG_DYNAMIC + "/s_511-Facebook"
-    IMG_INSTAGRAM   = Media::IMG_DYNAMIC + "/s_512-Instagram"
-    IMG_TRAVEL      = Media::IMG_DYNAMIC + "/s_531-Travel"
-    IMG_FOOD        = Media::IMG_DYNAMIC + "/s_532-Food"
+    IMG_PROFILE     = Media::TABLET_DYNAMIC + "/s_510-OTR_profile"  # broken
+    IMG_FACEBOOK    = Media::TABLET_DYNAMIC + "/s_511-Facebook"
+    IMG_INSTAGRAM   = Media::TABLET_DYNAMIC + "/s_512-Instagram"
+    IMG_TRAVEL      = Media::TABLET_DYNAMIC + "/s_531-Travel"
+    IMG_FOOD        = Media::TABLET_DYNAMIC + "/s_532-Food"
     DATA_DIR        = Media::PLAYBACK + "/data_dynamic/112-OTR/"
     DATABASE        = Media::DATABASE
 

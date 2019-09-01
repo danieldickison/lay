@@ -170,7 +170,7 @@ module GraphicsMagick
     def self.anno_args(annotate, width)
         if annotate
             line_width = (width - 10) / 14  # approx pixels per char at 18 point
-            words = annotate.split(/[\/ ]/)
+            words = annotate.split(/[\/ _]/)
             lines = []
             line = []
             while !words.empty?

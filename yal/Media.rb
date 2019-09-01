@@ -7,6 +7,7 @@ class Media
         VOLUME = ENV["HOME"] + "/lay-media"
     end
 
+    # THIS IS A MESS
     DATABASE = VOLUME + "/db"
     PLAYBACK = VOLUME + "/playback"
     YAL = YAL_DIR + "/media"
@@ -17,9 +18,7 @@ class Media
     DIR = PLAYBACK + "/media"
     DATA_DIR = PLAYBACK + "/data"
 
-    IMG_PATH = "/playback"
-    IMG_DYNAMIC = "/playback/media_dynamic"
-
+    TABLET_DYNAMIC = "/playback/media_tablet_dynamic"
 
     IMAGE_CATAGORIES = ["face", "friend", "friends", "travel", "love", "food", "pet", "child", "relevant"]
     TWEET_CATEGORIES = ["interesting"]

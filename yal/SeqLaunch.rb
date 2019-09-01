@@ -7,7 +7,6 @@ class SeqLaunch
 
     MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/113-Launch/"
     DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/113-Launch/"
-    IMG_BASE      = Media::IMG_PATH + "/media_dynamic/113-Launch/"
     DATABASE      = Media::DATABASE
 
     def self.export
@@ -161,17 +160,17 @@ class SeqLaunch
             # Person 1
             {
                 :position => :front,
-                :src => IMG_BASE + pbdata[:profile_image_names][person_1],
+                :src => Media::TABLET_DYNAMIC + pbdata[:profile_image_names][person_1],
                 :in_offset => 109.0, # s from start of video
             },
             {
                 :position => :back,
-                :src => IMG_BASE + pbdata[:facebook_image_names][facebook_1a],
+                :src => Media::TABLET_DYNAMIC + pbdata[:facebook_image_names][facebook_1a],
                 :in_offset => 111.97,
             },
             {
                 :position => :back,
-                :src => IMG_BASE + pbdata[:facebook_image_names][facebook_1b],
+                :src => Media::TABLET_DYNAMIC + pbdata[:facebook_image_names][facebook_1b],
                 :in_offset => 125.57,
                 :out_offset => 130.03,
             },
@@ -179,12 +178,12 @@ class SeqLaunch
             # Person 2
             {
                 :position => :front,
-                :src => IMG_BASE + pbdata[:profile_image_names][person_2],
+                :src => Media::TABLET_DYNAMIC + pbdata[:profile_image_names][person_2],
                 :in_offset => 139.0,
             },
             {
                 :position => :back,
-                :src => IMG_BASE + pbdata[:facebook_image_names][facebook_2a],
+                :src => Media::TABLET_DYNAMIC + pbdata[:facebook_image_names][facebook_2a],
                 :in_offset => 152.33,
                 :out_offset => 157.47,
             },
@@ -192,12 +191,12 @@ class SeqLaunch
             # Person 3
             {
                 :position => :front,
-                :src => IMG_BASE + pbdata[:profile_image_names][person_3],
+                :src => Media::TABLET_DYNAMIC + pbdata[:profile_image_names][person_3],
                 :in_offset => 167.0, # s from start of video
             },
             {
                 :position => :back,
-                :src => IMG_BASE + pbdata[:facebook_image_names][facebook_3a],
+                :src => Media::TABLET_DYNAMIC + pbdata[:facebook_image_names][facebook_3a],
                 :in_offset => 178.43,
                 :out_offset => 185.93,
             },
@@ -205,7 +204,7 @@ class SeqLaunch
             # Person 4
             {
                 :position => :front,
-                :src => IMG_BASE + pbdata[:profile_image_names][person_4],
+                :src => Media::TABLET_DYNAMIC + pbdata[:profile_image_names][person_4],
                 :in_offset => 232.0, # s from start of video
                 :out_offset => 364.8,
             },

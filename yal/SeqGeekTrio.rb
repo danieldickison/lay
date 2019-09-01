@@ -6,7 +6,6 @@ class SeqGeekTrio
 
     MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/s_420-GeekTrio/"
     DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/107-GeekTrio/"
-    IMG_BASE      = Media::IMG_PATH + "/media_dynamic/s_420-GeekTrio/"
     DATABASE      = Media::DATABASE
 
     TABLET_TRIGGER_PREROLL = 10 # seconds; give them enough time to load dynamic images before presenting.
@@ -159,7 +158,7 @@ Slots correspond to zones as follows: (32 per zone)
             enum = 1..25
         end
         enum.each do |t|
-            @tablet_image_sets[t] = pbdata[:geek_trio][t].collect {|set| set.collect {|img| IMG_BASE + img}}
+            @tablet_image_sets[t] = pbdata[:geek_trio][t].collect {|set| set.collect {|img| Media::TABLET_DYNAMIC + img}}
         end
     end
 
