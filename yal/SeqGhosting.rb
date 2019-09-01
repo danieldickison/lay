@@ -114,8 +114,18 @@ Slots correspond to zones as follows: (8 per zone)
                 dst = "410-#{slot}-R01-Ghosting_profile.jpg"
                 db_photo = Media::DATABASE + "/" + pp.path
                 # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
-                f, note = File.exist?(db_photo) ? [db_photo, nil] : [Media::YAL + "/patron.png", "#{pp.path}, employeeID #{pp.employee_id}, table #{pp.table}"]
-                GraphicsMagick.thumbnail(f, MEDIA_DYNAMIC + dst, 180, 180, "jpg", 85, true, note)
+                if File.exist?(db_photo)
+                    GraphicsMagick.thumbnail(db_photo, MEDIA_DYNAMIC + dst, 180, 180, "jpg", 85)
+                else
+                    while true
+                        r, g, b = rand(75), rand(75), rand(75)
+                        break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
+                    end
+                    color = "rgb(#{r}%,#{g}%,#{b}%)"
+                    annotate = "#{pp.path}, employee ID #{pp.employee_id}, table #{pp.table}"
+                    GraphicsMagick.convert("-size", "180x180", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(MEDIA_DYNAMIC + dst, "jpg"))
+                end
+
                 photo_names[slot_base + i] = dst
                 fn_pids[dst] = pp.employee_id
             end
@@ -145,8 +155,17 @@ Slots correspond to zones as follows: (8 per zone)
             dst = Media::TABLET_DYNAMIC + "/ghosting-#{i+1}.jpg"
             db_photo = Media::DATABASE + "/" + pp.path
             # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
-            f, note = File.exist?(db_photo) ? [db_photo, nil] : [Media::YAL + "/patron.png", "#{pp.path}, employeeID #{pp.employee_id}, table #{pp.table}"]
-            GraphicsMagick.thumbnail(f, Media::VOLUME + dst, 180, 180, "jpg", 85, true, note)
+            if File.exist?(db_photo)
+                GraphicsMagick.thumbnail(db_photo, Media::VOLUME + dst, 180, 180, "jpg", 85)
+            else
+                while true
+                    r, g, b = rand(75), rand(75), rand(75)
+                    break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
+                end
+                color = "rgb(#{r}%,#{g}%,#{b}%)"
+                annotate = "#{pp.path}, employee ID #{pp.employee_id}, table #{pp.table}"
+                GraphicsMagick.convert("-size", "180x180", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(MEDIA_DYNAMIC + dst, "jpg"))
+            end
             employee_photos[pp.employee_id] ||= []
             employee_photos[pp.employee_id] << dst
         end

@@ -195,7 +195,7 @@ module GraphicsMagick
                 y += 22
             end
             draw_arg = draw.join(" ")
-            args = ["-font", "courier-bold", "-pointsize", "18", "-fill", "blue", "-draw", draw_arg]
+            args = ["-font", "courier-bold", "-pointsize", "18", "-fill", "white", "-draw", draw_arg]
         else
             args = []
         end
