@@ -38,16 +38,25 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
     }.freeze
     TABLET_CONCLUSIONS = {
         :travel => [
-            'foo', 'bar baz',
+            'assessment: away from family',
+            'assessment: away from hometown',
+            'assessment: impulsive enthusiast',
         ],
         :interest => [
-            'something', 'intersting stuff!',
+            'assessment: flamenco ally',
+            'assessment: beer drinker',
+            'assessment: Sweetgreen use uptick',
         ],
         :friend => [
-            'sketchy friends', 'problematic'
+            'assessment: single/looking',
+            'assessment: Democrat adjacent',
+            'assessment: relationship unstable',
+            'assessment: expat ally',
         ],
         :shared => [
-            'looks nice', 'oversharer'
+            'assessment: birth control likely',
+            'assessment: daycare use soon',
+            'assessment: will change zipcode',
         ],
     }
 
@@ -138,7 +147,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                 }
                 enum.each do |t|
                     tablets[t] = {
-                        :src => Media::TABLET_DYNAMIC + @tablet_pbdata[t][cat][:srcs].last,
+                        :src => Media::TABLET_DYNAMIC + '/' + @tablet_pbdata[t][cat][:srcs].last,
                         :conclusion => @tablet_pbdata[t][cat][:conclusion],
                         :in_time => (1000 * (@start_time.to_f + timing[:in])).round,
                         :conclusion_time => (1000 * (@start_time.to_f + timing[:conclusion])).round,
