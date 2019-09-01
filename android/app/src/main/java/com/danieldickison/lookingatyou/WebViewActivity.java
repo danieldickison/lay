@@ -726,6 +726,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             playingSilence = false;
             this.seekTime = seekTime;
             try {
+                Log.d(TAG, "clip volume: " + volume);
                 mediaPlayer.setVolume(volume, volume);
                 mediaPlayer.setDataSource(url);
                 mediaPlayer.setLooping(loop);
