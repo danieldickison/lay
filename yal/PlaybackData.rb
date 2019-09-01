@@ -77,11 +77,14 @@ module PlaybackData
         # tablet_id => an array of 4 arrays of 4 image names each: [[img1-1 .. img1-4] .. [img4-1 .. img4-4]]
         :geek_trio => Hash.new(Array.new(4, Array.new(4, 'placeholder.jpg'))),
 
-        # tablet_id => {:travel, :interest, :friend, :shared} => {:srcs => [imgname1 .. imgname4], :conclusion => text}
-        :exterminator_tablets => Hash.new(Hash.new({
-            :srcs => Array.new(4, 'placeholder.jpg'),
-            :conclusion => "enjoys belly rubs"
-        })),
+        # tablet_id => {:travel, :interest, :friend, :shared} => {:srcs => [imgname1 .. imgname4]}
+        :exterminator_tablets => (1..25).collect do |t|
+            [   t,
+                [:travel, :interest, :friend, :shared].collect do |c|
+                    [c, {:srcs => Array.new(4, 'placeholder.jpg')}]
+                end.to_h
+            ]
+        end.to_h,
         
         # currently just a flat array of {:photo, :caption}.
         # should it be: person_id => array of {:photo, :caption} ??

@@ -36,6 +36,29 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         :friend     => 76.20,
         :shared     => 91.13,
     }.freeze
+    TABLET_CONCLUSIONS = {
+        :travel => [
+            'assessment: away from family',
+            'assessment: away from hometown',
+            'assessment: impulsive enthusiast',
+        ],
+        :interest => [
+            'assessment: flamenco ally',
+            'assessment: beer drinker',
+            'assessment: Sweetgreen use uptick',
+        ],
+        :friend => [
+            'assessment: single/looking',
+            'assessment: Democrat adjacent',
+            'assessment: relationship unstable',
+            'assessment: expat ally',
+        ],
+        :shared => [
+            'assessment: birth control likely',
+            'assessment: daycare use soon',
+            'assessment: will change zipcode',
+        ],
+    }
 
     # ExterminatorLite tablet js variant params
     TABLET_LITE_TIMING = {
@@ -74,6 +97,13 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         pbdata = PlaybackData.read(DATA_DYNAMIC)
 
         @tablet_pbdata = pbdata[:exterminator_tablets]
+        conclusion_index = 0
+        @tablet_pbdata.each do |t, tablet_categories|
+            tablet_categories.each do |category, hash|
+                hash[:conclusion] = TABLET_CONCLUSIONS[category][conclusion_index % TABLET_CONCLUSIONS[category].length]
+            end
+            conclusion_index += 1
+        end
         # @tablet_categories = {}
         # enum.each do |t|
         #     tablet_data = pbdata[:exterminator_tablets][t]
@@ -117,7 +147,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                 }
                 enum.each do |t|
                     tablets[t] = {
-                        :src => Media::TABLET_DYNAMIC + @tablet_pbdata[t][cat][:srcs].last,
+                        :src => Media::TABLET_DYNAMIC + '/' + @tablet_pbdata[t][cat][:srcs].last,
                         :conclusion => @tablet_pbdata[t][cat][:conclusion],
                         :in_time => (1000 * (@start_time.to_f + timing[:in])).round,
                         :conclusion_time => (1000 * (@start_time.to_f + timing[:conclusion])).round,
