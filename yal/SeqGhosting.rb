@@ -189,7 +189,7 @@ Slots correspond to zones as follows: (8 per zone)
     # image path is /playback/media_tablet_dynamic/ghosting-23.jpg
     # the "23" is just a photo index, 1..however many photos
 
-    # bdata[:employee_tables] -> hash[table] => [array of employee_ids]
+    # pbdata[:employee_tables] -> hash[table] => [array of employee_ids]
     # table is 1..25
 
     # run the sequence
@@ -208,6 +208,13 @@ Slots correspond to zones as follows: (8 per zone)
         @isadora_delay = 2 # seconds
 
         pbdata = PlaybackData.read(TABLETS_GHOSTING_DIR)
+        opt_outs = Set(SeqOptOut.opt_outs)
+
+        # delete all the opted-out people from :employee_tables array values
+        pbdata[:employee_tables].each do |t, people|
+            people.delete_if {|p| out_outs.include?(p)}
+            puts "table #{t} opted in people: #{people.inspect}"
+        end
 
         @tablet_images = {}
         # 1 => [IMG_URL + photo_name, IMG_URL + photo_name, IMG_URL + photo_name]
@@ -216,10 +223,43 @@ Slots correspond to zones as follows: (8 per zone)
         else
             enum = 1..25
         end
+        # First pass: each table gets first dibs on friend photos from opted-in people at the table. This also destructively alters the :employee_tables value arrays to remove opted-out folks.
         enum.each do |t|
-            people = pbdata[:people_at_tables][t] || [1, 2, 3]  # default to first 3 people
-            images = people.collect {|p| IMG_URL + pbdata[:photo_names][p]}
+            people = pbdata[:employee_tables][t] || []
+            people.delete_if {|p| out_outs.include?(p)}
+            images = []
+            people.each do |p|
+                if img = pbdata[:employee_photos][p].pop # or shift? how are the images ordered? if the "best" ones are first, we should use shift so the target table gets the best one.
+                    images << img
+                end
+                break if images.length == 3
+            end
             @tablet_images[t] = images
+        end
+        # Second pass: for any table with fewer than 3 images, we look for opted-in images from "far away" tables.
+        enum.each do |t|
+            images = @tablet_images[t]
+            if images.length < 3
+                puts "table #{t} only has #{images.length} images; finding other tables' photos"
+                current_table = t + 10
+                current_table = 1 if t > 25
+                while images.length < 3 && current_table != t && t <= 25 # last condition to avoid infinite loop while testing with tablet numbers > 25.
+                    # Note that we've already deleted opted-out people from these arrays
+                    people = pbdata[:employee_tables][current_table] || []
+                    people.each do |p|
+                        if img = pbdata[:employee_photos][p].pop
+                            images << img
+                        end
+                        break if images.length == 3
+                    end
+                    current_table += 1
+                    current_table = 1 if current_table > 25
+                end
+            end
+            if images.length < 3
+                puts "WARNING: we didn't find enough tablet images for table #{t}"
+                # TODO: add fake photos?
+            end
         end
     end
 
