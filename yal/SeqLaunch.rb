@@ -44,7 +44,7 @@ class SeqLaunch
 
   TIMINGS = [nil, nil, 10, 8, 8, 12, 8, 4, 5]
 
-    attr_accessor(:start_time)
+    attr_accessor(:start_time, :debug)
 
     def initialize
         # @id = p_data["Patron ID"]
@@ -211,6 +211,13 @@ class SeqLaunch
         ]
         @target_x_offset = 323.0
     end
+    
+    # override
+    def debug=(s)
+        @debug = s
+        @is.disable = @debug
+    end
+
 
     def load
         db = SpectatorsDB.new
