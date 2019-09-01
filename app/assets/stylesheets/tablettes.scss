@@ -9,6 +9,8 @@ html {
 body.tablet {
     background: transparent;
     margin: 0;
+
+   -webkit-user-select: none;
 }
 
 a {
