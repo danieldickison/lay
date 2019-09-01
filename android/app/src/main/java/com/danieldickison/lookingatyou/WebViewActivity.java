@@ -23,6 +23,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -126,7 +127,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mContentView.post(new Runnable() {
                 @Override
                 public void run() {
-                    prepareNextVideoCue(path, seekTime, 0, timestamp);
+                    prepareNextVideoCue(path, seekTime, 0, timestamp, 1);
                 }
             });
         }
@@ -233,11 +234,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         @Override
-        public void cueVideo(final String path, final long startTimestamp, final int fadeDuration) {
+        public void cueVideo(final String path, final long startTimestamp, final int fadeDuration, final float volume) {
             mContentView.post(new Runnable() {
                 @Override
                 public void run() {
-                    prepareNextVideoCue(path, 0, fadeDuration, startTimestamp);
+                    prepareNextVideoCue(path, 0, fadeDuration, startTimestamp, volume);
                 }
             });
         }
@@ -247,7 +248,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mContentView.post(new Runnable() {
                 @Override
                 public void run() {
-                    prepareNextVideoCue(null, 0, fadeDuration, 0);
+                    prepareNextVideoCue(null, 0, fadeDuration, 0, 0);
                 }
             });
         }
@@ -428,6 +429,10 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         evalJS("updateClockOffset(" + offset + ", " + lastSuccess.getTime() + ")", new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String s) {
+                if (s.equals("null")) {
+                    Log.w(TAG, "got null clock offset");
+                    return;
+                }
                 mClockOffset = (long) Double.parseDouble(s);
             }
         });
@@ -472,8 +477,24 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         });
     }
 
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        boolean consumed;
+        switch( event.getKeyCode() ) {
+            case KeyEvent.KEYCODE_VOLUME_UP:
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                consumed = true;
+                break;
+
+            default:
+                consumed = super.dispatchKeyEvent(event);
+                break;
+        }
+
+        return consumed;
+    }
+
     @MainThread
-    private void prepareNextVideoCue(String path, int seekTime, int fadeDuration, long startTimestamp) {
+    private void prepareNextVideoCue(String path, int seekTime, int fadeDuration, long startTimestamp, float volume) {
 
         Log.d(TAG, "prepareNextVideoCue: " + path);
 
@@ -493,7 +514,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             holder.prepareCue(filePath, seekTime, fadeDuration, loop);
 
             String audioPath = path.replace(".mp4", ".wav");
-            prepareNextAudioCue(audioPath, seekTime, startTimestamp);
+            prepareNextAudioCue(audioPath, seekTime, startTimestamp, volume);
 
             if (startTimestamp >= 0) {
                 holder.startCueAt(startTimestamp);
@@ -502,7 +523,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     @MainThread
-    private void prepareNextAudioCue(String path, int seekTime, long startTimestamp) {
+    private void prepareNextAudioCue(String path, int seekTime, long startTimestamp, float volume) {
         if (path == null) {
             audioPlayer.stopAudio();
         } else {
@@ -513,7 +534,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             }
 
             boolean loop = path.contains("loop");
-            audioPlayer.prepareAudio(filePath, seekTime, loop);
+            audioPlayer.prepareAudio(filePath, seekTime, loop, volume);
 
             if (startTimestamp >= 0) {
                 audioPlayer.startAudio(startTimestamp - AUDIO_LAG);
@@ -698,13 +719,14 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             playSilence();
         }
 
-        private void prepareAudio(String url, int seekTime, boolean loop) {
+        private void prepareAudio(String url, int seekTime, boolean loop, float volume) {
             this.url = url;
 
             mediaPlayer.reset();
             playingSilence = false;
             this.seekTime = seekTime;
             try {
+                mediaPlayer.setVolume(volume, volume);
                 mediaPlayer.setDataSource(url);
                 mediaPlayer.setLooping(loop);
                 mediaPlayer.prepareAsync();
