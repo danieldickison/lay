@@ -47,9 +47,9 @@ Slots correspond to zones as follows: (32 per zone)
     Photo = Struct.new(:path, :category, :employee_id, :table)
 
     # export <performance #> GeekTrio
-    # Generates s_410-s_420-GeekTrio Isadora directory, 105-Ghosting pbdata
+    # Generates s_410-s_420-GeekTrio Isadora directory, geektrio tablet directory
 
-    # Updated Saturday afternoon, 2019-08-31
+    # Updated Sunday morning, 2019-09-01
     def self.export(performance_id)
         `mkdir -p '#{ISADORA_GEEKTRIO_DIR}'`
         pbdata = {}
@@ -121,7 +121,7 @@ Slots correspond to zones as follows: (32 per zone)
                     GraphicsMagick.fit(db_photo, ISADORA_GEEKTRIO_DIR + dst, 640, 640, "jpg", 85)
                 else
                     while true
-                        r, g, b = rand(75), rand(75), rand(75)
+                        r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
                         break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                     end
                     color = "rgb(#{r}%,#{g}%,#{b}%)"

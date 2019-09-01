@@ -35,9 +35,9 @@ Slots correspond to zones as follows: (8 per zone)
     Photo = Struct.new(:path, :category, :employee_id, :table)
 
     # export <performance #> Ghosting
-    # Generates s_410-Ghosting_profile Isadora directory, 105-Ghosting pbdata
+    # Generates s_410-Ghosting_profile Isadora directory, ghosting tablet directory
 
-    # Updated Saturday morning, 2019-08-31
+    # Updated Sunday morning, 2019-09-01
     def self.export(performance_id)
         `mkdir -p '#{ISADORA_GHOSTING_DIR}'`
         `mkdir -p '#{TABLETS_GHOSTING_DIR}'`
@@ -120,7 +120,7 @@ Slots correspond to zones as follows: (8 per zone)
                     GraphicsMagick.thumbnail(db_photo, ISADORA_GHOSTING_DIR + dst, 180, 180, "jpg", 85)
                 else
                     while true
-                        r, g, b = rand(75), rand(75), rand(75)
+                        r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
                         break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                     end
                     color = "rgb(#{r}%,#{g}%,#{b}%)"
@@ -161,7 +161,7 @@ Slots correspond to zones as follows: (8 per zone)
                 GraphicsMagick.thumbnail(db_photo, TABLETS_GHOSTING_DIR + dst, 180, 180, "jpg", 85)
             else
                 while true
-                    r, g, b = rand(75), rand(75), rand(75)
+                    r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
                     break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                 end
                 color = "rgb(#{r}%,#{g}%,#{b}%)"
