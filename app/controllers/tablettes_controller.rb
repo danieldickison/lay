@@ -35,7 +35,7 @@ class TablettesController < ApplicationController
     @last_osc_ping_mutex = Mutex.new
     OSC_PING_INTERVAL = 5 # seconds
 
-    @show_time = false
+    @show_time = true
 
     skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :set_show_time, :start_cue, :stop_cue, :assets, :update_patron, :stats]
 
