@@ -182,6 +182,7 @@ Slots correspond to zones as follows: (32 per zone)
     end
 
     def start
+        @is.send('/isadora/1', '710')
         @run = true
         @tablet_chorus_index = 0
         Thread.new do
