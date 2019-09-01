@@ -132,7 +132,7 @@ module Lay
         when 150
             SeqSimpleVideo.new(150, '/playback/media_tablets/101-Opening/101-111-C60-EthanFeed.mp4').tap do |s|
                 s.tablet_fade = 0.5
-                s.tablet_volume = 25
+                s.tablet_volume = 0.5
             end
         when 200
             TablettesController.send_osc_fade_out
