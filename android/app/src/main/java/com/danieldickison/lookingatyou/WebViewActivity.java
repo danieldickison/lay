@@ -414,7 +414,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         evalJS("updateClockOffset(" + offset + ", " + lastSuccess.getTime() + ")", new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String s) {
-                mClockOffset = Long.parseLong(s);
+                mClockOffset = (long) Double.parseDouble(s);
             }
         });
     }
