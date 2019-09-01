@@ -267,7 +267,7 @@ Slots correspond to zones as follows: (32 per zone)
             tablet_start_time = (next_tablet_chorus.to_f * 1000).round
             @tablet_images.each do |t, images|
                 images = images.slice(@tablet_chorus_index, 4)
-                TablettesController.queue_command(t, 'geektrio', tablet_start_time, TABLET_IMAGE_INTERVAL, TABLET_CHORUS_DURATION[@tablet_chorus_index / 4], images)
+                TablettesController.queue_command(t, 'geektrio', tablet_start_time, TABLET_IMAGE_INTERVAL, TABLET_CHORUS_DURATIONS[@tablet_chorus_index / 4], images)
             end
             @tablet_chorus_index += 4
         end
