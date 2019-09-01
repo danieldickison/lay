@@ -208,13 +208,7 @@ Slots correspond to zones as follows: (8 per zone)
         @isadora_delay = 2 # seconds
 
         pbdata = PlaybackData.read(TABLETS_GHOSTING_DIR)
-        opt_outs = Set(SeqOptOut.opt_outs)
-
-        # delete all the opted-out people from :employee_tables array values
-        pbdata[:employee_tables].each do |t, people|
-            people.delete_if {|p| out_outs.include?(p)}
-            puts "table #{t} opted in people: #{people.inspect}"
-        end
+        opt_outs = Set.new(SeqOptOut.opt_outs)
 
         @tablet_images = {}
         # 1 => [IMG_URL + photo_name, IMG_URL + photo_name, IMG_URL + photo_name]
@@ -225,11 +219,13 @@ Slots correspond to zones as follows: (8 per zone)
         end
         # First pass: each table gets first dibs on friend photos from opted-in people at the table. This also destructively alters the :employee_tables value arrays to remove opted-out folks.
         enum.each do |t|
-            people = pbdata[:employee_tables][t] || []
-            people.delete_if {|p| out_outs.include?(p)}
+            people = pbdata[:employee_tables][t.to_s] || []
+            people.delete_if {|p| out_outs.include?(p.to_i)}
+            puts "table #{t} opted in people: #{people.inspect}"
+
             images = []
             people.each do |p|
-                if img = pbdata[:employee_photos][p].pop # or shift? how are the images ordered? if the "best" ones are first, we should use shift so the target table gets the best one.
+                if img = pbdata[:employee_photos][p.to_s].pop # or shift? how are the images ordered? if the "best" ones are first, we should use shift so the target table gets the best one.
                     images << img
                 end
                 break if images.length == 3
@@ -245,9 +241,9 @@ Slots correspond to zones as follows: (8 per zone)
                 current_table = 1 if t > 25
                 while images.length < 3 && current_table != t && t <= 25 # last condition to avoid infinite loop while testing with tablet numbers > 25.
                     # Note that we've already deleted opted-out people from these arrays
-                    people = pbdata[:employee_tables][current_table] || []
+                    people = pbdata[:employee_tables][current_table.to_s] || []
                     people.each do |p|
-                        if img = pbdata[:employee_photos][p].pop
+                        if img = pbdata[:employee_photos][p.to_s].pop
                             images << img
                         end
                         break if images.length == 3
