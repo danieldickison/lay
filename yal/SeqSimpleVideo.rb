@@ -12,7 +12,7 @@ class SeqSimpleVideo
         @tablet_video = tablet_video
         @tablet_delay = 1.0
         @tablet_fade = 1.0
-        @tablet_volume = 100
+        @tablet_volume = 1.0
         @isadora_delay = 1.0
     end
 
