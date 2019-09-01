@@ -25,17 +25,17 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
     TABLET_VIDEO = '/playback/media_tablets/108-Exterminator/108-011-C60-Exterminator.mp4'
 
     TABLET_TRIGGER_PREROLL = 10 # seconds; give them enough time to load dynamic images before presenting.
-    TABLET_SCROLL_INTERVAL = 3000 # ms delay betwee each of the 4 images to start scrolling
-    TABLET_SCROLL_DURATION = 4000 # ms to scroll one image all the way across (half that for last one to stop @ center)
-    TABLET_CONCLUSION_OFFSET = 3*TABLET_SCROLL_INTERVAL + TABLET_SCROLL_DURATION/2 # seconds for 4 images to scroll through before settling on conclusion
-    TABLET_CONCLUSION_DURATION = 4000 # ms for conclusion to stay on screen
+    # TABLET_SCROLL_INTERVAL = 3000 # ms delay betwee each of the 4 images to start scrolling
+    # TABLET_SCROLL_DURATION = 4000 # ms to scroll one image all the way across (half that for last one to stop @ center)
+    # TABLET_CONCLUSION_OFFSET = 3*TABLET_SCROLL_INTERVAL + TABLET_SCROLL_DURATION/2 # seconds for 4 images to scroll through before settling on conclusion
+    # TABLET_CONCLUSION_DURATION = 4000 # ms for conclusion to stay on screen
     CATEGORIES = [:travel, :interest, :friend, :shared].freeze # in the order they're presented
-    CONCLUSION_OFFSETS = {
-        :travel     => 21.00,
-        :interest   => 38.33,
-        :friend     => 76.20,
-        :shared     => 91.13,
-    }.freeze
+    # CONCLUSION_OFFSETS = {
+    #     :travel     => 21.00,
+    #     :interest   => 38.33,
+    #     :friend     => 76.20,
+    #     :shared     => 91.13,
+    # }.freeze
     TABLET_CONCLUSIONS = {
         :travel => [
             'assessment: away from family',
