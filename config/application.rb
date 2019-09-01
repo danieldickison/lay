@@ -183,7 +183,7 @@ module Lay
         end
 
         if @current_seq
-            @current_seq&.debug = cue >= 10000
+            @current_seq&.debug = true if cue >= 10000
             @current_seq.start_time = start_time
             @current_seq.start
         elsif cue < 10000
