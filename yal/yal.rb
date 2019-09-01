@@ -23,6 +23,7 @@ require('Database')
 require('Media')
 require('Isadora')
 require('Fake')
+require('Dummy')
 
 
 class Yal
