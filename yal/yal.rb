@@ -24,6 +24,7 @@ require('Media')
 require('Isadora')
 require('Fake')
 require('Dummy')
+require('CMUServer')
 
 
 class Yal
