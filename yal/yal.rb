@@ -32,7 +32,7 @@ class Yal
     elsif JOE_DEVELOPMENT
         DB_FILE = Media::VOLUME + "/db/db.sqlite3"
     else
-        raise "Daniel, need a db file"
+        DB_FILE = Media::VOLUME + "/db/db.sqlite3"
     end
 
     def start(args)
