@@ -62,11 +62,11 @@ Slots correspond to zones as follows: (32 per zone)
         db = SQLite3::Database.new(Yal::DB_FILE)
 
 
-        General query for selecting all the photos in a performance
-        row elements:
-          0..11: image names
-         12..23: image categories
-           24..: extra
+        # General query for selecting all the photos in a performance
+        # row elements:
+        #   0..11: image names
+        #  12..23: image categories
+        #    24..: extra
         rows = db.execute(<<~SQL).to_a
             SELECT
                 fbPostImage_1, fbPostImage_2, fbPostImage_3, fbPostImage_4, fbPostImage_5, fbPostImage_6,
