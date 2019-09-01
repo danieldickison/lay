@@ -36,6 +36,20 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         :friend     => 76.20,
         :shared     => 91.13,
     }.freeze
+    TABLET_CONCLUSIONS = {
+        :travel => [
+            'foo', 'bar baz',
+        ],
+        :interest => [
+            'something', 'intersting stuff!',
+        ],
+        :friend => [
+            'sketchy friends', 'problematic'
+        ],
+        :shared => [
+            'looks nice', 'oversharer'
+        ],
+    }
 
     # ExterminatorLite tablet js variant params
     TABLET_LITE_TIMING = {
@@ -74,6 +88,13 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         pbdata = PlaybackData.read(DATA_DYNAMIC)
 
         @tablet_pbdata = pbdata[:exterminator_tablets]
+        conclusion_index = 0
+        @tablet_pbdata.each do |t, tablet_categories|
+            tablet_categories.each do |category, hash|
+                hash[:conclusion] = TABLET_CONCLUSIONS[category][conclusion_index % TABLET_CONCLUSIONS[category].length]
+            end
+            conclusion_index += 1
+        end
         # @tablet_categories = {}
         # enum.each do |t|
         #     tablet_data = pbdata[:exterminator_tablets][t]
