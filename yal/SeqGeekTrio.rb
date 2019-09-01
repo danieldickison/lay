@@ -138,12 +138,13 @@ Slots correspond to zones as follows: (32 per zone)
     end
 
 
-    attr_accessor(:state, :start_time)
+    attr_accessor(:state, :start_time, :debug)
 
     def initialize
         @is = Isadora.new
         @state = :idle
         @time = nil
+        @debug = false
 
         @prepare_sleep = 1 # second
         @isadora_delay = 0 # seconds
@@ -160,6 +161,12 @@ Slots correspond to zones as follows: (32 per zone)
         enum.each do |t|
             @tablet_image_sets[t] = pbdata[:geek_trio][t].collect {|set| set.collect {|img| IMG_BASE + img}}
         end
+    end
+
+    # override
+    def debug=(s)
+        @debug = s
+        @is.disable = @debug
     end
 
     def start
