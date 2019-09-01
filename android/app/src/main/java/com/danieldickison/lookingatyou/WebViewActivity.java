@@ -170,6 +170,16 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         @JavascriptInterface
+        public void setScreenBrightness(final float brightness) {
+            mContentView.post(new Runnable() {
+                @Override
+                public void run() {
+                    WebViewActivity.this.setScreenBrightness(brightness);
+                }
+            });
+        }
+
+        @JavascriptInterface
         public void setVolume(int percent) {
             AudioManager mgr = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
             assert mgr != null;
@@ -285,9 +295,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mMulticastLock = wm.createMulticastLock("lay:webview");
 
         // Set max brightness
-        WindowManager.LayoutParams layout = getWindow().getAttributes();
-        layout.screenBrightness = 1F;
-        getWindow().setAttributes(layout);
+        setScreenBrightness(1f);
 
         if (checkPermission()) {
             Log.d(TAG, "already have necessary permissions");
@@ -296,6 +304,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         connectToHost(getIntent().getStringExtra(HOST_EXTRA));
+    }
+
+    private void setScreenBrightness(float brightness) {
+        WindowManager.LayoutParams layout = getWindow().getAttributes();
+        layout.screenBrightness = brightness;
+        getWindow().setAttributes(layout);
     }
 
     public static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
@@ -467,6 +481,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mVideoHolders[0].fadeOut(fadeDuration);
             mVideoHolders[1].fadeOut(fadeDuration);
             audioPlayer.stopAudio();
+            setScreenBrightness(0f);
         } else {
             mVideoViewIndex = (mVideoViewIndex + 1) % 2;
             String filePath = mDownloader.getCachedFilePath(path);
@@ -605,6 +620,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             @Override
             public void run() {
                 mediaPlayer.start();
+                setScreenBrightness(1f);
                 textureView.animate()
                         .setDuration(fadeInDuration)
                         .alpha(1);

@@ -15,6 +15,7 @@ if (!window.layNativeInterface) {
         setVolume: function () {},
         setAssets: function () {},
         hideChrome: function () {},
+        setScreenBrightness: function () {},
         resetOSC: function () {},
         resetNTP: function () {},
     };
@@ -386,6 +387,11 @@ function sendPing() {
             }
             preShow.style.display = 'none';
         } else {
+            if (preShow.style.display !== 'block') {
+                if (layNativeInterface.setScreenBrightness) {
+                    layNativeInterface.setScreenBrightness(1);
+                }
+            }
             preShow.style.display = 'block';
             preShow.style.backgroundImage = 'url(' + json.preshow_bg + ')';
         }
