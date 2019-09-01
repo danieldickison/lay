@@ -4,18 +4,18 @@ class Isadora
     IPS = ["172.16.1.221", "172.16.1.222", "172.16.1.223"]
 
     PORT = 1234
-    ENABLED = true
 
-    attr_accessor(:clients)
+    attr_accessor(:clients, :disable)
 
     def initialize
         @clients = IPS.collect {|ip| OSC::Client.new(ip, PORT)}
+        @disable = false
     end
 
     def send(msg, *args)
-        puts "IZ #{ENABLED ? 'send' : 'fake'} #{msg} - #{args.inspect}"
+        puts "IZ #{@disable ? '(send disabled)' : 'send'} #{msg} - #{args.inspect}"
         osc_msg = OSC::Message.new(msg, *args)
-        if ENABLED
+        if !@disable
             @clients.each {|c| c.send(osc_msg)}
         end
     rescue

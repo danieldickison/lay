@@ -140,12 +140,13 @@ Slots correspond to zones as follows: (8 per zone)
 
 
     # run the sequence
-    attr_accessor(:state, :start_time)
+    attr_accessor(:state, :start_time, :debug)
 
     def initialize
         @is = Isadora.new
         @state = :idle
         @time = nil
+        @debug = false
 
         @profile_delay = 67_800 # ms
         @profile_duration = 18_000 # ms
@@ -167,6 +168,12 @@ Slots correspond to zones as follows: (8 per zone)
             images = people.collect {|p| IMG_URL + pbdata[:photo_names][p]}
             @tablet_images[t] = images
         end
+    end
+
+    # override
+    def debug=(s)
+        @debug = s
+        @is.disable = @debug
     end
 
     def start
