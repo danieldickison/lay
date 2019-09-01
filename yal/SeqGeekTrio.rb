@@ -250,13 +250,13 @@ Slots correspond to zones as follows: (32 per zone)
     end
 
     def run
-        if @tablet_chorus_index >= CHORUS_OFFSETS.length
+        if @tablet_chorus_index / 4 >= CHORUS_OFFSETS.length
             @run = false
             return
         end
 
         now = Time.now.utc
-        next_tablet_chorus = @start_time + CHORUS_OFFSETS[@tablet_chorus_index]
+        next_tablet_chorus = @start_time + CHORUS_OFFSETS[@tablet_chorus_index / 4]
         if now > next_tablet_chorus - TABLET_TRIGGER_PREROLL
             puts "triggering geek trio chorus #{@tablet_chorus_index} on tablets"
             tablet_start_time = (next_tablet_chorus.to_f * 1000).round
