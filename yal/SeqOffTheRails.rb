@@ -405,18 +405,6 @@ class SeqOffTheRails
 
             sleep(TV_FEED_DELAY) #quick and dirty pre-delay for isadora tweets
 
-            tweet_queue = []
-            fb_queue = []
-            ig_queue = []
-
-            all_items = @tweets + @fb + @ig
-            item_queue = []
-            channel_queues =  {
-                :tweet => (0..2).to_a,
-                :fb => (3..5).to_a,
-                :ig => (6..8).to_a,
-            }
-
             rails = @tv_items.collect {|tv, items| TVRunner.new(tv, TV_ADDRESS[tv], @is, items)}
 
             end_time = @start_time + @prepare_delay + @duration
