@@ -492,7 +492,10 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             audioPlayer.stopAudio();
         } else {
             String filePath = mDownloader.getCachedFilePath(path);
-            if (filePath == null) return;
+            if (filePath == null) {
+                audioPlayer.stopAudio();
+                return;
+            }
 
             boolean loop = path.contains("loop");
             audioPlayer.prepareAudio(filePath, seekTime, loop);
