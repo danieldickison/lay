@@ -52,6 +52,7 @@ Slots correspond to zones as follows: (32 per zone)
     # Updated Sunday morning, 2019-09-01
     def self.export(performance_id)
         `mkdir -p '#{ISADORA_GEEKTRIO_DIR}'`
+        `mkdir -p '#{TABLETS_GEEKTRIO_DIR}'`
         pbdata = {}
         db = SQLite3::Database.new(Yal::DB_FILE)
 
@@ -75,6 +76,7 @@ Slots correspond to zones as follows: (32 per zone)
         SQL
 
         photos = []
+        employee_tables = {}
         rows.each do |r|
             # pull out extra columns
             employeeID = r[-2].to_i
@@ -83,6 +85,10 @@ Slots correspond to zones as follows: (32 per zone)
                 puts "warn: patron without a table"
                 table = "A"
             end
+
+            t = table.ord - "A".ord + 1
+            employee_tables[t] ||= []
+            employee_tables[t] << employeeID
 
             # collect photos
             (0..11).each do |i|
@@ -93,14 +99,13 @@ Slots correspond to zones as follows: (32 per zone)
                 end
             end
         end
+        pbdata[:employee_tables] = employee_tables
 
         fn_pids = {}  # for updating LAY_filename_pids.txt
 
 
         # select photos for this sequence
         # photos = photos.find_all {|p| p.category == "friend" || p.category == "friends"}
-
-        photo_names = {}
 
         # group photos by TV zone
         tv_photos = photos.group_by {|p| Media::TABLE_INFO[p.table]["zone"]}
@@ -135,13 +140,33 @@ Slots correspond to zones as follows: (32 per zone)
                     end
                     GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(ISADORA_GEEKTRIO_DIR + dst, "jpg"))
                 end
-                photo_names[slot_base + i] = dst
                 fn_pids[dst] = pp.employee_id
             end
             slot_base += 32
         end
 
-        pbdata[:photo_names] = photo_names
+        # Format photos for tablet
+        employee_photos = {}
+        photos.each_with_index do |pp, i|
+            dst = "geektrio-#{i+1}.jpg"
+            db_photo = DATABASE_DIR + pp.path
+            # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
+            if File.exist?(db_photo)
+                GraphicsMagick.fit(db_photo, TABLETS_GEEKTRIO_DIR + dst, 400, 600, "jpg", 85)
+            else
+                while true
+                    r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
+                    break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
+                end
+                color = "rgb(#{r}%,#{g}%,#{b}%)"
+                annotate = "#{pp.path}, employee ID #{pp.employee_id}, table #{pp.table}"
+                h = rand(300) + 300
+                GraphicsMagick.convert("-size", "400x#{h}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(TABLETS_GEEKTRIO_DIR + dst, "jpg"))
+            end
+            employee_photos[pp.employee_id] ||= []
+            employee_photos[pp.employee_id] << TABLETS_GEEKTRIO_URL + dst
+        end
+        pbdata[:employee_photos] = employee_photos
 
         # any more pbdata ?
 
@@ -162,16 +187,31 @@ Slots correspond to zones as follows: (32 per zone)
         @isadora_delay = 0 # seconds
 
         pbdata = PlaybackData.read(TABLETS_GEEKTRIO_DIR)
+        opt_outs = Set.new(SeqOptOut.opt_outs)
 
-        @tablet_image_sets = {}
+        @tablet_images = {}
         # 1 => [IMG_BASE + profile_image_name, IMG_BASE + profile_image_name, IMG_BASE + profile_image_name]
         if defined?(TablettesController)
             enum = TablettesController.tablet_enum(nil)
         else
             enum = 1..25
         end
+        remaining_images = []
         enum.each do |t|
-            @tablet_image_sets[t] = pbdata[:geek_trio][t].collect {|set| set.collect {|img| Media::TABLET_DYNAMIC + img}}
+            #puts "table #{t} all people: #{pbdata[:employee_tables][t].inspect}"
+            people = pbdata[:employee_tables][t] || []
+            people.delete_if {|p| opt_outs.include?(p)}
+            table_images = people.collect {|p| pbdata[:employee_photos][p]}.flatten.shuffle
+            puts "table #{t} opted in people: #{people.inspect} has #{table_images.length} photos"
+            @tablet_images[t] = table_images.slice!(0, 16)
+            remaining_images.concat(table_images) # All the remainders go into the fallback pool
+        end
+        remaining_images.shuffle!
+        @tablet_images.each do |t, images|
+            if images.length < 16
+                puts "add #{16 - images.length} spare images for table #{t}"
+                images.concat(remaining_images.slice!(0, 16 - images.length))
+            end
         end
     end
 
@@ -220,11 +260,11 @@ Slots correspond to zones as follows: (32 per zone)
         if now > next_tablet_chorus - TABLET_TRIGGER_PREROLL
             puts "triggering geek trio chorus #{@tablet_chorus_index} on tablets"
             tablet_start_time = (next_tablet_chorus.to_f * 1000).round
-            @tablet_image_sets.each do |t, image_sets|
-                images = image_sets[@tablet_chorus_index]
+            @tablet_images.each do |t, images|
+                images = images.slice(@tablet_chorus_index, 4)
                 TablettesController.queue_command(t, 'geektrio', tablet_start_time, TABLET_IMAGE_INTERVAL, TABLET_CHORUS_DURATION, images)
             end
-            @tablet_chorus_index += 1
+            @tablet_chorus_index += 4
         end
     end
 end
