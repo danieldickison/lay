@@ -13,7 +13,12 @@ class SeqGeekTrio
 
     TABLET_TRIGGER_PREROLL = 10 # seconds; give them enough time to load dynamic images before presenting.
     TABLET_IMAGE_INTERVAL = 750 # ms; 2 beats @ 160 bpm
-    TABLET_CHORUS_DURATION = 12_000 # ms; 8 bars of 4 beats @ 160 bpm
+    TABLET_CHORUS_DURATIONS = [
+        18_000, # ms; 12 bars of 4 beats at @ 160 bpm
+        18_000,
+        24_000, # ms; 16 bars
+        30_000, # ms; 20 bars
+    ].freeze
     CHORUS_OFFSETS = [
         24.0,
         67.5,
@@ -262,7 +267,7 @@ Slots correspond to zones as follows: (32 per zone)
             tablet_start_time = (next_tablet_chorus.to_f * 1000).round
             @tablet_images.each do |t, images|
                 images = images.slice(@tablet_chorus_index, 4)
-                TablettesController.queue_command(t, 'geektrio', tablet_start_time, TABLET_IMAGE_INTERVAL, TABLET_CHORUS_DURATION, images)
+                TablettesController.queue_command(t, 'geektrio', tablet_start_time, TABLET_IMAGE_INTERVAL, TABLET_CHORUS_DURATIONS[@tablet_chorus_index / 4], images)
             end
             @tablet_chorus_index += 4
         end
