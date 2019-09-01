@@ -4,7 +4,7 @@ require('Isadora')
 # A simple cue that triggers tablet video, waits, then triggers isadora cue.
 class SeqSimpleVideo
 
-    attr_accessor(:start_time, :tablet_delay, :tablet_fade, :isadora_delay)
+    attr_accessor(:start_time, :tablet_delay, :tablet_fade, :isadora_delay, :debug)
 
     def initialize(cue, tablet_video)
         @is = Isadora.new
@@ -13,6 +13,12 @@ class SeqSimpleVideo
         @tablet_delay = 1.0
         @tablet_fade = 1.0
         @isadora_delay = 1.0
+    end
+
+    # override
+    def debug=(s)
+        @debug = s
+        @is.disable = @debug
     end
 
     def start
