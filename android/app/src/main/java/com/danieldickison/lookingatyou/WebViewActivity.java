@@ -23,6 +23,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -126,7 +127,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mContentView.post(new Runnable() {
                 @Override
                 public void run() {
-                    prepareNextVideoCue(path, seekTime, 0, timestamp);
+                    prepareNextVideoCue(path, seekTime, 0, timestamp, 1);
                 }
             });
         }
@@ -170,12 +171,22 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         @JavascriptInterface
+        public void setScreenBrightness(final float brightness) {
+            mContentView.post(new Runnable() {
+                @Override
+                public void run() {
+                    WebViewActivity.this.setScreenBrightness(brightness);
+                }
+            });
+        }
+
+        @JavascriptInterface
         public void setVolume(int percent) {
             AudioManager mgr = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
             assert mgr != null;
             int volume = Math.round(0.01f * percent * mgr.getStreamMaxVolume(AudioManager.STREAM_MUSIC));
             Log.d(TAG, "setting volume to " + volume);
-            mgr.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_SHOW_UI | AudioManager.FLAG_PLAY_SOUND);
+            mgr.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0);
         }
 
         @JavascriptInterface
@@ -223,11 +234,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         @Override
-        public void cueVideo(final String path, final long startTimestamp, final int fadeDuration) {
+        public void cueVideo(final String path, final long startTimestamp, final int fadeDuration, final float volume) {
             mContentView.post(new Runnable() {
                 @Override
                 public void run() {
-                    prepareNextVideoCue(path, 0, fadeDuration, startTimestamp);
+                    prepareNextVideoCue(path, 0, fadeDuration, startTimestamp, volume);
                 }
             });
         }
@@ -237,7 +248,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mContentView.post(new Runnable() {
                 @Override
                 public void run() {
-                    prepareNextVideoCue(null, 0, fadeDuration, 0);
+                    prepareNextVideoCue(null, 0, fadeDuration, 0, 0);
                 }
             });
         }
@@ -285,9 +296,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         mMulticastLock = wm.createMulticastLock("lay:webview");
 
         // Set max brightness
-        WindowManager.LayoutParams layout = getWindow().getAttributes();
-        layout.screenBrightness = 1F;
-        getWindow().setAttributes(layout);
+        setScreenBrightness(1f);
 
         if (checkPermission()) {
             Log.d(TAG, "already have necessary permissions");
@@ -296,6 +305,12 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         }
 
         connectToHost(getIntent().getStringExtra(HOST_EXTRA));
+    }
+
+    private void setScreenBrightness(float brightness) {
+        WindowManager.LayoutParams layout = getWindow().getAttributes();
+        layout.screenBrightness = brightness;
+        getWindow().setAttributes(layout);
     }
 
     public static final int MY_PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
@@ -414,7 +429,11 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         evalJS("updateClockOffset(" + offset + ", " + lastSuccess.getTime() + ")", new ValueCallback<String>() {
             @Override
             public void onReceiveValue(String s) {
-                mClockOffset = Long.parseLong(s);
+                if (s.equals("null")) {
+                    Log.w(TAG, "got null clock offset");
+                    return;
+                }
+                mClockOffset = (long) Double.parseDouble(s);
             }
         });
     }
@@ -458,8 +477,24 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
         });
     }
 
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        boolean consumed;
+        switch( event.getKeyCode() ) {
+            case KeyEvent.KEYCODE_VOLUME_UP:
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                consumed = true;
+                break;
+
+            default:
+                consumed = super.dispatchKeyEvent(event);
+                break;
+        }
+
+        return consumed;
+    }
+
     @MainThread
-    private void prepareNextVideoCue(String path, int seekTime, int fadeDuration, long startTimestamp) {
+    private void prepareNextVideoCue(String path, int seekTime, int fadeDuration, long startTimestamp, float volume) {
 
         Log.d(TAG, "prepareNextVideoCue: " + path);
 
@@ -467,6 +502,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             mVideoHolders[0].fadeOut(fadeDuration);
             mVideoHolders[1].fadeOut(fadeDuration);
             audioPlayer.stopAudio();
+            setScreenBrightness(0f);
         } else {
             mVideoViewIndex = (mVideoViewIndex + 1) % 2;
             String filePath = mDownloader.getCachedFilePath(path);
@@ -478,7 +514,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             holder.prepareCue(filePath, seekTime, fadeDuration, loop);
 
             String audioPath = path.replace(".mp4", ".wav");
-            prepareNextAudioCue(audioPath, seekTime, startTimestamp);
+            prepareNextAudioCue(audioPath, seekTime, startTimestamp, volume);
 
             if (startTimestamp >= 0) {
                 holder.startCueAt(startTimestamp);
@@ -487,15 +523,18 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
     }
 
     @MainThread
-    private void prepareNextAudioCue(String path, int seekTime, long startTimestamp) {
+    private void prepareNextAudioCue(String path, int seekTime, long startTimestamp, float volume) {
         if (path == null) {
             audioPlayer.stopAudio();
         } else {
             String filePath = mDownloader.getCachedFilePath(path);
-            if (filePath == null) return;
+            if (filePath == null) {
+                audioPlayer.stopAudio();
+                return;
+            }
 
             boolean loop = path.contains("loop");
-            audioPlayer.prepareAudio(filePath, seekTime, loop);
+            audioPlayer.prepareAudio(filePath, seekTime, loop, volume);
 
             if (startTimestamp >= 0) {
                 audioPlayer.startAudio(startTimestamp - AUDIO_LAG);
@@ -602,6 +641,7 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             @Override
             public void run() {
                 mediaPlayer.start();
+                setScreenBrightness(1f);
                 textureView.animate()
                         .setDuration(fadeInDuration)
                         .alpha(1);
@@ -679,13 +719,14 @@ public class WebViewActivity extends Activity implements NtpSync.Callback {
             playSilence();
         }
 
-        private void prepareAudio(String url, int seekTime, boolean loop) {
+        private void prepareAudio(String url, int seekTime, boolean loop, float volume) {
             this.url = url;
 
             mediaPlayer.reset();
             playingSilence = false;
             this.seekTime = seekTime;
             try {
+                mediaPlayer.setVolume(volume, volume);
                 mediaPlayer.setDataSource(url);
                 mediaPlayer.setLooping(loop);
                 mediaPlayer.prepareAsync();

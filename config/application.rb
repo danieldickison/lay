@@ -105,7 +105,7 @@ module Lay
 
         cue = message.to_a[0].to_i
         puts "received cue #{cue}"
-        @current_seq = case cue
+        @current_seq = case cue % 10000
         when 50
             #SeqSimpleVideo.new(50, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
             TablettesController.show_time = false
@@ -132,6 +132,7 @@ module Lay
         when 150
             SeqSimpleVideo.new(150, '/playback/media_tablets/101-Opening/101-111-C60-EthanFeed.mp4').tap do |s|
                 s.tablet_fade = 0.5
+                s.tablet_volume = 25
             end
         when 200
             TablettesController.send_osc_fade_out
@@ -182,10 +183,11 @@ module Lay
         end
 
         if @current_seq
+            @current_seq&.debug = true if cue >= 10000
             @current_seq.start_time = start_time
             @current_seq.start
-        else
-            # Proxy unknown cues directly to isadora
+        elsif cue < 10000
+            # Proxy unknown non-debug cues directly to isadora
             @isadora.send('/isadora/1', cue.to_s)
         end
       end

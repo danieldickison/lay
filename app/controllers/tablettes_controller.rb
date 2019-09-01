@@ -35,7 +35,7 @@ class TablettesController < ApplicationController
     @last_osc_ping_mutex = Mutex.new
     OSC_PING_INTERVAL = 5 # seconds
 
-    @show_time = false
+    @show_time = true
 
     skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :set_show_time, :start_cue, :stop_cue, :assets, :update_patron, :stats]
 
@@ -405,14 +405,14 @@ class TablettesController < ApplicationController
         return nil
     end
 
-    def self.send_osc_cue(video_path, start_time, fade_duration = 1)
+    def self.send_osc_cue(video_path, start_time, fade_duration = 1, volume = 100)
         start_time = (start_time.to_f * 1000).to_i.to_s # ms since epoch; string since OSC ints are only 32 bits
         fade_duration = (1000 * fade_duration).to_i
         @tablets.each_value do |tablet|
             begin
                 c = OSC::Client.new(tablet[:ip], 53000)
                 path = video_path.sub('?', tablet[:group].to_s)
-                c.send(OSC::Message.new('/tablet/cue', path, start_time, fade_duration))
+                c.send(OSC::Message.new('/tablet/cue', path, start_time, fade_duration, volume))
             rescue
                 puts "error sending OSC packet to #{tablet[:ip]}: #{$!}"
             end

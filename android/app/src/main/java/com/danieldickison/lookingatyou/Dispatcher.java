@@ -22,7 +22,7 @@ public class Dispatcher {
     public interface Handler {
         void logMessage(OSCMessage message);
         void download(String path);
-        void cueVideo(String path, long startTimestamp, int fadeDuration);
+        void cueVideo(String path, long startTimestamp, int fadeDuration, float volume);
         void stopVideo(int fadeDuration);
         void ping(long serverTime);
     }
@@ -115,7 +115,8 @@ public class Dispatcher {
             String path = args.popString();
             long startTimestamp = args.popLong(0);
             int fadeDuration = args.popInt(0);
-            handler.cueVideo(path, startTimestamp, fadeDuration);
+            float volume = args.popInt(100) / 100.0f;
+            handler.cueVideo(path, startTimestamp, fadeDuration, volume);
         }
     };
 
