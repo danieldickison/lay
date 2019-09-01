@@ -13,18 +13,57 @@ require('PlaybackData')
 
 class SeqOffTheRails
 
-    MEDIA_PROFILE   = Media::DYNAMIC + "/s_510-OTR_profile"
-    MEDIA_FACEBOOK  = Media::DYNAMIC + "/s_511-Facebook"
-    MEDIA_INSTAGRAM = Media::DYNAMIC + "/s_512-Instagram"
-    MEDIA_TRAVEL    = Media::DYNAMIC + "/s_531-Travel"
-    MEDIA_FOOD      = Media::DYNAMIC + "/s_532-Food"
-    IMG_PROFILE     = Media::TABLET_DYNAMIC + "/s_510-OTR_profile"  # broken
-    IMG_FACEBOOK    = Media::TABLET_DYNAMIC + "/s_511-Facebook"
-    IMG_INSTAGRAM   = Media::TABLET_DYNAMIC + "/s_512-Instagram"
-    IMG_TRAVEL      = Media::TABLET_DYNAMIC + "/s_531-Travel"
-    IMG_FOOD        = Media::TABLET_DYNAMIC + "/s_532-Food"
-    DATA_DIR        = Media::PLAYBACK + "/data_dynamic/112-OTR/"
-    DATABASE        = Media::DATABASE
+    ISADORA_OFFTHERAILS_PROFILE_DIR = Media::ISADORA_DIR + "s_510-OTR_profile/"
+    ISADORA_OFFTHERAILS_RECENT_DIR  = Media::ISADORA_DIR + "s_520-OTR_recent/"
+    ISADORA_OFFTHERAILS_TRAVEL_DIR  = Media::ISADORA_DIR + "s_531-Travel/"
+    ISADORA_OFFTHERAILS_FOOD_DIR    = Media::ISADORA_DIR + "s_532-Food/"
+
+    # MEDIA_PROFILE   = Media::DYNAMIC + "/s_510-OTR_profile"
+    # MEDIA_FACEBOOK  = Media::DYNAMIC + "/s_511-Facebook"
+    # MEDIA_INSTAGRAM = Media::DYNAMIC + "/s_512-Instagram"
+    # MEDIA_TRAVEL    = Media::DYNAMIC + "/s_531-Travel"
+    # MEDIA_FOOD      = Media::DYNAMIC + "/s_532-Food"
+
+    # IMG_PROFILE     = Media::TABLET_DYNAMIC + "/s_510-OTR_profile"  # broken
+    # IMG_FACEBOOK    = Media::TABLET_DYNAMIC + "/s_511-Facebook"
+    # IMG_INSTAGRAM   = Media::TABLET_DYNAMIC + "/s_512-Instagram"
+    # IMG_TRAVEL      = Media::TABLET_DYNAMIC + "/s_531-Travel"
+    # IMG_FOOD        = Media::TABLET_DYNAMIC + "/s_532-Food"
+    # DATA_DIR        = Media::PLAYBACK + "/data_dynamic/112-OTR/"
+    # DATABASE        = Media::DATABASE
+
+
+    TVS = ["TV23","TV22","TV21","C01","TV31","TV32","TV33"]
+
+    TABLE_TVS = {
+        "A" => ["TV21","TV31","TV32","TV33"],
+        "B" => ["TV21","TV31","TV32","TV33"],
+        "C" => ["TV21","TV31","TV32","TV33"],
+        "D" => ["TV31","TV32","TV33"],
+        "E" => ["TV31","TV32","TV33"],
+        "F" => ["TV21","TV31","TV32"],
+        "G" => ["TV21","TV31","TV32"],
+        "H" => ["TV22","TV21","TV31","TV32","TV33"],
+        "I" => ["TV21","TV31"],
+        "J" => ["TV22","TV21","TV31","TV32"],
+        "K" => ["TV23","TV22","TV21","TV31","TV32","TV33"],
+        "L" => ["TV23","TV22","TV21"],
+        "M" => ["TV23","TV22","TV21"],
+        "N" => ["TV23","TV22","TV21","TV31","TV32"],
+        "O" => ["TV23","TV22","TV21","TV31","TV32"],
+        "P" => ["TV23","TV22","TV21"],
+        "Q" => ["TV23","TV22","TV21","TV31"],
+        "R" => ["TV23","TV22","TV21"],
+        "S" => ["TV23","TV22","TV21","TV31"],
+        "T" => ["TV23","TV22","TV21"],
+        "U" => ["TV23","TV22","TV21"],
+        "V" => ["TV22","TV21","TV31"],
+        "W" => ["TV23","TV22","TV21","TV31","TV32"],
+        "X" => ["TV23","TV22","TV21","TV33"],
+        "Y" => ["TV22","TV21","TV33"],
+    }
+
+
 
     TV_ADDRESS = {
         # TVs:
@@ -37,14 +76,17 @@ class SeqOffTheRails
         # center projector:
         '01' => '/isadora-multi/8',
     }.freeze
+
     TV_TYPE_ID = {
         :tweet => 1,
         :fb => 2,
         :ig => 3,
     }.freeze
+
     FIRST_TV_ITEM_MAX_DELAY = 5
     TV_ITEM_INTERVAL_RANGE = 14..25
     TV_FEED_DELAY = 30
+
 
     def self.export
         pbdata = {}
@@ -52,86 +94,193 @@ class SeqOffTheRails
         # profiles
         # 180x180 circles
         puts "Profile..."
-        debug_images = `find "#{DATABASE}/test_profile" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
-        profile_image_names = {}
-        10.times do |i|
-            begin
-                r = rand(debug_images.length)
-                f = debug_images.delete_at(r).strip
-                name = "510-#{'%03d' % (i + 1)}-R02-OTR_profile.png"
-                GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
-                profile_image_names[i + 1] = name
-            rescue
-                puts $!.inspect
-                puts "retrying"
-                sleep(1)
-                retry
+        # debug_images = `find "#{DATABASE}/test_profile" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
+        # profile_image_names = {}
+        # 10.times do |i|
+        #     begin
+        #         r = rand(debug_images.length)
+        #         f = debug_images.delete_at(r).strip
+        #         name = "510-#{'%03d' % (i + 1)}-R02-OTR_profile.png"
+        #         GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
+        #         profile_image_names[i + 1] = name
+        #     rescue
+        #         puts $!.inspect
+        #         puts "retrying"
+        #         sleep(1)
+        #         retry
+        #     end
+        # end
+
+        # pbdata[:profile_image_names] = profile_image_names
+
+
+
+        # fill Isadora with 100 facebook and instagram pictures, using dummy if we've run out
+        rows = db.execute(<<~SQL).to_a
+            SELECT fbPostImage_1, employeeID
+            FROM datastore_patron WHERE fbPostImage_1 IS NOT NULL AND fbPostImage_1 != "" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+            UNION SELECT fbPostImage_2, employeeID
+            FROM datastore_patron WHERE fbPostImage_2 IS NOT NULL AND fbPostImage_2 != "" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+            UNION SELECT fbPostImage_3, employeeID
+            FROM datastore_patron WHERE fbPostImage_3 IS NOT NULL AND fbPostImage_3 != "" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+            UNION SELECT fbPostImage_4, employeeID
+            FROM datastore_patron WHERE fbPostImage_4 IS NOT NULL AND fbPostImage_4 != "" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+            UNION SELECT fbPostImage_5, employeeID
+            FROM datastore_patron WHERE fbPostImage_5 IS NOT NULL AND fbPostImage_5 != "" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+            UNION SELECT fbPostImage_6, employeeID
+            FROM datastore_patron WHERE fbPostImage_6 IS NOT NULL AND fbPostImage_6 != "" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+            UNION SELECT igPostImage_1, employeeID
+            FROM datastore_patron WHERE igPostImage_1 IS NOT NULL AND igPostImage_1 != "" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+            UNION SELECT igPostImage_2, employeeID
+            FROM datastore_patron WHERE igPostImage_2 IS NOT NULL AND igPostImage_2 != "" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+            UNION SELECT igPostImage_3, employeeID
+            FROM datastore_patron WHERE igPostImage_3 IS NOT NULL AND igPostImage_3 != "" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+            UNION SELECT igPostImage_4, employeeID
+            FROM datastore_patron WHERE igPostImage_4 IS NOT NULL AND igPostImage_4 != "" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+            UNION SELECT igPostImage_5, employeeID
+            FROM datastore_patron WHERE igPostImage_5 IS NOT NULL AND igPostImage_5 != "" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+            UNION SELECT igPostImage_6, employeeID
+            FROM datastore_patron WHERE igPostImage_6 IS NOT NULL AND igPostImage_6 != "" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+        SQL
+        100.times do |i|
+            if !(row = rows[i])
+                raise
+                # row = dummy_rows[i]
             end
+
+            # pull out extra columns
+            employeeID = r[-1].to_i
+
+            slot = "%03d" % i
+            dst = "520-#{slot}-R03-OTR_recent.jpg"
+            db_photo = DATABASE_DIR + row[0]
+            if File.exist?(db_photo)
+                GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_RECENT_DIR + dst, 640, 640, "jpg", 85)
+            else
+                while true
+                    r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
+                    break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
+                end
+                color = "rgb(#{r}%,#{g}%,#{b}%)"
+                annotate = "#{row[0]}, employee ID #{employee_id}"
+                if rand(2) == 1
+                    width  = 640
+                    height = rand(640) + 320
+                else
+                    height = 640
+                    width  = rand(640) + 320
+                end
+                GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(ISADORA_OFFTHERAILS_RECENT_DIR + dst, "jpg"))
+            end
+            fn_pids[dst] = pp.employee_id
         end
 
-        # Hard-coded for 6/21 
-        # Aislinn Curry
-        f = "#{DATABASE}/hard_profile/AislinnCurryTwitterPhoto.jpeg"
-        name = "510-011-R02-OTR_profile.png"
-        GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
-        profile_image_names[11] = name
 
-        # Cierra Cass
-        f = "#{DATABASE}/hard_profile/CierraCassTwitterPhoto.jpeg"
-        name = "510-012-R02-OTR_profile.png"
-        GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
-        profile_image_names[12] = name
+        # fill Isadora with 56 travel pictures, using dummy if we've run out
+        # ZONED
+        [   ["travel", "540-#-R03-OTR_travel.jpg", ISADORA_OFFTHERAILS_TRAVEL_DIR],
+            ["food", "550-#-R03-Food.jpg", ISADORA_OFFTHERAILS_FOOD_DIR]
+        ].each do |category, dst_template, isadora_dir|
+            rows = db.execute(<<~SQL).to_a
+                SELECT spImage_1, employeeID, "table"
+                FROM datastore_patron WHERE spCat_1 = #{category} AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-        # Kamala Sankaram
-        f = "#{DATABASE}/hard_profile/KamalaSankaramTwitterPhoto.jpg"
-        name = "510-013-R02-OTR_profile.png"
-        GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
-        profile_image_names[13] = name
+                UNION SELECT spImage_2, employeeID, "table"
+                FROM datastore_patron WHERE spCat_2 = #{category} AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-        # Anne Hiatt
-        f = "#{DATABASE}/hard_profile/AnneHiattTwitterPhoto.jpg"
-        name = "510-014-R02-OTR_profile.png"
-        GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
-        profile_image_names[14] = name
+                UNION SELECT spImage_3, employeeID, "table"
+                FROM datastore_patron WHERE spCat_3 = #{category} AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-        # Jason Cady
-        f = "#{DATABASE}/hard_profile/JasonCadyTwitterPhoto.jpg"
-        name = "510-015-R02-OTR_profile.png"
-        GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
-        profile_image_names[15] = name
+                UNION SELECT spImage_4, employeeID, "table"
+                FROM datastore_patron WHERE spCat_4 = #{category} AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-        # Nick Benacerraf
-        f = "#{DATABASE}/hard_profile/NicBenacerrafTwitterPhoto.jpeg"
-        name = "510-016-R02-OTR_profile.png"
-        GraphicsMagick.thumbnail(f, "#{MEDIA_PROFILE}/#{name}", 180, 180, "png")
-        profile_image_names[16] = name
+                UNION SELECT spImage_5, employeeID, "table"
+                FROM datastore_patron WHERE spCat_5 = #{category} AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-        pbdata[:profile_image_names] = profile_image_names
+                UNION SELECT spImage_6, employeeID, "table"
+                FROM datastore_patron WHERE spCat_6 = #{category} AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
+                UNION SELECT spImage_7, employeeID, "table"
+                FROM datastore_patron WHERE spCat_7 = #{category} AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-        [["facebook images", MEDIA_FACEBOOK, "511", "Facebook", :facebook_image_names],
-         ["instagram images", MEDIA_INSTAGRAM, "512", "Instagram", :instagram_image_names],
-         ["travel images", MEDIA_TRAVEL, "531", "Travel", :travel_image_names],
-         ["food images", MEDIA_FOOD, "532", "Food", :food_image_names]].each do |src, dst, num, type, pbkey|
-            puts "#{type}..."
-            image_names = {}
-            debug_images = `find "#{DATABASE}/#{src}" -name "*" -print`.lines.find_all {|f| File.extname(f.strip) != ""}
-            30.times do |i|
-                begin
-                    r = rand(debug_images.length)
-                    f = debug_images.delete_at(r).strip
-                    name = "#{num}-#{'%03d' % (i + 1)}-R03-#{type}.jpg"
-                    GraphicsMagick.fit(f, "#{dst}/#{name}", 480, 480, "jpg", 85)
-                    image_names[i + 1] = name
-                rescue
-                    puts $!.inspect
-                    puts "retrying"
-                    sleep(1)
-                    retry
+                UNION SELECT spImage_8, employeeID, "table"
+                FROM datastore_patron WHERE spCat_8 = #{category} AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+                UNION SELECT spImage_9, employeeID, "table"
+                FROM datastore_patron WHERE spCat_9 = #{category} AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+                UNION SELECT spImage_10, employeeID, "table"
+                FROM datastore_patron WHERE spCat_10 = #{category} AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+                UNION SELECT spImage_11, employeeID, "table"
+                FROM datastore_patron WHERE spCat_11 = #{category} AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+                UNION SELECT spImage_12, employeeID, "table"
+                FROM datastore_patron WHERE spCat_12 = #{category} AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+
+                UNION SELECT spImage_13, employeeID, "table"
+                FROM datastore_patron WHERE spCat_13 = #{category} AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+            SQL
+
+            tv_rows = rows.group_by do |r|
+                tvs = TABLE_TVS[r[-1]]
+                tvs << "C01"
+                tvs[rand(tvs.length)]  # result
+            end
+
+            dst_index = 1
+            TVS.each do |tv|
+                # 8 random photos for each tv
+                ph = tv_rows[tv].shuffle
+                (0..7).each do |i|
+                    pp = ph[i]
+                    if !pp
+                        raise
+                        # pp = dummy
+                    end
+
+                    # pull out extra columns
+                    employee_id = r[-2].to_i
+
+                    slot = "%03d" % dst_index
+                    dst_index += 1
+
+                    dst = dst_template.gsub("#", slot)
+                    db_photo = DATABASE_DIR + row[0]
+                    if File.exist?(db_photo)
+                        GraphicsMagick.fit(db_photo, isadora_dir + dst, 640, 640, "jpg", 85)
+                    else
+                        while true
+                            r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
+                            break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
+                        end
+                        color = "rgb(#{r}%,#{g}%,#{b}%)"
+                        annotate = "#{row[0]}, employee ID #{employee_id}"
+                        if rand(2) == 1
+                            width  = 640
+                            height = rand(640) + 320
+                        else
+                            height = 640
+                            width  = rand(640) + 320
+                        end
+                        GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(isadora_dir + dst, "jpg"))
+                    end
+                    fn_pids[dst] = employee_id
                 end
             end
-            pbdata[pbkey] = image_names
         end
+
 
         tweets = [
             # {:profile => 1, :tweet => 'hi i ate a sandwich adn it was good'},
