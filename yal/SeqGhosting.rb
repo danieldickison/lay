@@ -4,9 +4,11 @@ require('PlaybackData')
 
 class SeqGhosting
 
-    MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/s_410-Ghosting_profile/"
-    DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/ghosting/"
-    DATABASE      = Media::DATABASE
+    DATABASE_DIR = Media::DATABASE_DIR
+
+    ISADORA_GHOSTING_DIR = Media::ISADORA_DIR + "s_410-Ghosting_profile/"
+    TABLETS_GHOSTING_DIR = Media::TABLETS_DIR + "ghosting/"
+    TABLETS_GHOSTING_URL = Media::TABLETS_URL + "ghosting/"
 
 =begin
 http://projectosn.heinz.cmu.edu:8000/admin/datastore/patron/
@@ -37,8 +39,8 @@ Slots correspond to zones as follows: (8 per zone)
 
     # Updated Saturday morning, 2019-08-31
     def self.export(performance_id)
-        `mkdir -p '#{MEDIA_DYNAMIC}'`
-        `mkdir -p '#{Media::VOLUME + Media::TABLET_DYNAMIC}'`
+        `mkdir -p '#{ISADORA_GHOSTING_DIR}'`
+        `mkdir -p '#{TABLETS_GHOSTING_DIR}'`
         pbdata = {}
         db = SQLite3::Database.new(Yal::DB_FILE)
 
@@ -112,10 +114,10 @@ Slots correspond to zones as follows: (8 per zone)
 
                 slot = "%03d" % (slot_base + i)
                 dst = "410-#{slot}-R01-Ghosting_profile.jpg"
-                db_photo = Media::DATABASE + "/" + pp.path
+                db_photo = DATABASE_DIR + pp.path
                 # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
                 if File.exist?(db_photo)
-                    GraphicsMagick.thumbnail(db_photo, MEDIA_DYNAMIC + dst, 180, 180, "jpg", 85)
+                    GraphicsMagick.thumbnail(db_photo, ISADORA_GHOSTING_DIR + dst, 180, 180, "jpg", 85)
                 else
                     while true
                         r, g, b = rand(75), rand(75), rand(75)
@@ -123,7 +125,7 @@ Slots correspond to zones as follows: (8 per zone)
                     end
                     color = "rgb(#{r}%,#{g}%,#{b}%)"
                     annotate = "#{pp.path}, employee ID #{pp.employee_id}, table #{pp.table}"
-                    GraphicsMagick.convert("-size", "180x180", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(MEDIA_DYNAMIC + dst, "jpg"))
+                    GraphicsMagick.convert("-size", "180x180", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(ISADORA_GHOSTING_DIR + dst, "jpg"))
                 end
 
                 photo_names[slot_base + i] = dst
@@ -152,11 +154,11 @@ Slots correspond to zones as follows: (8 per zone)
 
         employee_photos = {}
         photos.each_with_index do |pp, i|
-            dst = Media::TABLET_DYNAMIC + "/ghosting-#{i+1}.jpg"
-            db_photo = Media::DATABASE + "/" + pp.path
+            dst = "ghosting-#{i+1}.jpg"
+            db_photo = DATABASE_DIR + pp.path
             # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
             if File.exist?(db_photo)
-                GraphicsMagick.thumbnail(db_photo, Media::VOLUME + dst, 180, 180, "jpg", 85)
+                GraphicsMagick.thumbnail(db_photo, TABLETS_GHOSTING_DIR + dst, 180, 180, "jpg", 85)
             else
                 while true
                     r, g, b = rand(75), rand(75), rand(75)
@@ -164,15 +166,15 @@ Slots correspond to zones as follows: (8 per zone)
                 end
                 color = "rgb(#{r}%,#{g}%,#{b}%)"
                 annotate = "#{pp.path}, employee ID #{pp.employee_id}, table #{pp.table}"
-                GraphicsMagick.convert("-size", "180x180", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(MEDIA_DYNAMIC + dst, "jpg"))
+                GraphicsMagick.convert("-size", "180x180", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(TABLETS_GHOSTING_DIR + dst, "jpg"))
             end
             employee_photos[pp.employee_id] ||= []
-            employee_photos[pp.employee_id] << dst
+            employee_photos[pp.employee_id] << TABLETS_GHOSTING_URL + dst
         end
         pbdata[:employee_photos] = employee_photos
 
 
-        PlaybackData.write(DATA_DYNAMIC, pbdata)
+        PlaybackData.write(TABLETS_GHOSTING_DIR, pbdata)
         PlaybackData.merge_filename_pids(fn_pids)
     end
 
@@ -205,7 +207,7 @@ Slots correspond to zones as follows: (8 per zone)
         @prepare_sleep = 1 # second
         @isadora_delay = 2 # seconds
 
-        pbdata = PlaybackData.read(DATA_DYNAMIC)
+        pbdata = PlaybackData.read(TABLETS_GHOSTING_DIR)
 
         @tablet_images = {}
         # 1 => [IMG_URL + photo_name, IMG_URL + photo_name, IMG_URL + photo_name]

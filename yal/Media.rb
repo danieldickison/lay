@@ -7,6 +7,29 @@ class Media
         VOLUME = ENV["HOME"] + "/lay-media"
     end
 
+
+    # Tablet media goes in VOLUME + "/playback/media_tablet_dynamic/"
+    # PLAYBACK = "/playback"
+    #           Media::VOLUME + Media::PLAYBACK + "/media_tablet_dynamic"
+    # PLAYBACK_DIR = VOLUME + PLAYBACK
+    #           Media::PLAYBACK_DIR + "/media_tablet_dynamic"
+    # Tablet URLs are like "/playback/media_tablet_dynamic/"
+    #           Media::PLAYBACK + "/media_tablet_dynamic"
+    # TABLET_DIR = PLAYBACK_DIR + "/media_tablet_dynamic"
+    #           Media::TABLET_DIR + "/ghosting.jpg"
+
+    # Isadora media goes in VOLUME + "/playback/media_dynamic/<sequence>/"
+    #           Media::VOLUME + Media::PLAYBACK + "/media_dynamic/<sequence>/"
+
+
+    ISADORA_DIR = VOLUME + "/playback/media_dynamic/"
+
+    TABLETS_URL = "/playback/media_tablet_dynamic/"
+    TABLETS_DIR = VOLUME + "/playback/media_tablet_dynamic/"
+
+    DATABASE_DIR = VOLUME + "/db/"
+
+
     # THIS IS A MESS
     DATABASE = VOLUME + "/db"
     PLAYBACK = VOLUME + "/playback"
