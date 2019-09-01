@@ -67,6 +67,7 @@ module PlaybackData
 
     DEV_DATA = {
         :people_at_tables => {},
+        :photo_names => Hash.new('placeholder.jpg'),
         :profile_image_names => Hash.new('placeholder.jpg'),
         :facebook_image_names => Hash.new('placeholder.jpg'),
         :instagram_image_names => Hash.new('placeholder.jpg'),
