@@ -62,7 +62,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         },
     }
 
-    attr_accessor(:state, :start_time)
+    attr_accessor(:state, :start_time, :debug)
 
     def initialize
         @is = Isadora.new
@@ -90,6 +90,12 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         #         )
         #     end
         # end
+    end
+
+    # override
+    def debug=(s)
+        @debug = s
+        @is.disable = @debug
     end
 
     def start
