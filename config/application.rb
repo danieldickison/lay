@@ -155,8 +155,8 @@ module Lay
             TablettesController.send_osc_fade_out
         when 500
             SeqGhosting.new
-        when 600
-            TablettesController.send_osc_fade_out
+        when 510
+            TablettesController.send_osc_fade_out(5)
         when 700
             SeqSimpleVideo.new(700, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
         when 710
