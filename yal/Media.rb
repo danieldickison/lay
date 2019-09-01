@@ -4,7 +4,7 @@ class Media
     elsif JOE_DEVELOPMENT
         VOLUME = ENV["HOME"] + "/lay-media"
     else
-        VOLUME = ENV["HOME"] + "/lay-media"
+        VOLUME = ENV["HOME"] + "/src/lay/public"
     end
 
 
