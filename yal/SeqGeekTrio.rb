@@ -3,10 +3,13 @@ require('Media')
 require('PlaybackData')
 
 class SeqGeekTrio
+    DATABASE_DIR = Media::DATABASE_DIR
 
-    MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/s_420-GeekTrio/"
-    DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/107-GeekTrio/"
-    DATABASE      = Media::DATABASE
+    ISADORA_GEEKTRIO_DIR = Media::ISADORA_DIR + "s_420-GeekTrio/"
+    TABLETS_GEEKTRIO_DIR = Media::TABLETS_DIR + "geektrio/"
+    TABLETS_GEEKTRIO_URL = Media::TABLETS_URL + "geektrio/"
+
+
 
     TABLET_TRIGGER_PREROLL = 10 # seconds; give them enough time to load dynamic images before presenting.
     TABLET_IMAGE_INTERVAL = 800 # ms; 2 beats @ 150 bpm
@@ -48,7 +51,7 @@ Slots correspond to zones as follows: (32 per zone)
 
     # Updated Saturday afternoon, 2019-08-31
     def self.export(performance_id)
-        `mkdir -p '#{MEDIA_DYNAMIC}'`
+        `mkdir -p '#{ISADORA_GEEKTRIO_DIR}'`
         pbdata = {}
         db = SQLite3::Database.new(Yal::DB_FILE)
 
@@ -112,16 +115,26 @@ Slots correspond to zones as follows: (32 per zone)
 
                 slot = "%03d" % (slot_base + i)
                 dst = "s_420-#{slot}-R03-GeekTrio.jpg"
-                db_photo = Media::DATABASE + "/" + pp.path
+                db_photo = DATABASE_DIR + pp.path
                 # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
                 if File.exist?(db_photo)
-                    f = db_photo
-                    note = nil
+                    GraphicsMagick.fit(db_photo, ISADORA_GEEKTRIO_DIR + dst, 640, 640, "jpg", 85)
                 else
-                    f = Media::YAL + "/photo#{rand(2)+1}.png"
-                    note = "#{pp.path}, employeeID #{pp.employee_id}, table #{pp.table}"
+                    while true
+                        r, g, b = rand(75), rand(75), rand(75)
+                        break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
+                    end
+                    color = "rgb(#{r}%,#{g}%,#{b}%)"
+                    annotate = "#{pp.path}, employee ID #{pp.employee_id}, table #{pp.table}"
+                    if rand(2) == 1
+                        width  = 640
+                        height = rand(640) + 320
+                    else
+                        height = 640
+                        width  = rand(640) + 320
+                    end
+                    GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(ISADORA_GEEKTRIO_DIR + dst, "jpg"))
                 end
-                GraphicsMagick.fit(f, MEDIA_DYNAMIC + dst, 640, 640, "jpg", 85, note)
                 photo_names[slot_base + i] = dst
                 fn_pids[dst] = pp.employee_id
             end
@@ -132,7 +145,7 @@ Slots correspond to zones as follows: (32 per zone)
 
         # any more pbdata ?
 
-        PlaybackData.write(DATA_DYNAMIC, pbdata)
+        PlaybackData.write(TABLETS_GEEKTRIO_DIR, pbdata)
         PlaybackData.merge_filename_pids(fn_pids)
     end
 
@@ -148,7 +161,7 @@ Slots correspond to zones as follows: (32 per zone)
         @prepare_sleep = 1 # second
         @isadora_delay = 0 # seconds
 
-        pbdata = PlaybackData.read(DATA_DYNAMIC)
+        pbdata = PlaybackData.read(TABLETS_GEEKTRIO_DIR)
 
         @tablet_image_sets = {}
         # 1 => [IMG_BASE + profile_image_name, IMG_BASE + profile_image_name, IMG_BASE + profile_image_name]
