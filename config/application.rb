@@ -345,6 +345,7 @@ module Lay
       end
 
       `killall "Google Chrome"`
+      sleep(1)
       `open "http://localhost/tablettes/director" -a "Google Chrome"`
 
       puts "Playback server running"
