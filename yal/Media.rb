@@ -28,6 +28,7 @@ class Media
     TABLETS_DIR = VOLUME + "/playback/media_tablet_dynamic/"
 
     DATABASE_DIR = VOLUME + "/db/"
+    DATABASE_IMG_DIR = DATABASE_DIR + "images/"
 
 
     # THIS IS A MESS

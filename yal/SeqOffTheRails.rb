@@ -12,8 +12,6 @@ require('Media')
 require('PlaybackData')
 
 class SeqOffTheRails
-    DATABASE_DIR = Media::DATABASE_DIR
-
     ISADORA_OFFTHERAILS_PROFILE_DIR = Media::ISADORA_DIR + "s_510-OTR_profile/"
     ISADORA_OFFTHERAILS_RECENT_DIR  = Media::ISADORA_DIR + "s_520-OTR_recent/"
     ISADORA_OFFTHERAILS_TRAVEL_DIR  = Media::ISADORA_DIR + "s_531-Travel/"
@@ -88,7 +86,7 @@ class SeqOffTheRails
 
         # fill Isadora with 100 facebook and instagram pictures, using dummy if we've run out
         rows = db.execute(<<~SQL).to_a
-            SELECT employeeID, "table", firstName, fbProfilePhoto, twitterProfilePhoto,
+            SELECT pid, seating, firstName, fbProfilePhoto, twitterProfilePhoto,
             fbPostImage_1, fbPostImage_2, fbPostImage_3, fbPostImage_4, fbPostImage_5, fbPostImage_6,
             igPostImage_1, igPostImage_2, igPostImage_3, igPostImage_4, igPostImage_5, igPostImage_6,
             tweetText_1, tweetText_2
@@ -102,11 +100,11 @@ class SeqOffTheRails
         tablet_slot = 1
 
         rows.each do |row|
-            employeeID = row[0].to_i
-            table = row[1]
+            pid = row[0].to_i
+            table = row[1][0]
             name = row[2]
 
-            puts "table: #{table} employee #{employeeID}"
+            puts "table: #{table} employee #{pid}"
             tvs = Media::TABLE_TVS[table] + ["C01"]
             tv = tvs[rand(tvs.length)]
 
@@ -124,7 +122,7 @@ class SeqOffTheRails
             isadora_profile_slot += 1
             slot = "%03d" % isa_profile_num
             isa_profile = "510-#{slot}-R02-OTR_profile.png"
-            db_photo = DATABASE_DIR + db_profile
+            db_photo = Media::DATABASE_IMG_DIR + db_profile
             if File.exist?(db_photo)
                 GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, 180, 180, "png")
             else
@@ -133,10 +131,10 @@ class SeqOffTheRails
                     break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                 end
                 color = "rgb(#{r}%,#{g}%,#{b}%)"
-                annotate = "profile, employee ID #{employeeID}"
+                annotate = "profile, employee ID #{pid}"
                 GraphicsMagick.convert("-size", "180x180", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, "png"))
             end
-            fn_pids[isa_profile] = employeeID
+            fn_pids[isa_profile] = pid
 
             # for tablets
             tab_profile = "offtherails-#{tablet_slot}.png"
@@ -154,7 +152,7 @@ class SeqOffTheRails
                     isadora_recent_slot += 1
                     slot = "%03d" % isa_photo_num
                     isa_photo = "520-#{slot}-R03-OTR_recent.jpg"
-                    db_photo = DATABASE_DIR + row[0]
+                    db_photo = Media::DATABASE_IMG_DIR + row[i]
                     if File.exist?(db_photo)
                         GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, 640, 640, "jpg", 85)
                     else
@@ -163,7 +161,7 @@ class SeqOffTheRails
                             break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                         end
                         color = "rgb(#{r}%,#{g}%,#{b}%)"
-                        annotate = "facebook image, employee ID #{employeeID}"
+                        annotate = "facebook image, employee ID #{pid}"
                         if rand(2) == 1
                             width  = 640
                             height = rand(640) + 320
@@ -173,14 +171,14 @@ class SeqOffTheRails
                         end
                         GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, "jpg"))
                     end
-                    fn_pids[isa_photo] = employeeID
+                    fn_pids[isa_photo] = pid
 
                     # for tablets
                     tab_photo = "offtherails-#{tablet_slot}.png"
                     tablet_slot += 1
                     U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
-                    posts << post_struct.new("fb", employeeID, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
+                    posts << post_struct.new("fb", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
                 end
             end
 
@@ -194,7 +192,7 @@ class SeqOffTheRails
                     isadora_recent_slot += 1
                     slot = "%03d" % isa_photo_num
                     isa_photo = "520-#{slot}-R03-OTR_recent.jpg"
-                    db_photo = DATABASE_DIR + row[0]
+                    db_photo = Media::DATABASE_IMG_DIR + row[i]
                     if File.exist?(db_photo)
                         GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, 640, 640, "jpg", 85)
                     else
@@ -203,7 +201,7 @@ class SeqOffTheRails
                             break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                         end
                         color = "rgb(#{r}%,#{g}%,#{b}%)"
-                        annotate = "instagram image, employee ID #{employeeID}"
+                        annotate = "instagram image, employee ID #{pid}"
                         if rand(2) == 1
                             width  = 640
                             height = rand(640) + 320
@@ -213,14 +211,14 @@ class SeqOffTheRails
                         end
                         GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, "jpg"))
                     end
-                    fn_pids[isa_photo] = employeeID
+                    fn_pids[isa_photo] = pid
 
                     # for tablets
                     tab_photo = "offtherails-#{tablet_slot}.png"
                     tablet_slot += 1
                     U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
-                    posts << post_struct.new("ig", employeeID, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
+                    posts << post_struct.new("ig", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
                 end
             end
 
@@ -229,7 +227,7 @@ class SeqOffTheRails
             # twitter posts
             (17..18).each do |i|
                 if row[i] && row[i] != ""
-                    posts << post_struct.new("tw", employeeID, table, name, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, nil, nil, row[i])
+                    posts << post_struct.new("tw", pid, table, name, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, nil, nil, row[i])
                 end
             end
 
@@ -243,48 +241,48 @@ class SeqOffTheRails
             ["food", "550-#-R03-Food.jpg", ISADORA_OFFTHERAILS_FOOD_DIR]
         ].each do |category, dst_template, isadora_dir|
             rows = db.execute(<<~SQL).to_a
-                SELECT spImage_1, employeeID, "table"
+                SELECT spImage_1, pid, seating
                 FROM datastore_patron WHERE spCat_1 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-                UNION SELECT spImage_2, employeeID, "table"
+                UNION SELECT spImage_2, pid, seating
                 FROM datastore_patron WHERE spCat_2 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-                UNION SELECT spImage_3, employeeID, "table"
+                UNION SELECT spImage_3, pid, seating
                 FROM datastore_patron WHERE spCat_3 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-                UNION SELECT spImage_4, employeeID, "table"
+                UNION SELECT spImage_4, pid, seating
                 FROM datastore_patron WHERE spCat_4 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-                UNION SELECT spImage_5, employeeID, "table"
+                UNION SELECT spImage_5, pid, seating
                 FROM datastore_patron WHERE spCat_5 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-                UNION SELECT spImage_6, employeeID, "table"
+                UNION SELECT spImage_6, pid, seating
                 FROM datastore_patron WHERE spCat_6 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-                UNION SELECT spImage_7, employeeID, "table"
+                UNION SELECT spImage_7, pid, seating
                 FROM datastore_patron WHERE spCat_7 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-                UNION SELECT spImage_8, employeeID, "table"
+                UNION SELECT spImage_8, pid, seating
                 FROM datastore_patron WHERE spCat_8 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-                UNION SELECT spImage_9, employeeID, "table"
+                UNION SELECT spImage_9, pid, seating
                 FROM datastore_patron WHERE spCat_9 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-                UNION SELECT spImage_10, employeeID, "table"
+                UNION SELECT spImage_10, pid, seating
                 FROM datastore_patron WHERE spCat_10 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-                UNION SELECT spImage_11, employeeID, "table"
+                UNION SELECT spImage_11, pid, seating
                 FROM datastore_patron WHERE spCat_11 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-                UNION SELECT spImage_12, employeeID, "table"
+                UNION SELECT spImage_12, pid, seating
                 FROM datastore_patron WHERE spCat_12 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
 
-                UNION SELECT spImage_13, employeeID, "table"
+                UNION SELECT spImage_13, pid, seating
                 FROM datastore_patron WHERE spCat_13 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
             SQL
 
             tv_rows = rows.group_by do |r|
-                tvs = Media::TABLE_TVS[r[-1]] + ["C01"]
+                tvs = Media::TABLE_TVS[r[-1][0]] + ["C01"]
                 tvs[rand(tvs.length)]  # result
             end
 
@@ -301,13 +299,13 @@ class SeqOffTheRails
                     end
 
                     # pull out extra columns
-                    employeeID = pp[-2].to_i
-                    table = pp[-1]
+                    pid = pp[-2].to_i
+                    table = pp[-1][0]
 
                     slot = "%03d" % (slot_base + i)
 
                     dst = dst_template.gsub("#", slot)
-                    db_photo = DATABASE_DIR + pp[0]
+                    db_photo = Media::DATABASE_IMG_DIR + pp[0]
                     if File.exist?(db_photo)
                         GraphicsMagick.fit(db_photo, isadora_dir + dst, 640, 640, "jpg", 85)
                     else
@@ -316,7 +314,7 @@ class SeqOffTheRails
                             break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                         end
                         color = "rgb(#{r}%,#{g}%,#{b}%)"
-                        annotate = "#{category}, employee ID #{employeeID} at table #{table}"
+                        annotate = "#{category}, employee ID #{pid} at table #{table}"
                         if rand(2) == 1
                             width  = 640
                             height = rand(640) + 320
@@ -326,7 +324,7 @@ class SeqOffTheRails
                         end
                         GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(isadora_dir + dst, "jpg"))
                     end
-                    fn_pids[dst] = employeeID
+                    fn_pids[dst] = pid
                 end
                 slot_base += 8
             end
@@ -352,7 +350,7 @@ class SeqOffTheRails
         # employee tables
         employees = db.execute(<<~SQL).to_a
             SELECT
-                employeeID, "table"
+                pid, seating
             FROM datastore_patron
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
         SQL
@@ -360,7 +358,7 @@ class SeqOffTheRails
         # group employees by table
         employee_tables = {}
         employees.each do |p|
-            t = p[1].ord - "A".ord + 1
+            t = p[1][0].ord - "A".ord + 1
             employee_tables[t] ||= []
             employee_tables[t] << p[0].to_i
         end
