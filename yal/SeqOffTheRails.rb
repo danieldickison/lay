@@ -547,11 +547,19 @@ class SeqOffTheRails
                     @state = :trigger
                 end
             when :trigger
+                type = if @item[:text] && @item[:text] != '' && @item[:isa_photo_num]
+                    1
+                elsif @item[:text] && @item[:text] != ''
+                    2
+                else
+                    3
+                end
                 @is.send(@osc_address,
-                    @item[:isa_profile_num] ? @item[:isa_profile_num] % 300 : -1,  # profile pic
+                    # The % 300 is a temporary hack to avoid sending references to images isadora hasn't loaded (max 300 per category)
+                    @item[:isa_profile_num] ? (@item[:isa_profile_num] % 300) : -1,  # profile pic
                     @item[:isa_photo_num] ? (@item[:isa_photo_num] % 300) : -1,    # photo
-                    TV_TYPE_ID[@item[:type]] || 0,      # type
-                    @item[:text] ? @item[:text] + '🍣' : ''              # text
+                    type,
+                    @item[:text] || '' # text
                 )
                 @state = :idle
             end
