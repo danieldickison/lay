@@ -2,6 +2,9 @@ require('Media')
 
 =begin
 High level actions that happen before, during and after the show.
+
+For Isadoras and tablets: export <performance number>
+Right before showtime: finalize_last_minute_data <performance number>
 =end
 
 
@@ -91,7 +94,13 @@ end
 
 
 class Yal
-    def cli_finalize_last_minute_data
-        Showtime.finalize_last_minute_data
+    def cli_finalize_last_minute_data(*args)
+        performance_number = args.shift
+        raise "bad performance_number" if !performance_number
+        db = SQLite3::Database.new(DB_FILE)
+        performance_id = db.execute(<<~SQL).first[0]
+            SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
+        SQL
+        Showtime.finalize_last_minute_data(performance_id)
     end
 end
