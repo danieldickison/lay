@@ -551,7 +551,7 @@ class SeqOffTheRails
                     @item[:isa_profile_num] ? @item[:isa_profile_num] % 300 : -1,  # profile pic
                     @item[:isa_photo_num] ? (@item[:isa_photo_num] % 300) : -1,    # photo
                     TV_TYPE_ID[@item[:type]] || 0,      # type
-                    @item[:text] || ''              # text
+                    @item[:text] ? @item[:text] + '🍣' : ''              # text
                 )
                 @state = :idle
             end
