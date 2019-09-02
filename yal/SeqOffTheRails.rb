@@ -105,7 +105,7 @@ class SeqOffTheRails
         pbdata = {}
         fn_pids = {}  # for updating LAY_filename_pids.txt
 
-        post_struct = Struct.new(:type, :employee_id, :table, :isa_profile, :tab_profile, :isa_photo, :tab_photo, :text)
+        post_struct = Struct.new(:type, :employee_id, :table, :tv, :isa_profile_num, :tab_profile, :isa_photo_num, :tab_photo, :text)
 
         # fill Isadora with 100 facebook and instagram pictures, using dummy if we've run out
         rows = db.execute(<<~SQL).to_a
@@ -126,6 +126,10 @@ class SeqOffTheRails
             employeeID = row[0].to_i
             table = row[1]
 
+            tvs = TABLE_TVS[table]
+            tvs = tvs + tvs << "C01"
+            tv = tvs[rand(tvs.length)]
+
             if row[2] && row[2] != ""
                 db_profile = row[2]
             elsif row[3] && row[3] != ""
@@ -136,8 +140,9 @@ class SeqOffTheRails
 
             # make the profile image
             # for Isadora
-            slot = "%03d" % isadora_profile_slot
+            isa_profile_num = isadora_profile_slot
             isadora_profile_slot += 1
+            slot = "%03d" % isa_profile_num
             isa_profile = "510-#{slot}-R02-OTR_profile.png"
             db_photo = DATABASE_DIR + db_profile
             if File.exist?(db_photo)
@@ -156,7 +161,7 @@ class SeqOffTheRails
             # for tablets
             tab_profile = "offtherails-#{tablet_slot}.png"
             tablet_slot += 1
-            U.sh("cp", "-a", ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, TABLETS_OFFTHERAILS_URL + tab_profile)
+            U.sh("cp", "-a", ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, TABLETS_OFFTHERAILS_DIR + tab_profile)
 
 
             # facebook posts
@@ -164,8 +169,9 @@ class SeqOffTheRails
                 if row[i] && row[i] != ""
                     # make the post image
                     # for isadora
-                    slot = "%03d" % isadora_recent_slot
+                    isa_photo_num = isadora_recent_slot
                     isadora_recent_slot += 1
+                    slot = "%03d" % isa_photo_num
                     isa_photo = "520-#{slot}-R03-OTR_recent.jpg"
                     db_photo = DATABASE_DIR + row[0]
                     if File.exist?(db_photo)
@@ -193,7 +199,7 @@ class SeqOffTheRails
                     tablet_slot += 1
                     U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
-                    post_struct.new("fb", employeeID, table, isa_profile, tab_profile, isa_photo, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
+                    posts << post_struct.new("fb", employeeID, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
                 end
             end
 
@@ -203,8 +209,9 @@ class SeqOffTheRails
                 if row[i] && row[i] != ""
                     # make the post image
                     # for isadora
-                    slot = "%03d" % isadora_recent_slot
+                    isa_photo_num = isadora_recent_slot
                     isadora_recent_slot += 1
+                    slot = "%03d" % isa_photo_num
                     isa_photo = "520-#{slot}-R03-OTR_recent.jpg"
                     db_photo = DATABASE_DIR + row[0]
                     if File.exist?(db_photo)
@@ -232,7 +239,7 @@ class SeqOffTheRails
                     tablet_slot += 1
                     U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
-                    post_struct.new("ig", employeeID, table, isa_profile, tab_profile, isa_photo, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
+                    posts << post_struct.new("ig", employeeID, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
                 end
             end
 
@@ -240,7 +247,7 @@ class SeqOffTheRails
             # twitter posts
             (16..17).each do |i|
                 if row[i] && row[i] != ""
-                    post_struct.new("tw", employeeID, table, isa_profile, tab_profile, nil, nil, row[i])
+                    posts << post_struct.new("tw", employeeID, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, nil, nil, row[i])
                 end
             end
 
@@ -342,6 +349,8 @@ class SeqOffTheRails
             end
         end
 
+
+pp posts  # debug
 
         # employee tables
         employees = db.execute(<<~SQL).to_a
