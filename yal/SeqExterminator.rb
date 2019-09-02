@@ -77,8 +77,8 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
     # ExterminatorLite tablet js variant params
     TABLET_LITE_TIMING = {
         :travel => {
-            :in         => 3,#30.0,
-            :conclusion => 5,#50.15,
+            :in         => 30.0,
+            :conclusion => 50.15,
             :out        => 57.0,
         },
         :interest => {
