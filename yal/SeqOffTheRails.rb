@@ -37,38 +37,6 @@ class SeqOffTheRails
     # DATABASE        = Media::DATABASE
 
 
-    TVS = ["TV23","TV22","TV21","C01","TV31","TV32","TV33"]
-
-    TABLE_TVS = {
-        "A" => ["TV21","TV31","TV32","TV33"],
-        "B" => ["TV21","TV31","TV32","TV33"],
-        "C" => ["TV21","TV31","TV32","TV33"],
-        "D" => ["TV31","TV32","TV33"],
-        "E" => ["TV31","TV32","TV33"],
-        "F" => ["TV21","TV31","TV32"],
-        "G" => ["TV21","TV31","TV32"],
-        "H" => ["TV22","TV21","TV31","TV32","TV33"],
-        "I" => ["TV21","TV31"],
-        "J" => ["TV22","TV21","TV31","TV32"],
-        "K" => ["TV23","TV22","TV21","TV31","TV32","TV33"],
-        "L" => ["TV23","TV22","TV21"],
-        "M" => ["TV23","TV22","TV21"],
-        "N" => ["TV23","TV22","TV21","TV31","TV32"],
-        "O" => ["TV23","TV22","TV21","TV31","TV32"],
-        "P" => ["TV23","TV22","TV21"],
-        "Q" => ["TV23","TV22","TV21","TV31"],
-        "R" => ["TV23","TV22","TV21"],
-        "S" => ["TV23","TV22","TV21","TV31"],
-        "T" => ["TV23","TV22","TV21"],
-        "U" => ["TV23","TV22","TV21"],
-        "V" => ["TV22","TV21","TV31"],
-        "W" => ["TV23","TV22","TV21","TV31","TV32"],
-        "X" => ["TV23","TV22","TV21","TV33"],
-        "Y" => ["TV22","TV21","TV33"],
-    }
-
-
-
     TV_POST_ADDRESS = {
         # TVs:
         'TV21' => '/isadora-multi/2',
@@ -139,7 +107,7 @@ class SeqOffTheRails
             name = row[2]
 
             puts "table: #{table} employee #{employeeID}"
-            tvs = TABLE_TVS[table] + ["C01"]
+            tvs = Media::TABLE_TVS[table] + ["C01"]
             tv = tvs[rand(tvs.length)]
 
             if row[3] && row[3] != ""
@@ -316,12 +284,12 @@ class SeqOffTheRails
             SQL
 
             tv_rows = rows.group_by do |r|
-                tvs = TABLE_TVS[r[-1]] + ["C01"]
+                tvs = Media::TABLE_TVS[r[-1]] + ["C01"]
                 tvs[rand(tvs.length)]  # result
             end
 
             slot_base = 1
-            TVS.each do |tv|
+            Media::TVS.each do |tv|
                 # 8 random photos for each tv
                 ph = tv_rows[tv].shuffle
                 (0..7).each do |i|
