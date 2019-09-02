@@ -38,27 +38,38 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
     # }.freeze
     TABLET_CONCLUSIONS = {
         :travel => [
-            'assessment: away from family',
-            'assessment: away from hometown',
-            'assessment: impulsive enthusiast',
+            'away from family',
+            'away from hometown',
+            'impulsive enthusiast',
+            'scuba potential',
+            'climate sensitive',
+            'insurance upsurge',
         ],
         :interest => [
-            'assessment: flamenco ally',
-            'assessment: beer drinker',
-            'assessment: Sweetgreen use uptick',
+            'flamenco ally',
+            'beer drinker',
+            'Sweetgreen use uptick',
+            'late adopter',
+            'DSA adjacent',
+            'petition receptive',
         ],
         :friend => [
-            'assessment: single/looking',
-            'assessment: Democrat adjacent',
-            'assessment: relationship unstable',
-            'assessment: expat ally',
+            'single/looking',
+            'relationship unstable',
+            'expat ally',
+            'yogawear spike',
+            'extroversion falloff',
+            'gentrifier',
         ],
         :shared => [
-            'assessment: birth control likely',
-            'assessment: daycare use soon',
-            'assessment: will change zipcode',
+            'birth control likely',
+            'daycare use soon',
+            'will change zipcode',
+            'commuter',
+            'economically engaged',
+            'pet product increase',
         ],
-    }
+    }.freeze
 
     # ExterminatorLite tablet js variant params
     TABLET_LITE_TIMING = {

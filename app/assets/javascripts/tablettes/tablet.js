@@ -630,6 +630,13 @@ function ExterminatorLite(params) {
     img.style.backgroundImage = 'url(' + params.src + ')';
     div.appendChild(img);
 
+    let assessmentOuter = document.createElement('div');
+    assessmentOuter.classList.add('assessment');
+    div.appendChild(assessmentOuter);
+    let assessmentInner = document.createElement('div');
+    assessmentInner.innerText = 'assessment:';
+    assessmentOuter.appendChild(assessmentInner);
+
     let conclusionOuter = document.createElement('div');
     conclusionOuter.classList.add('conclusion');
     div.appendChild(conclusionOuter);
