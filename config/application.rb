@@ -16,7 +16,6 @@ require('SeqExterminator')
 require('SeqOffTheRails')
 require('SeqProductLaunch')
 require('SeqTabletCrossFadeTest')
-require('SeqOptOut')
 # require('YalRunner')
 
 module Lay
