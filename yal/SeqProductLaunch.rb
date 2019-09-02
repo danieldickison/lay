@@ -33,6 +33,21 @@ class SeqProductLaunch
         # Person A (12)
         # special image face 600x600 (faces), special image with loved one 600x600, special image pet 600x450
 
+        rows = db.execute(<<~SQL).to_a
+            SELECT
+                spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
+                spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
+
+                employeeID, "table"
+            FROM datastore_patron
+            WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+            AND vipStatus = "P-A"
+        SQL
+
+        person_a_struct = Struct.new(:pid
+        person_a = []
+        rows.each do |row|
+
         # Person B (12)
         # special image face 600x600 (faces), special image workspace or company logo 600x600
 

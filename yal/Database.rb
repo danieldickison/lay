@@ -7,6 +7,7 @@ class Database
     FB_POST_CATEGORIES = ["", "interesting", "political", "recent"]
     IG_POST_CATEGORIES = ["", "interesting", "political", "recent"]
     RELATIONSHIP_CATEGORIES = ["", "b/b", "g/b", "spouse"]
+    VIP_CATEGORIES = ["", "None", "P-A", "P-B", "P-C", "P-D"]
 
 
     def self.prepare_export(performance_id)
