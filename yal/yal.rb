@@ -28,7 +28,9 @@ require('CMUServer')
 
 
 class Yal
-    OSC_PORT = 53000
+    TABLET_OSC_PORT = 53000
+    SERVER_OSC_PORT = 53001
+
     if PRODUCTION
         DB_FILE = "/Users/blackwidow/Looking at You Media/db/db.sqlite3"
     elsif JOE_DEVELOPMENT
@@ -59,7 +61,7 @@ class Yal
     end
 
     def run_osc
-        port = OSC_PORT
+        port = SERVER_OSC_PORT
         offset = 0
         begin
             @osc = OSC::Server.new(port + offset)
@@ -120,9 +122,9 @@ class Yal
         puts "export <performance_number> [<sequence>]"
         puts "seq <sequence>"
         puts "seq start|stop|pause|unpause|load|kill|debug"
-        puts "osc <msg> - broadcast on port #{OSC_PORT}"
+        puts "osc <msg> - broadcast on port #{TABLET_OSC_PORT}"
         puts "osc <:port> <msg> - brodcast on given port"
-        puts "osc <ip> ... <msg> - send to list of ips on port #{OSC_PORT}"
+        puts "osc <ip> ... <msg> - send to list of ips on port #{TABLET_OSC_PORT}"
         puts "osc <ip:port> ... <msg> - send to list of ips/ports"
         # puts "config"
         # puts "config <key>"
@@ -201,7 +203,7 @@ class Yal
             m = args.first.match(/(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})*(:\d+)*/)
             break if !m[1] && !m[2]
 
-            port = m[2] ? Integer(m[2][1..-1]) : OSC_PORT
+            port = m[2] ? Integer(m[2][1..-1]) : TABLET_OSC_PORT
             if (ip = m[1])
                 clients.push(OSC::Client.new(ip, port))
             else
@@ -211,7 +213,7 @@ class Yal
         end
 
         if clients.empty?
-            clients.push(OSC::BroadcastClient.new(OSC_PORT))
+            clients.push(OSC::BroadcastClient.new(TABLET_OSC_PORT))
         end
 
         msg = OSC::Message.new(*args)
