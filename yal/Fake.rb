@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS "datastore_performance" (
 "date" datetime NOT NULL,
 "performance_number" integer unsigned NULL);
 
-CREATE TABLE IF NOT EXISTS "datastore_patron" (
+CREATE TABLE "datastore_patron" (
 "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
 "patronID" varchar(10) NOT NULL,
 "employeeID" varchar(10) NULL,
@@ -42,26 +42,26 @@ CREATE TABLE IF NOT EXISTS "datastore_patron" (
 "fbPostCat_2" varchar(15) NULL,
 "fbPostCat_3" varchar(15) NULL,
 "fbPostCat_4" varchar(15) NULL,
-"fbPostCat_5" varchar(15) NOT NULL,
-"fbPostCat_6" varchar(15) NOT NULL,
+"fbPostCat_5" varchar(15) NULL,
+"fbPostCat_6" varchar(15) NULL,
 "fbPostImage_1" varchar(100) NULL,
 "fbPostImage_2" varchar(100) NULL,
 "fbPostImage_3" varchar(100) NULL,
 "fbPostImage_4" varchar(100) NULL,
-"fbPostImage_5" varchar(100) NOT NULL,
-"fbPostImage_6" varchar(100) NOT NULL,
+"fbPostImage_5" varchar(100) NULL,
+"fbPostImage_6" varchar(100) NULL,
 "fbPostTS_1" datetime NULL,
 "fbPostTS_2" datetime NULL,
 "fbPostTS_3" datetime NULL,
 "fbPostTS_4" datetime NULL,
 "fbPostTS_5" datetime NULL,
 "fbPostTS_6" datetime NULL,
-"fbPostText_1" varchar(250) NULL,
-"fbPostText_2" varchar(250) NULL,
-"fbPostText_3" varchar(250) NULL,
-"fbPostText_4" varchar(250) NULL,
-"fbPostText_5" varchar(250) NOT NULL,
-"fbPostText_6" varchar(250) NOT NULL,
+"fbPostText_1" text NULL,
+"fbPostText_2" text NULL,
+"fbPostText_3" text NULL,
+"fbPostText_4" text NULL,
+"fbPostText_5" text NULL,
+"fbPostText_6" text NULL,
 "fbProfilePhoto" varchar(100) NULL,
 "fbRelationshipStatus" varchar(15) NULL,
 "fburl" varchar(200) NULL,
@@ -101,7 +101,7 @@ CREATE TABLE IF NOT EXISTS "datastore_patron" (
 "university_City" varchar(100) NULL,
 "university_LogoImage" varchar(100) NULL,
 "university_Name" varchar(100) NULL,
-"university_subject" varchar(30) NULL,
+"university_subject" varchar(200) NULL,
 "info_ListensTo" varchar(100) NULL,
 "info_PartnerFirstName" varchar(50) NULL,
 "info_PetName" varchar(50) NULL,
@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS "datastore_patron" (
 "spImage_10" varchar(100) NULL,
 "spImage_11" varchar(100) NULL,
 "spImage_12" varchar(100) NULL,
-"spImage_13" varchar(100) NOT NULL,
+"spImage_13" varchar(100) NULL,
 "spImage_2" varchar(100) NULL,
 "spImage_3" varchar(100) NULL,
 "spImage_4" varchar(100) NULL,
@@ -150,10 +150,11 @@ CREATE TABLE IF NOT EXISTS "datastore_patron" (
 "vipStatus" varchar(10) NULL,
 "greeterMatch" bool NOT NULL,
 "matchLikelihood" varchar(10) NULL,
-"linkedInURL" varchar(200) NULL);
-CREATE INDEX "datastore_patron_assignedTo_id_d19f55dc" ON "datastore_patron" ("assignedTo_id");
-CREATE INDEX "datastore_patron_performance_1_id_04bd40d6" ON "datastore_patron" ("performance_1_id");
-CREATE INDEX "datastore_patron_performance_2_id_182d77f1" ON "datastore_patron" ("performance_2_id");
+"linkedInURL" varchar(200) NULL,
+"personalURL" varchar(200) NULL,
+"seating" varchar(2) NULL,
+"phoneType" varchar(12) NULL);
+
 =end
 
 class Yal
@@ -221,7 +222,7 @@ class Yal
                         "institution",
                         "productionNote",
                         "minerNote",
-                        patronID, fbPostCat_5, fbPostCat_6, fbPostImage_5, fbPostImage_6, fbPostText_5, fbPostText_6, spImage_13, greeterMatch
+                        patronID, greeterMatch
                     ) VALUES (
                         "#{performance_id}", "#{table}", "#{firstName}", "#{lastName}", "#{employeeID}", 0, 0,
                         "#{email}",
@@ -235,7 +236,7 @@ class Yal
                         "#{institution}",
                         "#{productionNote}",
                         "#{minerNote}",
-                        "", "", "", "", "", "", "", "", 0
+                        "", 0
                     )
                 SQL
 

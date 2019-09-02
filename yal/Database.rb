@@ -1,7 +1,18 @@
 require('Media')
 
 class Database
+
+    SPECIAL_IMAGE_CATAGORIES = ["", "child", "face", "food", "friend", "friends", "love", "pet", "relevant", "travel"]
+    TWEET_CATEGORIES = ["", "interesting", "political"]
+    FB_POST_CATEGORIES = ["", "interesting", "political", "recent"]
+    IG_POST_CATEGORIES = ["", "interesting", "political", "recent"]
+    RELATIONSHIP_CATEGORIES = ["", "b/b", "g/b", "spouse"]
+
+
     def self.prepare_export(performance_id)
+
+        return
+
         db = SQLite3::Database.new(Yal::DB_FILE)
 
         ids = db.execute(<<~SQL).to_a

@@ -4,20 +4,46 @@ require('Media')
 require('PlaybackData')
 
 class SeqProductLaunch
+    DATABASE_DIR = Media::DATABASE_DIR
 
-    MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/113-Launch/"
-    DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/113-Launch/"
-    DATABASE      = Media::DATABASE
+    ISADORA_PRODUCTLAUNCH_FACES_DIR = Media::ISADORA_DIR + "s_610-ProductLaunch_faces/"
+    ISADORA_PRODUCTLAUNCH_CHOSEN_DIR = Media::ISADORA_DIR + "s_620-ProductLaunch_chosen_profile/"
+    ISADORA_PRODUCTLAUNCH_SPECIAL_DIR = Media::ISADORA_DIR + "s_630-ProductLaunch_special_detail/"
+    ISADORA_PRODUCTLAUNCH_THREAT_DIR = Media::ISADORA_DIR + "s_640-ProductLaunch_threat_profile/"
+    ISADORA_PRODUCTLAUNCH_MINED_DIR = Media::ISADORA_DIR + "s_650-ProductLaunch_threat_mined/"
+    TABLETS_PRODUCTLAUNCH_DIR = Media::TABLETS_DIR + "productlaunch/"
+    TABLETS_PRODUCTLAUNCH_URL = Media::TABLETS_URL + "productlaunch/"
 
     def self.export
+        `mkdir -p '#{ISADORA_PRODUCTLAUNCH_FACES_DIR}'`
+        `mkdir -p '#{ISADORA_PRODUCTLAUNCH_CHOSEN_DIR}'`
+        `mkdir -p '#{ISADORA_PRODUCTLAUNCH_SPECIAL_DIR}'`
+        `mkdir -p '#{ISADORA_PRODUCTLAUNCH_THREAT_DIR}'`
+        `mkdir -p '#{ISADORA_PRODUCTLAUNCH_MINED_DIR}'`
+        `mkdir -p '#{TABLETS_PRODUCTLAUNCH_DIR}'`
+
+        db = SQLite3::Database.new(Yal::DB_FILE)
+
         pbdata = {}
+        fn_pids = {}  # for updating LAY_filename_pids.txt
 
         # data mining requirements for VIPs
         # https://docs.google.com/document/d/172KsxBACZxxpWOKCSr7JLrobK78df-1DihZlKbKmtZA/edit
 
-        # face photos
-        # pet
+        # Person A (12)
+        # special image face 600x600 (faces), special image with loved one 600x600, special image pet 600x450
 
+        # Person B (12)
+        # special image face 600x600 (faces), special image workspace or company logo 600x600
+
+        # Person C (12)
+        # face, child
+
+        # Person D (4)
+        # face, with friends, personally relevant photo
+        # data: First Name, Works at, Works as, Hometown, Birthday, Studied [subject] at [institution], Went to [high school], Recently Traveled to,
+        #   Spouse or partner first name, Personally relevant short text, Liked, Listens to
+        # 2 tweets
         PlaybackData.write(DATA_DYNAMIC, pbdata)
     end
 
