@@ -548,8 +548,8 @@ class SeqOffTheRails
                 end
             when :trigger
                 @is.send(@osc_address,
-                    @item[:isa_profile_num] || -1,  # profile pic
-                    @item[:isa_photo_num] || -1,    # photo
+                    @item[:isa_profile_num] ? (@item[:isa_profile_num] % 300) : -1,  # profile pic
+                    @item[:isa_photo_num] ? (@item[:isa_photo_num] % 300) : -1,    # photo
                     TV_TYPE_ID[@item[:type]] || 0,      # type
                     @item[:text] || ''              # text
                 )
