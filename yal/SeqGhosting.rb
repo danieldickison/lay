@@ -32,7 +32,7 @@ Slots correspond to zones as follows: (8 per zone)
 041-048: TV 33
 =end
 
-    Photo = Struct.new(:path, :category, :employee_id, :table)
+    Photo = Struct.new(:path, :category, :pid, :table)
 
     # export <performance #> Ghosting
     # Generates s_410-Ghosting_profile Isadora directory, ghosting tablet directory
@@ -66,7 +66,7 @@ Slots correspond to zones as follows: (8 per zone)
                 igPostCat_1, igPostCat_2, igPostCat_3, igPostCat_4, igPostCat_5, igPostCat_6,
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
 
-                employeeID, "table"
+                pid, seating
             FROM datastore_patron
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
         SQL
@@ -74,8 +74,8 @@ Slots correspond to zones as follows: (8 per zone)
         photos = []
         rows.each do |r|
             # pull out extra columns
-            employeeID = r[-2].to_i
-            table = r[-1]
+            pid = r[-2].to_i
+            table = r[-1][0]
             if !table || table == ""
                 puts "warn: patron without a table"
                 table = "A"
@@ -86,7 +86,7 @@ Slots correspond to zones as follows: (8 per zone)
                 path = r[i]
                 category = r[i+25]
                 if path && path != ""
-                    photos << Photo.new(path, category, employeeID, table)
+                    photos << Photo.new(path, category, pid, table)
                 end
             end
         end
@@ -124,35 +124,35 @@ Slots correspond to zones as follows: (8 per zone)
                         break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                     end
                     color = "rgb(#{r}%,#{g}%,#{b}%)"
-                    annotate = "#{pp.path}, employee ID #{pp.employee_id}, table #{pp.table}"
+                    annotate = "#{pp.path}, pid #{pp.pid}, table #{pp.table}"
                     GraphicsMagick.convert("-size", "180x180", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(ISADORA_GHOSTING_DIR + dst, "jpg"))
                 end
 
                 photo_names[slot_base + i] = dst
-                fn_pids[dst] = pp.employee_id
+                fn_pids[dst] = pp.pid
             end
             slot_base += 8
         end
 
 
 
-        employees = db.execute(<<~SQL).to_a
+        pids = db.execute(<<~SQL).to_a
             SELECT
-                employeeID, "table"
+                pid, seating
             FROM datastore_patron
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
         SQL
 
-        # group employees by table
-        employee_tables = {}
-        employees.each do |p|
-            t = p[1].ord - "A".ord + 1
-            employee_tables[t] ||= []
-            employee_tables[t] << p[0].to_i
+        # group pids by table
+        pid_tables = {}
+        pids.each do |p|
+            t = p[1][0].ord - "A".ord + 1
+            pid_tables[t] ||= []
+            pid_tables[t] << p[0].to_i
         end
-        pbdata[:employee_tables] = employee_tables
+        pbdata[:pid_tables] = pid_tables
 
-        employee_photos = {}
+        pid_photos = {}
         photos.each_with_index do |pp, i|
             dst = "ghosting-#{i+1}.jpg"
             db_photo = DATABASE_DIR + pp.path
@@ -165,13 +165,13 @@ Slots correspond to zones as follows: (8 per zone)
                     break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                 end
                 color = "rgb(#{r}%,#{g}%,#{b}%)"
-                annotate = "#{pp.path}, employee ID #{pp.employee_id}, table #{pp.table}"
+                annotate = "#{pp.path}, pid #{pp.pid}, table #{pp.table}"
                 GraphicsMagick.convert("-size", "180x180", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(TABLETS_GHOSTING_DIR + dst, "jpg"))
             end
-            employee_photos[pp.employee_id] ||= []
-            employee_photos[pp.employee_id] << TABLETS_GHOSTING_URL + dst
+            pid_photos[pp.pid] ||= []
+            pid_photos[pp.pid] << TABLETS_GHOSTING_URL + dst
         end
-        pbdata[:employee_photos] = employee_photos
+        pbdata[:pid_photos] = pid_photos
 
 
         PlaybackData.write(TABLETS_GHOSTING_DIR, pbdata)
@@ -182,14 +182,14 @@ Slots correspond to zones as follows: (8 per zone)
 
     # DANIEL NOTES:
 
-    # opt_outs = SeqOptOut.opt_outs  # array of employee ids who've opted out
+    # opt_outs = SeqOptOut.opt_outs  # array of pids who've opted out
 
-    # pbdata[:employee_photos] -> hash[employee_id] => [array of image paths]
-    # employee_id is 1..100
+    # pbdata[:pid_photos] -> hash[pid] => [array of image paths]
+    # pid is 1..100
     # image path is /playback/media_tablet_dynamic/ghosting-23.jpg
     # the "23" is just a photo index, 1..however many photos
 
-    # pbdata[:employee_tables] -> hash[table] => [array of employee_ids]
+    # pbdata[:pid_tables] -> hash[table] => [array of pids]
     # table is 1..25
 
     # run the sequence
@@ -217,16 +217,16 @@ Slots correspond to zones as follows: (8 per zone)
         else
             enum = 1..25
         end
-        # First pass: each table gets first dibs on friend photos from opted-in people at the table. This also destructively alters the :employee_tables value arrays to remove opted-out folks.
+        # First pass: each table gets first dibs on friend photos from opted-in people at the table. This also destructively alters the :pid_tables value arrays to remove opted-out folks.
         enum.each do |t|
-            #puts "table #{t} all people: #{pbdata[:employee_tables][t].inspect}"
-            people = pbdata[:employee_tables][t] || []
+            #puts "table #{t} all people: #{pbdata[:pid_tables][t].inspect}"
+            people = pbdata[:pid_tables][t] || []
             people.delete_if {|p| opt_outs.include?(p)}
             puts "table #{t} opted in people: #{people.inspect}"
 
             images = []
             people.each do |p|
-                if img = pbdata[:employee_photos][p].pop # or shift? how are the images ordered? if the "best" ones are first, we should use shift so the target table gets the best one.
+                if img = pbdata[:pid_photos][p].pop # or shift? how are the images ordered? if the "best" ones are first, we should use shift so the target table gets the best one.
                     images << img
                 end
                 break if images.length == 3
@@ -242,9 +242,9 @@ Slots correspond to zones as follows: (8 per zone)
                 current_table = 1 if t > 25
                 while images.length < 3 && current_table != t && t <= 25 # last condition to avoid infinite loop while testing with tablet numbers > 25.
                     # Note that we've already deleted opted-out people from these arrays
-                    people = pbdata[:employee_tables][current_table] || []
+                    people = pbdata[:pid_tables][current_table] || []
                     people.each do |p|
-                        if img = pbdata[:employee_photos][p].pop
+                        if img = pbdata[:pid_photos][p].pop
                             puts "  one from #{p} at table #{current_table}"
                             images << img
                         end
