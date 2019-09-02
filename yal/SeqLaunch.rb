@@ -44,28 +44,28 @@ class SeqLaunch
 
   TIMINGS = [nil, nil, 10, 8, 8, 12, 8, 4, 5]
 
-    attr_accessor(:start_time)
+    attr_accessor(:start_time, :debug)
 
-    def initialize(p_data={})
-        @id = p_data["Patron ID"]
-        @table = p_data["Table (auto)"]
+    def initialize
+        # @id = p_data["Patron ID"]
+        # @table = p_data["Table (auto)"]
 
-        @img1 = p_data["Isadora OSC Channel 9"]
-        @img2 = p_data["Isadora OSC Channel 10"]
-        @img3 = p_data["Isadora OSC Channel 11"]
+        # @img1 = p_data["Isadora OSC Channel 9"]
+        # @img2 = p_data["Isadora OSC Channel 10"]
+        # @img3 = p_data["Isadora OSC Channel 11"]
 
-        @data = []
-        @data[NAME_CHANNEL] = p_data["First Name"]
-        @data[HOMETOWN_CHANNEL] = p_data["Hometown"]
-        @data[FACT1_CHANNEL] = p_data["Uncommon Interest 1"]
-        @data[FACT2_CHANNEL] = p_data["Uncommon Interest 2"]
-        @data[FAMILY_CHANNEL] = p_data["Family Member 1"]
-        @data[EDUCATION_CHANNEL] = p_data["Education 1"]
-        @data[OCCUPATION_CHANNEL] = p_data["Current Occupation 1"]
+        # @data = []
+        # @data[NAME_CHANNEL] = p_data["First Name"]
+        # @data[HOMETOWN_CHANNEL] = p_data["Hometown"]
+        # @data[FACT1_CHANNEL] = p_data["Uncommon Interest 1"]
+        # @data[FACT2_CHANNEL] = p_data["Uncommon Interest 2"]
+        # @data[FAMILY_CHANNEL] = p_data["Family Member 1"]
+        # @data[EDUCATION_CHANNEL] = p_data["Education 1"]
+        # @data[OCCUPATION_CHANNEL] = p_data["Current Occupation 1"]
 
         pbdata = PlaybackData.read(DATA_DYNAMIC)
 
-        @disp = [NAME_CHANNEL, HOMETOWN_CHANNEL, FACT1_CHANNEL, FACT2_CHANNEL, FAMILY_CHANNEL, OCCUPATION_CHANNEL, EDUCATION_CHANNEL].shuffle
+        # @disp = [NAME_CHANNEL, HOMETOWN_CHANNEL, FACT1_CHANNEL, FACT2_CHANNEL, FAMILY_CHANNEL, OCCUPATION_CHANNEL, EDUCATION_CHANNEL].shuffle
 
         @is = Isadora.new
         @state = :idle
@@ -160,17 +160,17 @@ class SeqLaunch
             # Person 1
             {
                 :position => :front,
-                :src => Media::TABLET_DYNAMIC + pbdata[:profile_image_names][person_1],
+                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_1],
                 :in_offset => 109.0, # s from start of video
             },
             {
                 :position => :back,
-                :src => Media::TABLET_DYNAMIC + pbdata[:facebook_image_names][facebook_1a],
+                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_1a],
                 :in_offset => 111.97,
             },
             {
                 :position => :back,
-                :src => Media::TABLET_DYNAMIC + pbdata[:facebook_image_names][facebook_1b],
+                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_1b],
                 :in_offset => 125.57,
                 :out_offset => 130.03,
             },
@@ -178,12 +178,12 @@ class SeqLaunch
             # Person 2
             {
                 :position => :front,
-                :src => Media::TABLET_DYNAMIC + pbdata[:profile_image_names][person_2],
+                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_2],
                 :in_offset => 139.0,
             },
             {
                 :position => :back,
-                :src => Media::TABLET_DYNAMIC + pbdata[:facebook_image_names][facebook_2a],
+                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_2a],
                 :in_offset => 152.33,
                 :out_offset => 157.47,
             },
@@ -191,12 +191,12 @@ class SeqLaunch
             # Person 3
             {
                 :position => :front,
-                :src => Media::TABLET_DYNAMIC + pbdata[:profile_image_names][person_3],
+                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_3],
                 :in_offset => 167.0, # s from start of video
             },
             {
                 :position => :back,
-                :src => Media::TABLET_DYNAMIC + pbdata[:facebook_image_names][facebook_3a],
+                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_3a],
                 :in_offset => 178.43,
                 :out_offset => 185.93,
             },
@@ -204,13 +204,20 @@ class SeqLaunch
             # Person 4
             {
                 :position => :front,
-                :src => Media::TABLET_DYNAMIC + pbdata[:profile_image_names][person_4],
+                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_4],
                 :in_offset => 232.0, # s from start of video
                 :out_offset => 364.8,
             },
         ]
         @target_x_offset = 323.0
     end
+    
+    # override
+    def debug=(s)
+        @debug = s
+        @is.disable = @debug
+    end
+
 
     def load
         db = SpectatorsDB.new

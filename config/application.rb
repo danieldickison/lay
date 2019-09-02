@@ -172,7 +172,9 @@ module Lay
         when 1030
             SeqSimpleVideo.new(1030, '/playback/media_tablets/110-ExecOffice/110-021-C60-ExecOffice.mp4')
         when 1040
-            SeqSimpleVideo.new(1040, '/playback/media_tablets/110-ExecOffice/110-051-C60-Algorithm_neutral-loop.mp4')
+            SeqSimpleVideo.new(1040, '/playback/media_tablets/110-ExecOffice/110-051-C60-Algorithm_neutral-loop.mp4').tap do |s|
+                s.tablet_fade = 5
+            end
         when 1100
             SeqOffTheRails.new
         when 1200
