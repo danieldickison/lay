@@ -17,11 +17,40 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
 
     # export <performance #> Exterminator
 
-    # Updated Monday afternoon, 2019-09-02
-    def self.export
+    ExportImage = Struct.new(:pid, :table, :friend, :travel, :interest, :shared)
+
+    # Updated Monday afternoon, 2019-09-02.
+    def self.export(performance_id)
         # @@@
         # special images with travel, interested in, shared, friends with
         # ideally different travel from off the rails
+        rows = db.execute(<<~SQL).to_a
+            SELECT
+                pid, "table",
+                spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6,
+                spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
+                spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6,
+                spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13
+            FROM datastore_patron
+            WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+        SQL
+
+        images = rows.collect do |row|
+            pid = row[0]
+            table = row[1]
+            image_cats = row[2...15].zip(row[15...28])
+            puts "image_cats: #{image_cats.inspect}"
+            ExportImage.new(
+                pid,
+                table,
+                image_cats.find {|_, cat| cat == 'friend' || cat == 'friends'}[0],
+                image_cats.find {|_, cat| cat == 'travel'}[0],
+                image_cats.find {|_, cat| cat == 'interest'}[0],
+                image_cats.find {|_, cat| cat == 'shared'}[0]
+            )
+        end
+
+
     end
 
     TABLET_TRIGGER_PREROLL = 10 # seconds; give them enough time to load dynamic images before presenting.
