@@ -71,6 +71,7 @@ class Media
         "W" => ["TV23","TV22","TV21","TV31","TV32"],
         "X" => ["TV23","TV22","TV21","TV33"],
         "Y" => ["TV22","TV21","TV33"],
+        "Z" => ["TV22","TV21","TV33"],
     }.freeze
 
     TV_ZONES_NO_CENTER = ["TV 21", "TV 22", "TV 23", "TV 31", "TV 32", "TV 33"]
@@ -105,6 +106,7 @@ class Media
         "X" => {"zone" => "TV 33"},
 
         "Y" => {"zone" => "TV 33"},
+        "Z" => {"zone" => "TV 33"},
     }
 
 
@@ -139,5 +141,6 @@ class Media
         "W" => {"zone" => "TV 32"},
         "X" => {"zone" => "TV 33"},
         "Y" => {"zone" => "TV 33"},
+        "Z" => {"zone" => "TV 33"},
     }
 end

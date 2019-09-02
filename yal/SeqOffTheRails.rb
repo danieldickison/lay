@@ -387,7 +387,7 @@ class SeqOffTheRails
         @duration = 200 # 3:20
 
         pbdata = PlaybackData.read(TABLETS_OFFTHERAILS_DIR)
-        opt_outs = Set.new(SeqOptOut.opt_outs)
+        opt_outs = Showtime.opt_outs
 
         @tv_items = {}
         pbdata[:tv_posts].each do |tv, posts|

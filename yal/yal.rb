@@ -25,6 +25,7 @@ require('Isadora')
 require('Fake')
 require('Dummy')
 require('CMUServer')
+require('Preshow')
 
 
 class Yal
@@ -243,7 +244,7 @@ class Yal
             args = @seqs
         end
 
-        Database.prepare_export(performance_id)
+        Showtime.prepare_export(performance_id)
         args.each do |seq|
             puts "#{seq}..."
             seqclass = Object.const_get("Seq#{seq}".to_sym)
@@ -258,10 +259,6 @@ class Yal
     def cli_gm
         f = Media::YAL + "/photo.png"
         GraphicsMagick.fit(f, Media::PLAYBACK + "/test.jpg", 640, 640, "jpg", 85, "images/blahblah.jpg, employeeID 12, table X")
-    end
-
-    def cli_xxx(*args)
-        Database.prepare_export(args[0])
     end
 
     def cli_quit

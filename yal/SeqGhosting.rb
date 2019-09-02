@@ -182,7 +182,7 @@ Slots correspond to zones as follows: (8 per zone)
 
     # DANIEL NOTES:
 
-    # opt_outs = SeqOptOut.opt_outs  # array of pids who've opted out
+    # opt_outs = Showtime.opt_outs  # set of pids who've opted out
 
     # pbdata[:pid_photos] -> hash[pid] => [array of image paths]
     # pid is 1..100
@@ -208,7 +208,7 @@ Slots correspond to zones as follows: (8 per zone)
         @isadora_delay = 2 # seconds
 
         pbdata = PlaybackData.read(TABLETS_GHOSTING_DIR)
-        opt_outs = Set.new(SeqOptOut.opt_outs)
+        opt_outs = Showtime.opt_outs
 
         @tablet_images = {}
         # 1 => [IMG_URL + photo_name, IMG_URL + photo_name, IMG_URL + photo_name]

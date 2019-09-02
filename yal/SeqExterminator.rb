@@ -237,7 +237,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         @time = nil
 
         pbdata = PlaybackData.read(TABLETS_EXTERMINATOR_DIR)
-        opt_outs = Set.new(SeqOptOut.opt_outs)
+        opt_outs = Showtime.opt_outs
 
         # 1 => [IMG_BASE + profile_image_name, IMG_BASE + profile_image_name, IMG_BASE + profile_image_name]
         if defined?(TablettesController)

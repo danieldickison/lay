@@ -194,7 +194,7 @@ Slots correspond to zones as follows: (32 per zone)
         @isadora_delay = 0 # seconds
 
         pbdata = PlaybackData.read(TABLETS_GEEKTRIO_DIR)
-        opt_outs = Set.new(SeqOptOut.opt_outs)
+        opt_outs = Showtime.opt_outs
 
         @tablet_images = {}
         # 1 => [IMG_BASE + profile_image_name, IMG_BASE + profile_image_name, IMG_BASE + profile_image_name]
