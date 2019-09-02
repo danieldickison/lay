@@ -14,7 +14,7 @@ class SeqProductLaunch
     TABLETS_PRODUCTLAUNCH_DIR = Media::TABLETS_DIR + "productlaunch/"
     TABLETS_PRODUCTLAUNCH_URL = Media::TABLETS_URL + "productlaunch/"
 
-    def self.export
+    def self.export(performance_id)
         `mkdir -p '#{ISADORA_PRODUCTLAUNCH_FACES_DIR}'`
         `mkdir -p '#{ISADORA_PRODUCTLAUNCH_CHOSEN_DIR}'`
         `mkdir -p '#{ISADORA_PRODUCTLAUNCH_SPECIAL_DIR}'`
@@ -30,37 +30,165 @@ class SeqProductLaunch
         # data mining requirements for VIPs
         # https://docs.google.com/document/d/172KsxBACZxxpWOKCSr7JLrobK78df-1DihZlKbKmtZA/edit
 
+
         # Person A (12)
         # special image face 600x600 (faces), special image with loved one 600x600, special image pet 600x450
+
+        person_a_struct = Struct.new(:pid, :face, :love, :pet)
 
         rows = db.execute(<<~SQL).to_a
             SELECT
                 spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
-
-                employeeID, "table"
+                pid
             FROM datastore_patron
-            WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+            WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
             AND vipStatus = "P-A"
         SQL
 
-        # person_a_struct = Struct.new(:pid, 
-        # person_a = []
-        # rows.each do |row|
+        person_as = rows.collect do |row|
+            a = person_a_struct.new(row[-1])
+            (0..12).each do |i|
+                img = row[i]
+                cat = row[i+13]
+                case cat
+                when 'face'
+                    a.face = img
+                when 'love'
+                    a.love = img
+                when 'pet'
+                    a.pet = img
+                end
+            end
+            a  # result
+        end
 
 
         # Person B (12)
         # special image face 600x600 (faces), special image workspace or company logo 600x600
 
+        person_b_struct = Struct.new(:pid, :face, :company)
+
+        rows = db.execute(<<~SQL).to_a
+            SELECT
+                spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
+                spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
+                company_LogoImage, pid
+            FROM datastore_patron
+            WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
+            AND vipStatus = "P-B"
+        SQL
+
+        person_bs = rows.collect do |row|
+            b = person_b_struct.new(row[-1])
+            b.company = row[-2]
+            (0..12).each do |i|
+                img = row[i]
+                cat = row[i+13]
+                case cat
+                when 'face'
+                    b.face = img
+                end
+            end
+            b  # result
+        end
+
+
         # Person C (12)
         # face, child
 
+        person_c_struct = Struct.new(:pid, :face, :child)
+
+        rows = db.execute(<<~SQL).to_a
+            SELECT
+                spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
+                spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
+                pid
+            FROM datastore_patron
+            WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
+            AND vipStatus = "P-C"
+        SQL
+
+        person_cs = rows.collect do |row|
+            c = person_c_struct.new(row[-1])
+            (0..12).each do |i|
+                img = row[i]
+                cat = row[i+13]
+                case cat
+                when 'face'
+                    c.face = img
+                when 'child'
+                    c.child = img
+                end
+            end
+            c  # result
+        end
+
+
         # Person D (4)
         # face, with friends, personally relevant photo
-        # data: First Name, Works at, Works as, Hometown, Birthday, Studied [subject] at [institution], Went to [high school], Recently Traveled to,
+        # data: First Name, Works at ... as, Hometown, Birthday, Studied [subject] at [institution], Went to [high school], Recently Traveled to,
         #   Spouse or partner first name, Personally relevant short text, Liked, Listens to
         # 2 tweets
-        PlaybackData.write(DATA_DYNAMIC, pbdata)
+
+        person_d_struct = Struct.new(:pid, :face, :friends, :relevant_photo, :relevant_text, :first_name, :works_at, :hometown, :birthday,
+            :university, :high_school, :traveled_to, :spouse_first_name, :listens_to, :liked, :tweet1, :tweet2)
+
+        rows = db.execute(<<~SQL).to_a
+            SELECT
+                spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
+                spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
+                firstName, company_Position, company_Name, fbHometown, fbBirthday, university_subject, university_Name, highSchool_Name,
+                info_TraveledTo, info_PartnerFirstName, info_ListensTo, tweetText_1, tweetText_2,
+                pid
+            FROM datastore_patron
+            WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
+            AND vipStatus = "P-D"
+        SQL
+
+        # ?? liked
+        # ?? relevant text
+
+        person_ds = rows.collect do |row|
+            d = person_d_struct.new(row[-1])
+            d.first_name = row[26]
+            d.works_at = "#{row[27]} at #{row[28]}"
+            d.hometown = row[29]
+            d.birthday = row[30]
+            d.university = "Studied #{row[31]} at #{row[32]}"
+            d.high_school = "Went to #{row[33]}"
+            d.traveled_to = "Recently traveled to #{row[34]}"
+            d.spouse_first_name = row[35]
+            d.listens_to = row[36]
+            d.liked = nil
+            d.tweet1 = row[37]
+            d.tweet2 = row[38]
+            (0..12).each do |i|
+                img = row[i]
+                cat = row[i+13]
+                case cat
+                when 'face'
+                    d.face = img
+                when 'friends'
+                    d.friends = img
+                when 'relevant'
+                    d.relevant_photo = img
+                end
+            end
+            d  # result
+        end
+
+
+puts "person_as"
+pp person_as
+puts "person_bs"
+pp person_bs
+puts "person_cs"
+pp person_cs
+puts "person_ds"
+pp person_ds
+
+        PlaybackData.write(TABLETS_PRODUCTLAUNCH_DIR, pbdata)
     end
 
 
