@@ -3,7 +3,7 @@ require('Isadora')
 require('Media')
 require('PlaybackData')
 
-class SeqLaunch
+class SeqProductLaunch
 
     MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/113-Launch/"
     DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/113-Launch/"

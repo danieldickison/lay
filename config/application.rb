@@ -14,7 +14,7 @@ require('SeqGhosting')
 require('SeqGeekTrio')
 require('SeqExterminator')
 require('SeqOffTheRails')
-require('SeqLaunch')
+require('SeqProductLaunch')
 require('SeqTabletCrossFadeTest')
 require('SeqOptOut')
 # require('YalRunner')
@@ -178,7 +178,7 @@ module Lay
         when 1100
             SeqOffTheRails.new
         when 1200
-            SeqLaunch.new
+            SeqProductLaunch.new
         when 9000
             SeqTabletCrossFadeTest.new
         else
