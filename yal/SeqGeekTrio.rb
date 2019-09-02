@@ -127,7 +127,7 @@ Slots correspond to zones as follows: (32 per zone)
 
                 slot = "%03d" % (slot_base + i)
                 dst = "s_420-#{slot}-R03-GeekTrio.jpg"
-                db_photo = DATABASE_DIR + pp.path
+                db_photo = DATABASE_DIR + pp.path ## BS probably should be Media::DATABASE_IMG_DIR
                 # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
                 if File.exist?(db_photo)
                     GraphicsMagick.fit(db_photo, ISADORA_GEEKTRIO_DIR + dst, 640, 640, "jpg", 85)
