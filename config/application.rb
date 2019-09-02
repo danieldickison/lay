@@ -16,6 +16,7 @@ require('SeqExterminator')
 require('SeqOffTheRails')
 require('SeqProductLaunch')
 require('SeqTabletCrossFadeTest')
+require('Showtime')
 # require('YalRunner')
 
 module Lay
