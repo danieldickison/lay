@@ -82,7 +82,12 @@ module Lay
     def initialize
       super
       require 'osc-ruby'
-      puts "OSCApplication"
+      puts "Playback server starting"
+
+      # @@@ slack
+      # synchronous systems check
+      # start periodic async systems check
+
       @isadora = Isadora.new
       @server = OSC::Server.new(53000)
 
@@ -339,7 +344,10 @@ module Lay
         @server.run
       end
 
-      puts "OSC running"
+      `killall "Google Chrome"`
+      `open "http://localhost/tablettes/director" -a "Google Chrome"`
+
+      puts "Playback server running"
     end
   end
 end
