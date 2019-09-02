@@ -43,6 +43,11 @@ class Showtime
         `mkdir -p '#{Media::DATA_DIR}'`
         db = SQLite3::Database.new(Yal::DB_FILE)
 
+        performance_number = db.execute(<<~SQL).first[0]
+            SELECT performance_number FROM datastore_performance WHERE id = #{performance_id}
+        SQL
+        is_fake = (performance_number < 0)
+
         # opt outs
         ids = db.execute(<<~SQL).collect {|r| r[0]}
             SELECT pid
@@ -50,6 +55,10 @@ class Showtime
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
             AND consented = 0
         SQL
+
+        if is_fake && ids.length == 100
+            ids = ids.shuffle[0..24]
+        end
 
         File.open(OPT_OUT_FILE, "w") do |f|
             o = ids.collect {|i| "%03d" % i}.join("\n")

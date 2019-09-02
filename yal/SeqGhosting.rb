@@ -102,12 +102,15 @@ Slots correspond to zones as follows: (8 per zone)
         photo_names = {}
 
         # group photos by TV zone
-        tv_photos = photos.group_by {|p| Media::TABLE_INFO_NO_CENTER[p.table]["zone"]}
+        tv_photos = photos.group_by do |p|
+            tvs = Media::TABLE_TVS[r[-1][0]] + Media::TABLE_TVS[r[-1][0]]
+            tvs[rand(tvs.length)]  # result
+        end
 
         slot_base = 1
-        Media::TV_ZONES_NO_CENTER.each do |zone|
-            # 8 random photos for each zone
-            ph = tv_photos[zone].shuffle
+        Media::TVS_NO_CENTER.each do |tv|
+            # 8 random photos for each tv
+            ph = tv_photos[tv].shuffle
             (0..7).each do |i|
                 pp = ph[i]
                 break if !pp
@@ -115,7 +118,7 @@ Slots correspond to zones as follows: (8 per zone)
                 slot = "%03d" % (slot_base + i)
                 dst = "410-#{slot}-R01-Ghosting_profile.jpg"
                 db_photo = DATABASE_DIR + pp.path
-                # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
+                # puts "#{tv}-#{slot} '#{db_photo}', '#{dst}'"
                 if File.exist?(db_photo)
                     GraphicsMagick.thumbnail(db_photo, ISADORA_GHOSTING_DIR + dst, 180, 180, "jpg", 85)
                 else

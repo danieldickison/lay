@@ -102,7 +102,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         #puts "table images: #{tablet_images.inspect}"
         # tablet_id => catogery => pid => img
         exterminator_tablets = {}
-        (1..25).each do |t|
+        (1..26).each do |t|
             t_imgs = tablet_images[t]
             exterminator_tablets[t] = {}
             CATEGORIES.each do |cat|
@@ -243,7 +243,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         if defined?(TablettesController)
             enum = TablettesController.tablet_enum(nil)
         else
-            enum = 1..25
+            raise
         end
         remaining_images = CATEGORIES.collect {|cat| [cat, []]}.to_h
         @tablet_data = {}
@@ -292,7 +292,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
             if defined?(TablettesController)
                 enum = TablettesController.tablet_enum(nil)
             else
-                enum = 1..25
+                raise
             end
             @tablet_triggers = CATEGORIES.collect do |cat|
                 timing = TABLET_LITE_TIMING[cat]

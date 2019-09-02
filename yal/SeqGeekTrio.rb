@@ -115,12 +115,15 @@ Slots correspond to zones as follows: (32 per zone)
         # photos = photos.find_all {|p| p.category == "friend" || p.category == "friends"}
 
         # group photos by TV zone
-        tv_photos = photos.group_by {|p| Media::TABLE_INFO[p.table]["zone"]}
+        tv_photos = photos.group_by do |p|
+            tvs = Media::TABLE_TVS[r[-1][0]] + Media::TABLE_TVS[r[-1][0]] + ["C01"]
+            tvs[rand(tvs.length)]  # result
+        end
 
         slot_base = 1
-        Media::TV_ZONES.each do |zone|
-            # 8 random photos for each zone
-            ph = tv_photos[zone].shuffle
+        Media::TVS.each do |tv|
+            # 8 random photos for each tv
+            ph = tv_photos[tv].shuffle
             (0..31).each do |i|
                 pp = ph[i]
                 break if !pp
@@ -128,7 +131,7 @@ Slots correspond to zones as follows: (32 per zone)
                 slot = "%03d" % (slot_base + i)
                 dst = "s_420-#{slot}-R03-GeekTrio.jpg"
                 db_photo = DATABASE_DIR + pp.path ## BS probably should be Media::DATABASE_IMG_DIR
-                # puts "#{zone}-#{slot} '#{db_photo}', '#{dst}'"
+                # puts "#{tv}-#{slot} '#{db_photo}', '#{dst}'"
                 if File.exist?(db_photo)
                     GraphicsMagick.fit(db_photo, ISADORA_GEEKTRIO_DIR + dst, 640, 640, "jpg", 85)
                 else
@@ -201,7 +204,7 @@ Slots correspond to zones as follows: (32 per zone)
         if defined?(TablettesController)
             enum = TablettesController.tablet_enum(nil)
         else
-            enum = 1..25
+            raise
         end
         remaining_images = []
         enum.each do |t|

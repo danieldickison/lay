@@ -105,7 +105,7 @@ class SeqOffTheRails
             name = row[2]
 
             puts "table: #{table} employee #{pid}"
-            tvs = Media::TABLE_TVS[table] + ["C01"]
+            tvs = Media::TABLE_TVS[table] + Media::TABLE_TVS[table] + ["C01"]
             tv = tvs[rand(tvs.length)]
 
             if row[3] && row[3] != ""
@@ -282,7 +282,7 @@ class SeqOffTheRails
             SQL
 
             tv_rows = rows.group_by do |r|
-                tvs = Media::TABLE_TVS[r[-1][0]] + ["C01"]
+                tvs = Media::TABLE_TVS[r[-1][0]] + Media::TABLE_TVS[r[-1][0]] + ["C01"]
                 tvs[rand(tvs.length)]  # result
             end
 
