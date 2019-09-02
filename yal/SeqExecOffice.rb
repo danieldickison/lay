@@ -24,7 +24,7 @@ No zones
 ?? images total
 =end
 
-    ProfilePhoto = Struct.new(:path, :employee_id)
+    ProfilePhoto = Struct.new(:path, :pid)
 
     # export <performance #> ExecOffice
     def self.export(performance_id)
@@ -39,19 +39,19 @@ No zones
         rows = db.execute(<<~SQL).to_a
             SELECT
                 twitterProfilePhoto, fbProfilePhoto,
-                employeeID
+                pid
             FROM datastore_patron
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
         SQL
 
         photos = []
         rows.each do |r|
-            employeeID = r[-1].to_i
+            pid = r[-1].to_i
             tw = r[0]
             fb = r[1]
             path = fb && fb != '' ? fb : tw # prefer fb over tw if both present
             if path && path != ''
-                photos << ProfilePhoto.new(path, employeeID)
+                photos << ProfilePhoto.new(path, pid)
             end
         end
 
@@ -68,10 +68,10 @@ No zones
                     break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                 end
                 color = "rgb(#{r}%,#{g}%,#{b}%)"
-                annotate = "#{photo.path}, employee ID #{photo.employee_id}"
+                annotate = "#{photo.path}, employee ID #{photo.pid}"
                 GraphicsMagick.convert("-size", "600x600", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 600), GraphicsMagick.format_args(ISADORA_EXEC_OFFICE_DIR + dst, "jpg"))
             end
-            fn_pids[dst] = photo.employee_id
+            fn_pids[dst] = photo.pid
         end
 
         PlaybackData.merge_filename_pids(fn_pids)
