@@ -21,9 +21,6 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
     def self.export
     end
 
-
-    TABLET_VIDEO = '/playback/media_tablets/108-Exterminator/108-011-C60-Exterminator.mp4'
-
     TABLET_TRIGGER_PREROLL = 10 # seconds; give them enough time to load dynamic images before presenting.
     # TABLET_SCROLL_INTERVAL = 3000 # ms delay betwee each of the 4 images to start scrolling
     # TABLET_SCROLL_DURATION = 4000 # ms to scroll one image all the way across (half that for last one to stop @ center)
@@ -80,26 +77,38 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
     # ExterminatorLite tablet js variant params
     TABLET_LITE_TIMING = {
         :travel => {
-            :in         =>  9.6,
-            :conclusion => 21.0,
-            :out        => 30.2,
+            :in         => 3,#30.0,
+            :conclusion => 5,#50.15,
+            :out        => 57.0,
         },
         :interest => {
-            :in         => 31.2,
-            :conclusion => 38.33,
-            :out        => 56.7,
+            :in         => 58.0,
+            :conclusion => 67.0,
+            :out        => 73.0,
         },
         :friend => {
-            :in         => 57.7,
-            :conclusion => 76.2,
-            :out        => 85.33,
+            :in         => 74.0,
+            :conclusion => 79.06,
+            :out        => 83.0,
         },
         :shared => {
-            :in         => 86.33,
-            :conclusion => 91.13,
+            :in         => 84.0,
+            :conclusion => 88.23,
             :fade_out   => 136.0,
         },
     }
+
+    TABLET_VIDEOS = [
+        {
+            :asset => '/playback/media_tablets/108-Exterminator/108-050-C60-Exterminator_frame_guy.mp4',
+            :offset => 1,
+        }.freeze,
+        {
+            :asset => '/playback/media_tablets/108-Exterminator/108-051-C60-Exterminator_frame_empty.mp4',
+            :offset => 30, # adjust
+        }.freeze
+    ].freeze
+    ISADORA_DELAY = 1
 
     attr_accessor(:state, :start_time, :debug)
 
@@ -107,9 +116,6 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         @is = Isadora.new
         @state = :idle
         @time = nil
-
-        @prepare_sleep = 1 # second
-        @isadora_delay = 0 # seconds
 
         pbdata = PlaybackData.read(DATA_DYNAMIC)
 
@@ -148,8 +154,8 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         @run = true
         @tablet_category_index = 0
         Thread.new do
-            TablettesController.send_osc_cue(TABLET_VIDEO, @start_time + @prepare_sleep)
-            sleep(@start_time + @prepare_sleep + @isadora_delay - Time.now)
+            TablettesController.send_osc_cue(TABLET_VIDEOS[0][:asset], @start_time + TABLET_VIDEOS[0][:offset])
+            sleep(@start_time + ISADORA_DELAY - Time.now)
             @is.send('/isadora/1', '800')
 
             if defined?(TablettesController)
@@ -180,6 +186,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
             end
             @next_tablet_trigger = @tablet_triggers.shift
             @next_tablet_trigger_time = @next_tablet_trigger.delete(:trigger_time)
+            @video_2_trigger_time = @next_tablet_trigger_time
 
             while @run
                 run
@@ -229,6 +236,10 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
             if @next_tablet_trigger = @tablet_triggers.shift
                 @next_tablet_trigger_time = @next_tablet_trigger.delete(:trigger_time)
             end
+        end
+        if @video_2_trigger_time && now > @video_2_trigger_time
+            TablettesController.send_osc_cue(TABLET_VIDEOS[1][:asset], @start_time + TABLET_VIDEOS[1][:offset])
+            @video_2_trigger_time = nil
         end
 
         # next_category_start = @start_time + CONCLUSION_OFFSETS[category] - 0.001*TABLET_CONCLUSION_OFFSET

@@ -226,18 +226,6 @@ a {
     right: 24px;
     overflow: hidden;
 
-    > .category-title {
-        position: absolute;
-        left: 16px;
-        top: 42px;
-        width: 752px;
-        bottom: 10px;
-        text-align: center;
-        font-size: 59px;
-        color: #01DAFF;
-        text-shadow: #01A3BF 0 0 40px;
-    }
-
     > .img {
         transform: translateX(-800px) scale(0.8);
         opacity: 0;
@@ -278,9 +266,10 @@ a {
     }
     > .category-title > div {
         bottom: auto;
-        top: 18px;
+        top: 42px;
         left: 16px;
         text-align: left;
+        font-size: 70px;
     }
 
     &--in {
