@@ -258,14 +258,6 @@ class Yal
         GraphicsMagick.fit(f, Media::PLAYBACK + "/test.jpg", 640, 640, "jpg", 85, "images/blahblah.jpg, employeeID 12, table X")
     end
 
-    def cli_push_media
-        Isadora.push_media
-    end
-
-    def cli_push_opt_out
-        Isadora.push_opt_out
-    end
-
     def cli_quit
         exit(0)
     end

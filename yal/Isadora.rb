@@ -43,3 +43,14 @@ class Isadora
         end
     end
 end
+
+
+class Yal
+    def cli_isadora_push
+        Isadora.push_media
+    end
+
+    def cli_isadora_opt_out
+        Isadora.push_opt_out
+    end
+end
