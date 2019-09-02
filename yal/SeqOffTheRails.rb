@@ -461,7 +461,7 @@ class SeqOffTheRails
 
             sleep(TV_FEED_DELAY) #quick and dirty pre-delay for isadora tweets
 
-            rails = @tv_items.collect {|tv, items| TVRunner.new(tv, TV_ADDRESS[tv], @is, items)}
+            rails = @tv_items.collect {|tv, items| TVRunner.new(tv, TV_ADDRESS[tv.to_s], @is, items)}
 
             end_time = @start_time + @prepare_delay + @duration
             while @run && Time.now < end_time
@@ -499,6 +499,7 @@ class SeqOffTheRails
 
     class TVRunner
         def initialize(tv, osc_address, is, all_items)
+            puts "tv #{tv.inspect} address #{osc_address.inspect}"
             @tv = tv
             @osc_address = osc_address
             @is = is

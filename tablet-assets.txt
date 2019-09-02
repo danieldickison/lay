@@ -81,7 +81,8 @@
 /playback/media_tablets/105-Ghosting/105-011-C67-Ghosting.wav
 /playback/media_tablets/105-Ghosting/105-011-C68-Ghosting.mp4
 /playback/media_tablets/105-Ghosting/105-011-C68-Ghosting.wav
-/playback/media_tablets/108-Exterminator/108-011-C60-Exterminator.mp4
+/playback/media_tablets/108-Exterminator/108-050-C60-Exterminator_frame_guy.mp4
+/playback/media_tablets/108-Exterminator/108-051-C60-Exterminator_frame_empty.mp4
 /playback/media_tablets/110-ExecOffice/110-011-C61-ExecOffice_tablettes_cue01.mp4
 /playback/media_tablets/110-ExecOffice/110-011-C61-ExecOffice_tablettes_cue01.wav
 /playback/media_tablets/110-ExecOffice/110-011-C62-ExecOffice_tablettes_cue01.mp4

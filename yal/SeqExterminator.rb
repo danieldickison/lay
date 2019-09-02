@@ -21,15 +21,18 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
     def self.export
     end
 
-
-    TABLET_VIDEO = '/playback/media_tablets/108-Exterminator/108-011-C60-Exterminator.mp4'
-
     TABLET_TRIGGER_PREROLL = 10 # seconds; give them enough time to load dynamic images before presenting.
     # TABLET_SCROLL_INTERVAL = 3000 # ms delay betwee each of the 4 images to start scrolling
     # TABLET_SCROLL_DURATION = 4000 # ms to scroll one image all the way across (half that for last one to stop @ center)
     # TABLET_CONCLUSION_OFFSET = 3*TABLET_SCROLL_INTERVAL + TABLET_SCROLL_DURATION/2 # seconds for 4 images to scroll through before settling on conclusion
     # TABLET_CONCLUSION_DURATION = 4000 # ms for conclusion to stay on screen
     CATEGORIES = [:travel, :interest, :friend, :shared].freeze # in the order they're presented
+    CATEGORY_TITLES = {
+        :travel => 'Traveled to',
+        :interest => 'Interested in',
+        :friend  => 'Friends with',
+        :shared => 'Shared',
+    }.freeze
     # CONCLUSION_OFFSETS = {
     #     :travel     => 21.00,
     #     :interest   => 38.33,
@@ -38,51 +41,74 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
     # }.freeze
     TABLET_CONCLUSIONS = {
         :travel => [
-            'assessment: away from family',
-            'assessment: away from hometown',
-            'assessment: impulsive enthusiast',
+            'away from family',
+            'away from hometown',
+            'impulsive enthusiast',
+            'scuba potential',
+            'climate sensitive',
+            'insurance upsurge',
         ],
         :interest => [
-            'assessment: flamenco ally',
-            'assessment: beer drinker',
-            'assessment: Sweetgreen use uptick',
+            'flamenco ally',
+            'beer drinker',
+            'Sweetgreen use uptick',
+            'late adopter',
+            'DSA adjacent',
+            'petition receptive',
         ],
         :friend => [
-            'assessment: single/looking',
-            'assessment: Democrat adjacent',
-            'assessment: relationship unstable',
-            'assessment: expat ally',
+            'single/looking',
+            'relationship unstable',
+            'expat ally',
+            'yogawear spike',
+            'extroversion falloff',
+            'gentrifier',
         ],
         :shared => [
-            'assessment: birth control likely',
-            'assessment: daycare use soon',
-            'assessment: will change zipcode',
+            'birth control likely',
+            'daycare use soon',
+            'will change zipcode',
+            'commuter',
+            'economically engaged',
+            'pet product increase',
         ],
-    }
+    }.freeze
 
     # ExterminatorLite tablet js variant params
     TABLET_LITE_TIMING = {
         :travel => {
-            :in         =>  9.6,
-            :conclusion => 21.0,
-            :out        => 30.2,
+            :in         => 46.1,
+            :conclusion => 50.15,
+            :out        => 62.0,
         },
         :interest => {
-            :in         => 31.2,
-            :conclusion => 38.33,
-            :out        => 56.7,
+            :in         => 63.0,
+            :conclusion => 67.0,
+            :out        => 74.0,
         },
         :friend => {
-            :in         => 57.7,
-            :conclusion => 76.2,
-            :out        => 85.33,
+            :in         => 75.0,
+            :conclusion => 79.06,
+            :out        => 83.0,
         },
         :shared => {
-            :in         => 86.33,
-            :conclusion => 91.13,
+            :in         => 84.0,
+            :conclusion => 88.23,
             :fade_out   => 136.0,
         },
     }
+
+    TABLET_VIDEOS = [
+        {
+            :asset => '/playback/media_tablets/108-Exterminator/108-050-C60-Exterminator_frame_guy.mp4',
+            :offset => 1,
+        }.freeze,
+        {
+            :asset => '/playback/media_tablets/108-Exterminator/108-051-C60-Exterminator_frame_empty.mp4',
+            :offset => 45, # adjust
+        }.freeze
+    ].freeze
+    ISADORA_DELAY = 1
 
     attr_accessor(:state, :start_time, :debug)
 
@@ -90,9 +116,6 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         @is = Isadora.new
         @state = :idle
         @time = nil
-
-        @prepare_sleep = 1 # second
-        @isadora_delay = 0 # seconds
 
         pbdata = PlaybackData.read(DATA_DYNAMIC)
 
@@ -131,8 +154,8 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         @run = true
         @tablet_category_index = 0
         Thread.new do
-            TablettesController.send_osc_cue(TABLET_VIDEO, @start_time + @prepare_sleep)
-            sleep(@start_time + @prepare_sleep + @isadora_delay - Time.now)
+            TablettesController.send_osc_cue(TABLET_VIDEOS[0][:asset], @start_time + TABLET_VIDEOS[0][:offset])
+            sleep(@start_time + ISADORA_DELAY - Time.now)
             @is.send('/isadora/1', '800')
 
             if defined?(TablettesController)
@@ -147,6 +170,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                 }
                 enum.each do |t|
                     tablets[t] = {
+                        :title => CATEGORY_TITLES[cat],
                         :src => Media::TABLET_DYNAMIC + '/' + @tablet_pbdata[t][cat][:srcs].last,
                         :conclusion => @tablet_pbdata[t][cat][:conclusion],
                         :in_time => (1000 * (@start_time.to_f + timing[:in])).round,
@@ -162,6 +186,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
             end
             @next_tablet_trigger = @tablet_triggers.shift
             @next_tablet_trigger_time = @next_tablet_trigger.delete(:trigger_time)
+            @video_2_trigger_time = @next_tablet_trigger_time
 
             while @run
                 run
@@ -211,6 +236,10 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
             if @next_tablet_trigger = @tablet_triggers.shift
                 @next_tablet_trigger_time = @next_tablet_trigger.delete(:trigger_time)
             end
+        end
+        if @video_2_trigger_time && now > @video_2_trigger_time
+            TablettesController.send_osc_cue(TABLET_VIDEOS[1][:asset], @start_time + TABLET_VIDEOS[1][:offset])
+            @video_2_trigger_time = nil
         end
 
         # next_category_start = @start_time + CONCLUSION_OFFSETS[category] - 0.001*TABLET_CONCLUSION_OFFSET
