@@ -11,6 +11,12 @@ class SeqExterminator
         :friend     => Media::ISADORA_DIR + "s_450-Exterminator_friends/",
         :shared     => Media::ISADORA_DIR + "s_460-Exterminator_shared/",
     }.freeze
+    ISADORA_EXTERMINATOR_NAMES = {
+        :travel     => "s_430-%03d-R05-Exterminator_travel.jpg",
+        :interest   => "s_440-%03d-R05-Exterminator_interested.jpg",
+        :friend     => "s_450-%03d-R05-Exterminator_friends.jpg",
+        :shared     => "s_460-%03d-R05-Exterminator_shared.jpg",
+    }
     TABLETS_EXTERMINATOR_DIR = Media::TABLETS_DIR + "exterminator/"
     TABLETS_EXTERMINATOR_URL = Media::TABLETS_URL + "exterminator/"
 
@@ -26,12 +32,17 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
 
     # Updated Monday afternoon, 2019-09-02.
     def self.export(performance_id)
+        ISADORA_EXTERMINATOR_DIRS.values.each {|dir| `mkdir -p '#{dir}'`}
+        `mkdir -p '#{TABLETS_EXTERMINATOR_DIR}'`
+
+        db = SQLite3::Database.new(Yal::DB_FILE)
+
         # @@@
         # special images with travel, interested in, shared, friends with
         # ideally different travel from off the rails
         rows = db.execute(<<~SQL).to_a
             SELECT
-                pid, "table",
+                pid, seating,
                 spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6,
                 spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6,
@@ -44,7 +55,8 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
             pid = row[0]
             table = row[1][0]
             image_cats = row[2...15].zip(row[15...28])
-            puts "image_cats: #{image_cats.inspect}"
+            #puts "image_cats: #{image_cats.inspect}"
+            # We'll just take the first category image from each selected patron
             {
                 :pid => pid,
                 :table => table,
@@ -55,13 +67,77 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
             }
         end
 
+        fn_pids = {}
+
         ISADORA_EXTERMINATOR_DIRS.each do |cat, dir|
             matches = images.find_all {|img| img[cat]}
-            matches.shuffle[0...20].each do |img|
-                
+            matches.shuffle[0...20].each_with_index do |img, i|
+                dst = ISADORA_EXTERMINATOR_NAMES[cat] % (i + 1)
+                db_photo = Media::DATABASE_IMG_DIR + img[cat]
+                if File.exist?(db_photo)
+                    GraphicsMagick.fit(db_photo, dir + dst, 640, 640, "jpg", 85)
+                else
+                    while true
+                        r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
+                        break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
+                    end
+                    color = "rgb(#{r}%,#{g}%,#{b}%)"
+                    annotate = "#{img[cat]}, pid #{img[:pid]}, table #{img[:table]}"
+                    if rand(2) == 1
+                        width  = 640
+                        height = rand(640) + 320
+                    else
+                        height = 640
+                        width  = rand(640) + 320
+                    end
+                    GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(dir + dst, "jpg"))
+                end
+                fn_pids[dst] = img[:pid]
             end
         end
 
+        pbdata = {}
+
+        tablet_images = images.group_by {|img| img[:table].ord - 'A'.ord + 1}
+        #puts "table images: #{tablet_images.inspect}"
+        # tablet_id => catogery => pid => img
+        exterminator_tablets = {}
+        (1..25).each do |t|
+            t_imgs = tablet_images[t]
+            exterminator_tablets[t] = {}
+            CATEGORIES.each do |cat|
+                exterminator_tablets[t][cat] = pid_img = {}
+                t_imgs.each do |img|
+                    if img[cat]
+                        dst = "%03d-%s.jpg" % [img[:pid], cat]
+                        pid_img[img[:pid]] = TABLETS_EXTERMINATOR_URL + dst
+                        db_photo = Media::DATABASE_IMG_DIR + img[cat]
+                        if File.exist?(db_photo)
+                            GraphicsMagick.fit(db_photo, TABLETS_EXTERMINATOR_DIR + dst, 700, 700, "jpg", 85)
+                        else
+                            while true
+                                r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
+                                break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
+                            end
+                            color = "rgb(#{r}%,#{g}%,#{b}%)"
+                            annotate = "#{img[cat]}, pid #{img[:pid]}, table #{img[:table]}"
+                            if rand(2) == 1
+                                width  = 700
+                                height = rand(700) + 320
+                            else
+                                height = 700
+                                width  = rand(700) + 320
+                            end
+                            GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(TABLETS_EXTERMINATOR_DIR + dst, "jpg"))
+                        end
+                    end
+                end
+            end
+        end
+        pbdata[:exterminator_tablets] = exterminator_tablets
+
+        PlaybackData.write(TABLETS_EXTERMINATOR_DIR, pbdata)
+        PlaybackData.merge_filename_pids(fn_pids)
     end
 
     TABLET_TRIGGER_PREROLL = 10 # seconds; give them enough time to load dynamic images before presenting.
@@ -160,31 +236,43 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         @state = :idle
         @time = nil
 
-        pbdata = PlaybackData.read(DATA_DYNAMIC)
+        pbdata = PlaybackData.read(TABLETS_EXTERMINATOR_DIR)
+        opt_outs = Set.new(SeqOptOut.opt_outs)
 
-        @tablet_pbdata = pbdata[:exterminator_tablets]
-        conclusion_index = 0
-        @tablet_pbdata.each do |t, tablet_categories|
-            tablet_categories.each do |category, hash|
-                hash[:conclusion] = TABLET_CONCLUSIONS[category][conclusion_index % TABLET_CONCLUSIONS[category].length]
-            end
-            conclusion_index += 1
+        # 1 => [IMG_BASE + profile_image_name, IMG_BASE + profile_image_name, IMG_BASE + profile_image_name]
+        if defined?(TablettesController)
+            enum = TablettesController.tablet_enum(nil)
+        else
+            enum = 1..25
         end
-        # @tablet_categories = {}
-        # enum.each do |t|
-        #     tablet_data = pbdata[:exterminator_tablets][t]
-        #     @tablet_categories[t] = {}
-        #     CATEGORIES.each do |category|
-        #         @tablet_categories[t][category] = tablet_data[category].merge(
-        #             :category => category,
-        #             :srcs => tablet_data[category][:srcs].collect {|img| IMG_BASE + img},
-        #             :scroll_interval => TABLET_SCROLL_INTERVAL,
-        #             :scroll_duration => TABLET_SCROLL_DURATION,
-        #             :conclusion_offset => TABLET_CONCLUSION_OFFSET,
-        #             :conclusion_duration => TABLET_CONCLUSION_DURATION
-        #         )
-        #     end
-        # end
+        remaining_images = CATEGORIES.collect {|cat| [cat, []]}.to_h
+        @tablet_data = {}
+        exterminator_tablets = pbdata[:exterminator_tablets]
+        enum.each do |t|
+            @tablet_data[t] = {}
+            CATEGORIES.each do |cat|
+                pid_img = exterminator_tablets.dig(t, cat)
+                if pid_img.length > 0
+                    pids = pid_img.keys.reject {|pid| opt_outs.include?(pid)}.shuffle
+                    @tablet_data[t][cat] = {
+                        :img => pid_img[pids.first],
+                        :conclusion => TABLET_CONCLUSIONS[cat][t % TABLET_CONCLUSIONS[cat].length]
+                    }
+                    remaining_images[cat].concat(pids[1..-1].collect {|pid| pid_img[pid]})
+                end
+            end
+        end
+        enum.each do |t|
+            CATEGORIES.each do |cat|
+                if !@tablet_data[t][cat]
+                    puts "Did not find any #{cat} image for table #{t}; using spares"
+                    @tablet_data[t][cat] = {
+                        :img => remaining_images[cat].sample,
+                        :conclusion => TABLET_CONCLUSIONS[cat][t % TABLET_CONCLUSIONS[cat].length]
+                    }
+                end
+            end
+        end
     end
 
     # override
@@ -214,8 +302,8 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                 enum.each do |t|
                     tablets[t] = {
                         :title => CATEGORY_TITLES[cat],
-                        :src => Media::TABLET_DYNAMIC + '/' + @tablet_pbdata[t][cat][:srcs].last,
-                        :conclusion => @tablet_pbdata[t][cat][:conclusion],
+                        :src => @tablet_data[t][cat][:img],
+                        :conclusion => @tablet_data[t][cat][:conclusion],
                         :in_time => (1000 * (@start_time.to_f + timing[:in])).round,
                         :conclusion_time => (1000 * (@start_time.to_f + timing[:conclusion])).round,
                     }

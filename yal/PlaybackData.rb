@@ -77,11 +77,11 @@ module PlaybackData
         # tablet_id => an array of 4 arrays of 4 image names each: [[img1-1 .. img1-4] .. [img4-1 .. img4-4]]
         :geek_trio => Hash.new(Array.new(4, Array.new(4, 'placeholder.jpg'))),
 
-        # tablet_id => {:travel, :interest, :friend, :shared} => {:srcs => [imgname1 .. imgname4]}
+        # tablet_id => {:travel, :interest, :friend, :shared} => {pid => imgname1}
         :exterminator_tablets => (1..25).collect do |t|
             [   t,
                 [:travel, :interest, :friend, :shared].collect do |c|
-                    [c, {:srcs => Array.new(4, 'placeholder.jpg')}]
+                    [c, Hash.new('placeholder.jpg')]
                 end.to_h
             ]
         end.to_h,
