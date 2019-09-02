@@ -20,7 +20,7 @@ class SeqOffTheRails
     ISADORA_OFFTHERAILS_FOOD_DIR    = Media::ISADORA_DIR + "s_532-Food/"
 
     TABLETS_OFFTHERAILS_DIR = Media::TABLETS_DIR + "offtherails/"
-    TABLETS_OFFTHERAILS_URL = Media::TABLETS_URL + "geektrio/"
+    TABLETS_OFFTHERAILS_URL = Media::TABLETS_URL + "offtherails/"
 
     # MEDIA_PROFILE   = Media::DYNAMIC + "/s_510-OTR_profile"
     # MEDIA_FACEBOOK  = Media::DYNAMIC + "/s_511-Facebook"
@@ -117,9 +117,9 @@ class SeqOffTheRails
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
         SQL
 
-        profiles = {}
         posts = []
         isadora_profile_slot = 1
+        isadora_recent_slot = 1
         tablet_slot = 1
 
         rows.each do |row|
@@ -148,15 +148,15 @@ class SeqOffTheRails
                     break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                 end
                 color = "rgb(#{r}%,#{g}%,#{b}%)"
-                annotate = "profile employee ID #{employeeID}"
-                GraphicsMagick.convert("-size", "180x180", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(ISADORA_OFFTHERAILS_RECENT_DIR + isa_profile, "png"))
+                annotate = "profile, employee ID #{employeeID}"
+                GraphicsMagick.convert("-size", "180x180", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, "png"))
             end
             fn_pids[isa_profile] = employeeID
 
             # for tablets
             tab_profile = "offtherails-#{tablet_slot}.png"
             tablet_slot += 1
-            U.sh("cp", "-a", ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, tab_profile)
+            U.sh("cp", "-a", ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, TABLETS_OFFTHERAILS_URL + tab_profile)
 
 
             # facebook posts
@@ -164,7 +164,8 @@ class SeqOffTheRails
                 if row[i] && row[i] != ""
                     # make the post image
                     # for isadora
-                    slot = "%03d" % i
+                    slot = "%03d" % isadora_recent_slot
+                    isadora_recent_slot += 1
                     isa_photo = "520-#{slot}-R03-OTR_recent.jpg"
                     db_photo = DATABASE_DIR + row[0]
                     if File.exist?(db_photo)
@@ -175,7 +176,7 @@ class SeqOffTheRails
                             break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                         end
                         color = "rgb(#{r}%,#{g}%,#{b}%)"
-                        annotate = "#{row[0]}, employee ID #{employeeID}"
+                        annotate = "facebook image, employee ID #{employeeID}"
                         if rand(2) == 1
                             width  = 640
                             height = rand(640) + 320
@@ -188,11 +189,11 @@ class SeqOffTheRails
                     fn_pids[isa_photo] = employeeID
 
                     # for tablets
-                    tab_profile = "offtherails-#{tablet_slot}.png"
+                    tab_photo = "offtherails-#{tablet_slot}.png"
                     tablet_slot += 1
-                    U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, tab_profile)
+                    U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
-                    post_struct.new("fb", employeeID, table, isa_profile, tab_profile, isa_photo, tab_photo, nil)
+                    post_struct.new("fb", employeeID, table, isa_profile, tab_profile, isa_photo, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
                 end
             end
 
@@ -202,18 +203,19 @@ class SeqOffTheRails
                 if row[i] && row[i] != ""
                     # make the post image
                     # for isadora
-                    slot = "%03d" % i
-                    dst = "520-#{slot}-R03-OTR_recent.jpg"
+                    slot = "%03d" % isadora_recent_slot
+                    isadora_recent_slot += 1
+                    isa_photo = "520-#{slot}-R03-OTR_recent.jpg"
                     db_photo = DATABASE_DIR + row[0]
                     if File.exist?(db_photo)
-                        GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_RECENT_DIR + dst, 640, 640, "jpg", 85)
+                        GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, 640, 640, "jpg", 85)
                     else
                         while true
                             r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
                             break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                         end
                         color = "rgb(#{r}%,#{g}%,#{b}%)"
-                        annotate = "#{row[0]}, employee ID #{employee_id}"
+                        annotate = "instagram image, employee ID #{employeeID}"
                         if rand(2) == 1
                             width  = 640
                             height = rand(640) + 320
@@ -221,18 +223,16 @@ class SeqOffTheRails
                             height = 640
                             width  = rand(640) + 320
                         end
-                        GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(ISADORA_OFFTHERAILS_RECENT_DIR + dst, "jpg"))
+                        GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, "jpg"))
                     end
-                    fn_pids[dst] = employeeID
-                    isa_photo = dst
+                    fn_pids[isa_photo] = employeeID
 
                     # for tablets
-                    dst = "offtherails-#{tablet_slot}.png"
+                    tab_photo = "offtherails-#{tablet_slot}.png"
                     tablet_slot += 1
-                    U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, dst)
-                    tab_profile = dst
+                    U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
-                    post_struct.new("ig", employeeID, table, isa_profile, tab_profile, isa_photo, tab_photo, nil)
+                    post_struct.new("ig", employeeID, table, isa_profile, tab_profile, isa_photo, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
                 end
             end
 
@@ -245,7 +245,6 @@ class SeqOffTheRails
             end
 
         end
-
 
         # fill Isadora with 56 travel and food pictures, using dummy if we've run out
         # ZONED
@@ -295,7 +294,7 @@ class SeqOffTheRails
 
             tv_rows = rows.group_by do |r|
                 tvs = TABLE_TVS[r[-1]]
-                tvs << "C01"
+                tvs = tvs + tvs << "C01"
                 tvs[rand(tvs.length)]  # result
             end
 
@@ -306,17 +305,19 @@ class SeqOffTheRails
                 (0..7).each do |i|
                     pp = ph[i]
                     if !pp
-                        raise
+                        puts "WARNING: duplicating a tv row image"
+                        pp = ph[0]
                         # pp = dummy
                     end
 
                     # pull out extra columns
-                    employee_id = r[-2].to_i
+                    employeeID = pp[-2].to_i
+                    table = pp[-1]
 
                     slot = "%03d" % (slot_base + i)
 
                     dst = dst_template.gsub("#", slot)
-                    db_photo = DATABASE_DIR + row[0]
+                    db_photo = DATABASE_DIR + pp[0]
                     if File.exist?(db_photo)
                         GraphicsMagick.fit(db_photo, isadora_dir + dst, 640, 640, "jpg", 85)
                     else
@@ -325,7 +326,7 @@ class SeqOffTheRails
                             break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                         end
                         color = "rgb(#{r}%,#{g}%,#{b}%)"
-                        annotate = "#{row[0]}, employee ID #{employee_id}"
+                        annotate = "#{category}, employee ID #{employeeID} at table #{table}"
                         if rand(2) == 1
                             width  = 640
                             height = rand(640) + 320
@@ -335,7 +336,7 @@ class SeqOffTheRails
                         end
                         GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(isadora_dir + dst, "jpg"))
                     end
-                    fn_pids[dst] = employee_id
+                    fn_pids[dst] = employeeID
                 end
                 slot_base += 8
             end
