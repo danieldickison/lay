@@ -153,7 +153,8 @@ CREATE TABLE "datastore_patron" (
 "linkedInURL" varchar(200) NULL,
 "personalURL" varchar(200) NULL,
 "seating" varchar(2) NULL,
-"phoneType" varchar(12) NULL);
+"phoneType" varchar(12) NULL;
+"pid" integer unsigned NULL);
 
 =end
 
@@ -193,9 +194,10 @@ class Yal
             table = "A"
             seat_number = 1
             (1..100).each do |i|
+                seating = table + seat_number.to_s
                 firstName = "firstName-#{i}"
                 lastName = "lastName-#{i}"
-                employeeID = i.to_s
+                employeeID = "#{table}-XYZ-#{seat_number}"
                 email = "email-#{i}"
                 title = "title-#{i}"
                 phone = "phone-#{i}"
@@ -210,7 +212,7 @@ class Yal
 
                 db.execute(<<~SQL)
                     INSERT INTO datastore_patron (
-                        "performance_1_id", "table", "firstName", "lastName", "employeeID", "completed", "consented",
+                        "performance_1_id", "seating", "firstName", "lastName", "employeeID", "completed", "consented",
                         "email",
                         "title",
                         "phone",
@@ -224,7 +226,7 @@ class Yal
                         "minerNote",
                         patronID, greeterMatch
                     ) VALUES (
-                        "#{performance_id}", "#{table}", "#{firstName}", "#{lastName}", "#{employeeID}", 0, 0,
+                        "#{performance_id}", "#{seating}", "#{firstName}", "#{lastName}", "#{employeeID}", 0, 0,
                         "#{email}",
                         "#{title}",
                         "#{phone}",

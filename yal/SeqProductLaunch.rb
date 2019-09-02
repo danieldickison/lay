@@ -44,9 +44,10 @@ class SeqProductLaunch
             AND vipStatus = "P-A"
         SQL
 
-        person_a_struct = Struct.new(:pid
-        person_a = []
-        rows.each do |row|
+        # person_a_struct = Struct.new(:pid
+        # person_a = []
+        # rows.each do |row|
+        
 
         # Person B (12)
         # special image face 600x600 (faces), special image workspace or company logo 600x600
