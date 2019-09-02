@@ -400,8 +400,8 @@ class Yal
 
 
                 # special
-                spCat_1 = ""
-                spCat_2 = ""
+                spCat_1 = "food"
+                spCat_2 = "travel"
                 spCat_3 = ""
                 spCat_4 = ""
                 spCat_5 = ""

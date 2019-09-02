@@ -58,8 +58,11 @@ Slots correspond to zones as follows: (32 per zone)
     def self.export(performance_id)
         `mkdir -p '#{ISADORA_GEEKTRIO_DIR}'`
         `mkdir -p '#{TABLETS_GEEKTRIO_DIR}'`
-        pbdata = {}
+
         db = SQLite3::Database.new(Yal::DB_FILE)
+
+        pbdata = {}
+        fn_pids = {}  # for updating LAY_filename_pids.txt
 
 
         # General query for selecting all the photos in a performance
@@ -105,8 +108,6 @@ Slots correspond to zones as follows: (32 per zone)
             end
         end
         pbdata[:employee_tables] = employee_tables
-
-        fn_pids = {}  # for updating LAY_filename_pids.txt
 
 
         # select photos for this sequence
