@@ -3,10 +3,11 @@ require('Media')
 require('PlaybackData')
 
 class SeqExterminator
+    DATABASE_DIR = Media::DATABASE_DIR
 
-    MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/108-Exterminator/"
-    DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/108-Exterminator/"
-    DATABASE      = Media::DATABASE
+    ISADORA_EXTERMINATOR_DIR = Media::ISADORA_DIR + "s_430-Exterminator_travel/"
+    TABLETS_EXTERMINATOR_DIR = Media::TABLETS_DIR + "exterminator/"
+    TABLETS_EXTERMINATOR_URL = Media::TABLETS_URL + "exterminator/"
 
 =begin
 http://projectosn.heinz.cmu.edu:8000/admin/datastore/patron/
@@ -15,9 +16,8 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
 =end
 
     # export <performance #> Exterminator
-    # Generates s_410-Ghosting_profile Isadora directory, 105-Ghosting pbdata
 
-    # Updated Saturday morning, 2019-08-31
+    # Updated Monday afternoon, 2019-09-02
     def self.export
         # @@@
         # special images with travel, interested in, shared, friends with
