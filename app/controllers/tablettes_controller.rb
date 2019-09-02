@@ -294,7 +294,7 @@ class TablettesController < ApplicationController
     end
 
     def self.queue_command(tablet, *cmd)
-        puts "queue_command #{tablet} #{cmd.inspect}"
+        puts "queue_command #{tablet} #{cmd.first}..."
         tablet_enum(tablet).each do |t|
             cmds = @commands[t] ||= []
             cmds << cmd

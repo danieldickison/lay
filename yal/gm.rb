@@ -2,6 +2,8 @@ require('ushell')
 
 module GraphicsMagick
 
+    ENABLED = true # for debug to make things go more quickly
+
     @@gm = nil
     @@gifsicle = nil
 
@@ -11,14 +13,14 @@ module GraphicsMagick
             @@gm = ['/usr/local/bin/gm', '/usr/bin/gm'].find {|bb| File.executable?(bb)}
             raise "no gm" if !@@gm
         end
-        return U.sh(@@gm, args)
+        return ENABLED ? U.sh(@@gm, args) : ''
     end
 
     def self.gifsicle(*args)
         if !@@gifsicle
             @@gifsicle = ['/usr/local/bin/gifsicle', '/usr/bin/gifsicle'].find {|bb| File.executable?(bb)}
         end
-        return U.sh(@@gifsicle, args)
+        return ENABLED ? U.sh(@@gifsicle, args) : ''
     end
 
     def self.gifconvert(*args)
