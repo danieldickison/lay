@@ -49,7 +49,7 @@ Slots correspond to zones as follows: (32 per zone)
 193-224: C01 (projector)
 =end
 
-    Photo = Struct.new(:path, :category, :employee_id, :table)
+    Photo = Struct.new(:path, :category, :pid, :table)
 
     # export <performance #> GeekTrio
     # Generates s_410-s_420-GeekTrio Isadora directory, geektrio tablet directory
@@ -78,36 +78,36 @@ Slots correspond to zones as follows: (32 per zone)
                 fbPostCat_1, fbPostCat_2, fbPostCat_3, fbPostCat_4, fbPostCat_5, fbPostCat_6,
                 igPostCat_1, igPostCat_2, igPostCat_3, igPostCat_4, igPostCat_5, igPostCat_6,
 
-                employeeID, "table"
+                pid, seating
             FROM datastore_patron
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
         SQL
 
         photos = []
-        employee_tables = {}
+        pid_tables = {}
         rows.each do |r|
             # pull out extra columns
-            employeeID = r[-2].to_i
-            table = r[-1]
+            pid = r[-2].to_i
+            table = r[-1][0]
             if !table || table == ""
                 puts "warn: patron without a table"
                 table = "A"
             end
 
             t = table.ord - "A".ord + 1
-            employee_tables[t] ||= []
-            employee_tables[t] << employeeID
+            pid_tables[t] ||= []
+            pid_tables[t] << pid
 
             # collect photos
             (0..11).each do |i|
                 path = r[i]
                 category = r[i+12]
                 if path && path != ""
-                    photos << Photo.new(path, category, employeeID, table)
+                    photos << Photo.new(path, category, pid, table)
                 end
             end
         end
-        pbdata[:employee_tables] = employee_tables
+        pbdata[:pid_tables] = pid_tables
 
         # @@@ exclude personal/political, if possible
 
@@ -137,7 +137,7 @@ Slots correspond to zones as follows: (32 per zone)
                         break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                     end
                     color = "rgb(#{r}%,#{g}%,#{b}%)"
-                    annotate = "#{pp.path}, employee ID #{pp.employee_id}, table #{pp.table}"
+                    annotate = "#{pp.path}, pid #{pp.pid}, table #{pp.table}"
                     if rand(2) == 1
                         width  = 640
                         height = rand(640) + 320
@@ -147,13 +147,13 @@ Slots correspond to zones as follows: (32 per zone)
                     end
                     GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(ISADORA_GEEKTRIO_DIR + dst, "jpg"))
                 end
-                fn_pids[dst] = pp.employee_id
+                fn_pids[dst] = pp.pid
             end
             slot_base += 32
         end
 
         # Format photos for tablet
-        employee_photos = {}
+        pid_photos = {}
         photos.each_with_index do |pp, i|
             dst = "geektrio-#{i+1}.jpg"
             db_photo = DATABASE_DIR + pp.path
@@ -166,14 +166,14 @@ Slots correspond to zones as follows: (32 per zone)
                     break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                 end
                 color = "rgb(#{r}%,#{g}%,#{b}%)"
-                annotate = "#{pp.path}, employee ID #{pp.employee_id}, table #{pp.table}"
+                annotate = "#{pp.path}, pid #{pp.pid}, table #{pp.table}"
                 h = rand(300) + 300
                 GraphicsMagick.convert("-size", "400x#{h}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(TABLETS_GEEKTRIO_DIR + dst, "jpg"))
             end
-            employee_photos[pp.employee_id] ||= []
-            employee_photos[pp.employee_id] << TABLETS_GEEKTRIO_URL + dst
+            pid_photos[pp.pid] ||= []
+            pid_photos[pp.pid] << TABLETS_GEEKTRIO_URL + dst
         end
-        pbdata[:employee_photos] = employee_photos
+        pbdata[:pid_photos] = pid_photos
 
         # any more pbdata ?
 
@@ -205,10 +205,10 @@ Slots correspond to zones as follows: (32 per zone)
         end
         remaining_images = []
         enum.each do |t|
-            #puts "table #{t} all people: #{pbdata[:employee_tables][t].inspect}"
-            people = pbdata[:employee_tables][t] || []
+            #puts "table #{t} all people: #{pbdata[:pid_tables][t].inspect}"
+            people = pbdata[:pid_tables][t] || []
             people.delete_if {|p| opt_outs.include?(p)}
-            table_images = people.collect {|p| pbdata[:employee_photos][p]}.flatten.shuffle
+            table_images = people.collect {|p| pbdata[:pid_photos][p]}.flatten.shuffle
             puts "table #{t} opted in people: #{people.inspect} has #{table_images.length} photos"
             @tablet_images[t] = table_images.slice!(0, 16)
             remaining_images.concat(table_images) # All the remainders go into the fallback pool
