@@ -163,6 +163,7 @@ class SeqOffTheRails
             tablet_slot += 1
             U.sh("cp", "-a", ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, TABLETS_OFFTHERAILS_DIR + tab_profile)
 
+            # prefer personal, political
 
             # facebook posts
             (4..9).each do |i|
@@ -244,6 +245,7 @@ class SeqOffTheRails
             end
 
 
+            # any kind
             # twitter posts
             (16..17).each do |i|
                 if row[i] && row[i] != ""
@@ -252,6 +254,8 @@ class SeqOffTheRails
             end
 
         end
+
+        # preferably not used in previous sequence (travel only)
 
         # fill Isadora with 56 travel and food pictures, using dummy if we've run out
         # ZONED

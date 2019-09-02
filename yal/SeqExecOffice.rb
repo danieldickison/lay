@@ -32,6 +32,9 @@ No zones
         pbdata = {}
         db = SQLite3::Database.new(Yal::DB_FILE)
 
+        # @@@
+        # special images face
+
         # Query to fetch profile photos
         rows = db.execute(<<~SQL).to_a
             SELECT

@@ -109,6 +109,7 @@ Slots correspond to zones as follows: (32 per zone)
         end
         pbdata[:employee_tables] = employee_tables
 
+        # @@@ exclude personal/political, if possible
 
         # select photos for this sequence
         # photos = photos.find_all {|p| p.category == "friend" || p.category == "friends"}

@@ -12,6 +12,12 @@ class SeqProductLaunch
     def self.export
         pbdata = {}
 
+        # data mining requirements for VIPs
+        # https://docs.google.com/document/d/172KsxBACZxxpWOKCSr7JLrobK78df-1DihZlKbKmtZA/edit
+
+        # face photos
+        # pet
+
         PlaybackData.write(DATA_DYNAMIC, pbdata)
     end
 

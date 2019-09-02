@@ -19,6 +19,9 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
 
     # Updated Saturday morning, 2019-08-31
     def self.export
+        # @@@
+        # special images with travel, interested in, shared, friends with
+        # ideally different travel from off the rails
     end
 
     TABLET_TRIGGER_PREROLL = 10 # seconds; give them enough time to load dynamic images before presenting.
