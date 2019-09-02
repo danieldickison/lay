@@ -20,7 +20,7 @@ class SeqTabletCrossFadeTest
     DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/105-Ghosting/"
     DATABASE      = Media::DATABASE
 
-    def self.export
+    def self.export(performance_id)
     end
 
     attr_accessor(:state, :start_time)

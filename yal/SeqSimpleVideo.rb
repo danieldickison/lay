@@ -4,6 +4,9 @@ require('Isadora')
 # A simple cue that triggers tablet video, waits, then triggers isadora cue.
 class SeqSimpleVideo
 
+    def self.export(performance_id)
+    end
+
     attr_accessor(:start_time, :tablet_delay, :tablet_fade, :tablet_volume, :isadora_delay, :debug)
 
     def initialize(cue, tablet_video)
