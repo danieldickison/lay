@@ -382,7 +382,7 @@ class SeqOffTheRails
         @prepare_delay = 2.667
         @duration = 200 # 3:20
 
-        pbdata = PlaybackData.read(DATA_DIR)
+        pbdata = PlaybackData.read(TABLETS_OFFTHERAILS_DIR)
         opt_outs = Set.new(SeqOptOut.opt_outs)
 
         # We want 4 element arrays:
@@ -422,13 +422,13 @@ class SeqOffTheRails
                         tweets_shuffled = @tweets.dup.shuffle
                     end
                     i = tweets_shuffled.pop
-                    {:profile_img => IMG_PROFILE + "/" + pbdata[:profile_image_names][i[1]], :tweet => i[3]}
+                    {:profile_img => Media::TABLETS_URL + "/" + pbdata[:profile_image_names][i[1]], :tweet => i[3]}
                 when 1
                     i = @fb.sample
-                    {:photo => IMG_FACEBOOK + "/" + pbdata[:facebook_image_names][i[2]]}
+                    {:photo => Media::TABLETS_URL + "/" + pbdata[:facebook_image_names][i[2]]}
                 when 2
                     i = @ig.sample
-                    {:photo => IMG_INSTAGRAM + "/" + pbdata[:instagram_image_names][i[2]]}
+                    {:photo => Media::TABLETS_URL + "/" + pbdata[:instagram_image_names][i[2]]}
                 end
             end
         end
