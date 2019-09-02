@@ -77,17 +77,17 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
     # ExterminatorLite tablet js variant params
     TABLET_LITE_TIMING = {
         :travel => {
-            :in         => 30.0,
+            :in         => 46.1,
             :conclusion => 50.15,
-            :out        => 57.0,
+            :out        => 62.0,
         },
         :interest => {
-            :in         => 58.0,
+            :in         => 63.0,
             :conclusion => 67.0,
-            :out        => 73.0,
+            :out        => 74.0,
         },
         :friend => {
-            :in         => 74.0,
+            :in         => 75.0,
             :conclusion => 79.06,
             :out        => 83.0,
         },
@@ -105,7 +105,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         }.freeze,
         {
             :asset => '/playback/media_tablets/108-Exterminator/108-051-C60-Exterminator_frame_empty.mp4',
-            :offset => 30, # adjust
+            :offset => 45, # adjust
         }.freeze
     ].freeze
     ISADORA_DELAY = 1
