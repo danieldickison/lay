@@ -71,20 +71,20 @@ class SeqOffTheRails
 
     TV_ADDRESS = {
         # TVs:
-        '21' => '/isadora-multi/2',
-        '22' => '/isadora-multi/3',
-        '23' => '/isadora-multi/4',
-        '31' => '/isadora-multi/5',
-        '32' => '/isadora-multi/6',
-        '33' => '/isadora-multi/7',
+        'TV21' => '/isadora-multi/2',
+        'TV22' => '/isadora-multi/3',
+        'TV23' => '/isadora-multi/4',
+        'TV31' => '/isadora-multi/5',
+        'TV32' => '/isadora-multi/6',
+        'TV33' => '/isadora-multi/7',
         # center projector:
-        '01' => '/isadora-multi/8',
+        'C01' => '/isadora-multi/8',
     }.freeze
 
     TV_TYPE_ID = {
-        :tweet => 1,
-        :fb => 2,
-        :ig => 3,
+        'tw' => 1,
+        'fb' => 2,
+        'ig' => 3,
     }.freeze
 
     FIRST_TV_ITEM_MAX_DELAY = 5
@@ -126,8 +126,8 @@ class SeqOffTheRails
             employeeID = row[0].to_i
             table = row[1]
 
-            tvs = TABLE_TVS[table]
-            tvs = tvs + tvs << "C01"
+            puts "table: #{table} employee #{employeeID}"
+            tvs = TABLE_TVS[table] + ["C01"]
             tv = tvs[rand(tvs.length)]
 
             if row[2] && row[2] != ""
@@ -300,8 +300,7 @@ class SeqOffTheRails
             SQL
 
             tv_rows = rows.group_by do |r|
-                tvs = TABLE_TVS[r[-1]]
-                tvs = tvs + tvs << "C01"
+                tvs = TABLE_TVS[r[-1]] + ["C01"]
                 tvs[rand(tvs.length)]  # result
             end
 
@@ -350,7 +349,10 @@ class SeqOffTheRails
         end
 
 
-pp posts  # debug
+#pp posts  # debug
+        post_hashes = posts.collect(&:to_h)
+        pbdata[:employee_posts] = post_hashes.group_by {|p| p[:employee_id]}
+        pbdata[:tv_posts] = post_hashes.group_by {|p| p[:tv]}
 
         # employee tables
         employees = db.execute(<<~SQL).to_a
@@ -394,51 +396,46 @@ pp posts  # debug
         pbdata = PlaybackData.read(TABLETS_OFFTHERAILS_DIR)
         opt_outs = Set.new(SeqOptOut.opt_outs)
 
-        # We want 4 element arrays:
-        # [type, profile_pic_id, photo_id (nil for tweets), tweet/caption]
-        @tweets = pbdata[:tweets].collect {|h| [:tweet, h[:profile], h[:photo], h[:tweet]]}
-        @fb = pbdata[:facebooks].collect {|h| [:fb, h[:profile], h[:photo], h[:caption]]}
-        @ig = pbdata[:instagrams].collect {|h| [:ig, h[:profile], h[:photo], h[:caption]]}
+        @tv_items = {}
+        pbdata[:tv_posts].each do |tv, posts|
+            @tv_items[tv] = posts.reject {|p| opt_outs.include?(p[:employee_id])}
+        end
 
-        # Maps isadora channel number to the items we want to show on that TV.
-        # for debug, i'm just shuffling all items together and throwing them at all tvs
-        tmp_tv_items = (@tweets + @fb + @ig).shuffle
-        tmp_projector_items = tmp_tv_items.dup
-        @tv_items = {
-            '21' => tmp_tv_items,
-            '22' => tmp_tv_items,
-            '23' => tmp_tv_items,
-            '31' => tmp_tv_items,
-            '32' => tmp_tv_items,
-            '33' => tmp_tv_items,
-            '01' => tmp_projector_items,
-        }
-
+        employee_posts = pbdata[:employee_posts]
+        opt_outs.each do |pid|
+            employee_posts.delete(pid)
+        end
         @tablet_items = {}
         if defined?(TablettesController)
             enum = TablettesController.tablet_enum(nil)
         else
             enum = 1..25
         end
-
-        tweets_shuffled = []
-
         enum.each do |t|
-            @tablet_items[t] = 50.times.collect do
-                case rand(3)
-                when 0
-                    if tweets_shuffled.empty?
-                        tweets_shuffled = @tweets.dup.shuffle
-                    end
-                    i = tweets_shuffled.pop
-                    {:profile_img => Media::TABLETS_URL + "/" + pbdata[:profile_image_names][i[1]], :tweet => i[3]}
-                when 1
-                    i = @fb.sample
-                    {:photo => Media::TABLETS_URL + "/" + pbdata[:facebook_image_names][i[2]]}
-                when 2
-                    i = @ig.sample
-                    {:photo => Media::TABLETS_URL + "/" + pbdata[:instagram_image_names][i[2]]}
+            people = pbdata[:employee_tables][t]
+            items = []
+            people.each do |p|
+                items.concat(employee_posts[p] || [])
+            end
+            borrow_table = (t + 1) % 25
+            while items.length < 20 && borrow_table != t
+                puts "not enough posts for table #{t}; borrowing from table #{borrow_table}"
+                borrow_people = pbdata[:employee_tables][borrow_table]
+                borrow_people.each do |p|
+                    items.concat(employee_posts[p] || [])
+                    break if items.length >= 20
                 end
+                borrow_table = (borrow_table + 1) % 25
+            end
+            @tablet_items[t] = items.shuffle.collect do |item|
+                tab_item = {
+                    :profile_img => item[:tab_profile],
+                }
+                case item[:type]
+                when 'tw' then tab_item[:tweet] = item[:text]
+                else tab_item[:photo] = item[:tab_photo]
+                end
+                tab_item
             end
         end
     end
@@ -532,10 +529,10 @@ pp posts  # debug
                 end
             when :trigger
                 @is.send(@osc_address,
-                    @item[1] || -1,                   # profile pic
-                    @item[2] || -1,             # photo
-                    TV_TYPE_ID[@item[0]] || 0,  # type
-                    @item[3]                    # text
+                    @item[:isa_profile_num] || -1,  # profile pic
+                    @item[:isa_photo_num] || -1,    # photo
+                    TV_TYPE_ID[@item[:type]] || 0,      # type
+                    @item[:text] || ''              # text
                 )
                 @state = :idle
             end
