@@ -30,6 +30,12 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
     # TABLET_CONCLUSION_OFFSET = 3*TABLET_SCROLL_INTERVAL + TABLET_SCROLL_DURATION/2 # seconds for 4 images to scroll through before settling on conclusion
     # TABLET_CONCLUSION_DURATION = 4000 # ms for conclusion to stay on screen
     CATEGORIES = [:travel, :interest, :friend, :shared].freeze # in the order they're presented
+    CATEGORY_TITLES = {
+        :travel => 'Traveled to',
+        :interest => 'Interested in',
+        :friend  => 'Friends with',
+        :shared => 'Shared',
+    }.freeze
     # CONCLUSION_OFFSETS = {
     #     :travel     => 21.00,
     #     :interest   => 38.33,
@@ -158,6 +164,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                 }
                 enum.each do |t|
                     tablets[t] = {
+                        :title => CATEGORY_TITLES[cat],
                         :src => Media::TABLET_DYNAMIC + '/' + @tablet_pbdata[t][cat][:srcs].last,
                         :conclusion => @tablet_pbdata[t][cat][:conclusion],
                         :in_time => (1000 * (@start_time.to_f + timing[:in])).round,

@@ -220,18 +220,30 @@ a {
 
 .exterminator-lite {
     position: absolute;
-    top: 140px;
+    top: 0;
     left: 24px;
     bottom: 24px;
     right: 24px;
     overflow: hidden;
+
+    > .category-title {
+        position: absolute;
+        left: 16px;
+        top: 42px;
+        width: 752px;
+        bottom: 10px;
+        text-align: center;
+        font-size: 59px;
+        color: #01DAFF;
+        text-shadow: #01A3BF 0 0 40px;
+    }
 
     > .img {
         transform: translateX(-800px) scale(0.8);
         opacity: 0;
 
         position: absolute;
-        top: 0;
+        top: 140px;
         bottom: 120px;
         left: 26px;
         width: 700px;
@@ -240,6 +252,7 @@ a {
         background-repeat: no-repeat;
     }
 
+    > .category-title,
     > .conclusion,
     > .assessment {
         position: absolute;
@@ -263,8 +276,18 @@ a {
     > .assessment > div {
         bottom: 70px;
     }
+    > .category-title > div {
+        bottom: auto;
+        top: 18px;
+        left: 16px;
+        text-align: left;
+    }
 
     &--in {
+        > .category-title {
+            transition: width linear 1000ms;
+            width: 100%;
+        }
         > .img {
             transition: transform ease-out 4000ms, opacity ease-out 2000ms;
             transform: none;
@@ -289,6 +312,7 @@ a {
             transform: translateX(800px) scale(0.8);
             opacity: 0;
         }
+        > .category-title,
         > .conclusion,
         > .assessment {
             transition: opacity ease-in 1000ms;
