@@ -225,7 +225,7 @@ class SeqProductLaunch
         # @data[EDUCATION_CHANNEL] = p_data["Education 1"]
         # @data[OCCUPATION_CHANNEL] = p_data["Current Occupation 1"]
 
-        pbdata = PlaybackData.read(TABLETS_PRODUCTLAUNCH_DIR)
+        pbdata = PlaybackData::DEV_DATA #.read(TABLETS_PRODUCTLAUNCH_DIR)
 
         # @disp = [NAME_CHANNEL, HOMETOWN_CHANNEL, FACT1_CHANNEL, FACT2_CHANNEL, FAMILY_CHANNEL, OCCUPATION_CHANNEL, EDUCATION_CHANNEL].shuffle
 
