@@ -69,7 +69,7 @@ class SeqOffTheRails
 
 
 
-    TV_ADDRESS = {
+    TV_POST_ADDRESS = {
         # TVs:
         'TV21' => '/isadora-multi/2',
         'TV22' => '/isadora-multi/3',
@@ -78,7 +78,18 @@ class SeqOffTheRails
         'TV32' => '/isadora-multi/6',
         'TV33' => '/isadora-multi/7',
         # center projector:
-        'C01' => '/isadora-multi/8',
+        'C01'  => '/isadora-multi/8',
+    }.freeze
+    TV_NAME_ADDRESS = {
+        # TVs:
+        'TV21' => ['/isadora/41', '/isadora/42'],
+        'TV22' => ['/isadora/43', '/isadora/44'],
+        'TV23' => ['/isadora/45', '/isadora/46'],
+        'TV31' => ['/isadora/47', '/isadora/48'],
+        'TV32' => ['/isadora/49', '/isadora/50'],
+        'TV33' => ['/isadora/51', '/isadora/52'],
+        # center projector:
+        'C01'  => ['/isadora/53', '/isadora/54'],
     }.freeze
 
     TV_TYPE_ID = {
@@ -105,11 +116,11 @@ class SeqOffTheRails
         pbdata = {}
         fn_pids = {}  # for updating LAY_filename_pids.txt
 
-        post_struct = Struct.new(:type, :employee_id, :table, :tv, :isa_profile_num, :tab_profile, :isa_photo_num, :tab_photo, :text)
+        post_struct = Struct.new(:type, :employee_id, :name, :table, :tv, :isa_profile_num, :tab_profile, :isa_photo_num, :tab_photo, :text)
 
         # fill Isadora with 100 facebook and instagram pictures, using dummy if we've run out
         rows = db.execute(<<~SQL).to_a
-            SELECT employeeID, "table", fbProfilePhoto, twitterProfilePhoto,
+            SELECT employeeID, "table", firstName, fbProfilePhoto, twitterProfilePhoto,
             fbPostImage_1, fbPostImage_2, fbPostImage_3, fbPostImage_4, fbPostImage_5, fbPostImage_6,
             igPostImage_1, igPostImage_2, igPostImage_3, igPostImage_4, igPostImage_5, igPostImage_6,
             tweetText_1, tweetText_2
@@ -125,15 +136,16 @@ class SeqOffTheRails
         rows.each do |row|
             employeeID = row[0].to_i
             table = row[1]
+            name = row[2]
 
             puts "table: #{table} employee #{employeeID}"
             tvs = TABLE_TVS[table] + ["C01"]
             tv = tvs[rand(tvs.length)]
 
-            if row[2] && row[2] != ""
-                db_profile = row[2]
-            elsif row[3] && row[3] != ""
+            if row[3] && row[3] != ""
                 db_profile = row[3]
+            elsif row[4] && row[4] != ""
+                db_profile = row[4]
             else
                 next
             end
@@ -166,7 +178,7 @@ class SeqOffTheRails
             # prefer personal, political
 
             # facebook posts
-            (4..9).each do |i|
+            (5..10).each do |i|
                 if row[i] && row[i] != ""
                     # make the post image
                     # for isadora
@@ -200,13 +212,13 @@ class SeqOffTheRails
                     tablet_slot += 1
                     U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
-                    posts << post_struct.new("fb", employeeID, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
+                    posts << post_struct.new("fb", employeeID, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
                 end
             end
 
 
             # instagram posts
-            (10..15).each do |i|
+            (11..16).each do |i|
                 if row[i] && row[i] != ""
                     # make the post image
                     # for isadora
@@ -240,16 +252,16 @@ class SeqOffTheRails
                     tablet_slot += 1
                     U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
-                    posts << post_struct.new("ig", employeeID, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
+                    posts << post_struct.new("ig", employeeID, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
                 end
             end
 
 
             # any kind
             # twitter posts
-            (16..17).each do |i|
+            (17..18).each do |i|
                 if row[i] && row[i] != ""
-                    posts << post_struct.new("tw", employeeID, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, nil, nil, row[i])
+                    posts << post_struct.new("tw", employeeID, table, name, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, nil, nil, row[i])
                 end
             end
 
@@ -357,6 +369,17 @@ class SeqOffTheRails
         post_hashes = posts.collect(&:to_h)
         pbdata[:employee_posts] = post_hashes.group_by {|p| p[:employee_id]}
         pbdata[:tv_posts] = post_hashes.group_by {|p| p[:tv]}
+        pbdata[:tv_names] = posts
+            .uniq(&:employee_id)
+            .collect do |p|
+                {
+                    :tv => p.tv,
+                    :employee_id => p.employee_id,
+                    :name => p.name,
+                    :isa_profile_num => p.isa_profile_num
+                }
+            end
+            .group_by {|p| p[:tv]}
 
         # employee tables
         employees = db.execute(<<~SQL).to_a
@@ -403,6 +426,24 @@ class SeqOffTheRails
         @tv_items = {}
         pbdata[:tv_posts].each do |tv, posts|
             @tv_items[tv] = posts.reject {|p| opt_outs.include?(p[:employee_id])}
+        end
+
+        @tv_names = {}
+        spare_tv_names = []
+        pbdata[:tv_names].each do |tv, names|
+            all_tv_names = names.reject {|p| opt_outs.include?(p[:employee_id])}.shuffle
+            @tv_names[tv] = all_tv_names[0...4]
+            spare_tv_names.concat(all_tv_names[4..-1] || [])
+        end
+        @tv_names.each do |tv, names|
+            if names.length < 4
+                puts "tv #{tv} had too few names (#{names.join(', ')}); picking from spares"
+                if spare_tv_names.length < 4 - names.length
+                    puts "WARNING: not enough names for TVs. recycling..."
+                    spare_tv_names = @tv_names.values.flatten.shuffle
+                end
+                names.concat(spare_tv_names.slice(0, 4 - names.length))
+            end
         end
 
         employee_posts = pbdata[:employee_posts]
@@ -463,9 +504,16 @@ class SeqOffTheRails
                 TablettesController.queue_command(t, 'offtherails', items)
             end
 
+            @tv_names.each do |tv, names|
+                addrs = TV_NAME_ADDRESS[tv.to_s]
+                puts "tv #{tv} names #{names.collect {|n| n[:name]}.inspect}"
+                @is.send(addrs[0], names.collect {|n| n[:name]}.join(','))
+                @is.send(addrs[1], names.collect {|n| n[:isa_profile_num]}.join(','))
+            end
+
             sleep(TV_FEED_DELAY) #quick and dirty pre-delay for isadora tweets
 
-            rails = @tv_items.collect {|tv, items| TVRunner.new(tv, TV_ADDRESS[tv.to_s], @is, items)}
+            rails = @tv_items.collect {|tv, items| TVRunner.new(tv, TV_POST_ADDRESS[tv.to_s], @is, items)}
 
             end_time = @start_time + @prepare_delay + @duration
             while @run && Time.now < end_time
