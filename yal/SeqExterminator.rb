@@ -5,7 +5,12 @@ require('PlaybackData')
 class SeqExterminator
     DATABASE_DIR = Media::DATABASE_DIR
 
-    ISADORA_EXTERMINATOR_DIR = Media::ISADORA_DIR + "s_430-Exterminator_travel/"
+    ISADORA_EXTERMINATOR_DIRS = {
+        :travel     => Media::ISADORA_DIR + "s_430-Exterminator_travel/",
+        :interest   => Media::ISADORA_DIR + "s_440-Exterminator_interested/",
+        :friend     => Media::ISADORA_DIR + "s_450-Exterminator_friends/",
+        :shared     => Media::ISADORA_DIR + "s_460-Exterminator_shared/",
+    }.freeze
     TABLETS_EXTERMINATOR_DIR = Media::TABLETS_DIR + "exterminator/"
     TABLETS_EXTERMINATOR_URL = Media::TABLETS_URL + "exterminator/"
 
@@ -37,19 +42,25 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
 
         images = rows.collect do |row|
             pid = row[0]
-            table = row[1]
+            table = row[1][0]
             image_cats = row[2...15].zip(row[15...28])
             puts "image_cats: #{image_cats.inspect}"
-            ExportImage.new(
-                pid,
-                table,
-                image_cats.find {|_, cat| cat == 'friend' || cat == 'friends'}[0],
-                image_cats.find {|_, cat| cat == 'travel'}[0],
-                image_cats.find {|_, cat| cat == 'interest'}[0],
-                image_cats.find {|_, cat| cat == 'shared'}[0]
-            )
+            {
+                :pid => pid,
+                :table => table,
+                :friend => image_cats.find {|_, cat| cat == 'friend' || cat == 'friends'}[0],
+                :travel => image_cats.find {|_, cat| cat == 'travel'}[0],
+                :interest => image_cats.find {|_, cat| cat == 'interest'}[0],
+                :shared => image_cats.find {|_, cat| cat == 'shared'}[0],
+            }
         end
 
+        ISADORA_EXTERMINATOR_DIRS.each do |cat, dir|
+            matches = images.find_all {|img| img[cat]}
+            matches.shuffle[0...20].each do |img|
+                
+            end
+        end
 
     end
 
