@@ -403,40 +403,76 @@ class Yal
 
 
                 # special
-                spCat_1 = "food"
-                spCat_2 = "travel"
-                spCat_3 = ""
-                spCat_4 = ""
-                spCat_5 = ""
-                spImage_1 = "images/spImage_1-#{i}"
-                spImage_2 = "images/spImage_2-#{i}"
-                spImage_3 = "images/spImage_3-#{i}"
-                spImage_4 = "images/spImage_4-#{i}"
-                spImage_5 = "images/spImage_5-#{i}"
-                spTS_1 = "spTS_1-#{i}"
-                spTS_2 = "spTS_2-#{i}"
-                spTS_3 = "spTS_3-#{i}"
-                spTS_4 = "spTS_4-#{i}"
-                spTS_5 = "spTS_5-#{i}"
+                spCat_1  = "child"
+                spCat_2  = "face"
+                spCat_3  = "food"
+                spCat_4  = "friend"
+                spCat_5  = "friends"
+                spCat_6  = "interest"
+                spCat_7  = "love"
+                spCat_8  = "pet"
+                spCat_9  = "relevant"
+                spCat_10 = "shared"
+                spCat_11 = "travel"
+                spImage_1  = "images/spImage_1-#{i}"
+                spImage_2  = "images/spImage_2-#{i}"
+                spImage_3  = "images/spImage_3-#{i}"
+                spImage_4  = "images/spImage_4-#{i}"
+                spImage_5  = "images/spImage_5-#{i}"
+                spImage_6  = "images/spImage_6-#{i}"
+                spImage_7  = "images/spImage_7-#{i}"
+                spImage_8  = "images/spImage_8-#{i}"
+                spImage_9  = "images/spImage_9-#{i}"
+                spImage_10 = "images/spImage_10-#{i}"
+                spImage_11 = "images/spImage_11-#{i}"
+                spTS_1  = "spTS_1-#{i}"
+                spTS_2  = "spTS_2-#{i}"
+                spTS_3  = "spTS_3-#{i}"
+                spTS_4  = "spTS_4-#{i}"
+                spTS_5  = "spTS_5-#{i}"
+                spTS_6  = "spTS_6-#{i}"
+                spTS_7  = "spTS_7-#{i}"
+                spTS_8  = "spTS_8-#{i}"
+                spTS_9  = "spTS_9-#{i}"
+                spTS_10 = "spTS_10-#{i}"
+                spTS_11 = "spTS_11-#{i}"
 
                 db.execute(<<~SQL)
                     UPDATE datastore_patron
                     SET
-                        spCat_1 = "#{spCat_1}",
-                        spCat_2 = "#{spCat_2}",
-                        spCat_3 = "#{spCat_3}",
-                        spCat_4 = "#{spCat_4}",
-                        spCat_5 = "#{spCat_5}",
-                        spImage_1 = "#{spImage_1}",
-                        spImage_2 = "#{spImage_2}",
-                        spImage_3 = "#{spImage_3}",
-                        spImage_4 = "#{spImage_4}",
-                        spImage_5 = "#{spImage_5}",
-                        spTS_1 = "#{spTS_1}",
-                        spTS_2 = "#{spTS_2}",
-                        spTS_3 = "#{spTS_3}",
-                        spTS_4 = "#{spTS_4}",
-                        spTS_5 = "#{spTS_5}"
+                        spCat_1  = "#{spCat_1}",
+                        spCat_2  = "#{spCat_2}",
+                        spCat_3  = "#{spCat_3}",
+                        spCat_4  = "#{spCat_4}",
+                        spCat_5  = "#{spCat_5}",
+                        spCat_6  = "#{spCat_6}",
+                        spCat_7  = "#{spCat_7}",
+                        spCat_8  = "#{spCat_8}",
+                        spCat_9  = "#{spCat_9}",
+                        spCat_10 = "#{spCat_10}",
+                        spCat_11 = "#{spCat_11}",
+                        spImage_1  = "#{spImage_1}",
+                        spImage_2  = "#{spImage_2}",
+                        spImage_3  = "#{spImage_3}",
+                        spImage_4  = "#{spImage_4}",
+                        spImage_5  = "#{spImage_5}",
+                        spImage_6  = "#{spImage_6}",
+                        spImage_7  = "#{spImage_7}",
+                        spImage_8  = "#{spImage_8}",
+                        spImage_9  = "#{spImage_9}",
+                        spImage_10 = "#{spImage_10}",
+                        spImage_11 = "#{spImage_11}",
+                        spTS_1  = "#{spTS_1}",
+                        spTS_2  = "#{spTS_2}",
+                        spTS_3  = "#{spTS_3}",
+                        spTS_4  = "#{spTS_4}",
+                        spTS_5  = "#{spTS_5}",
+                        spTS_6  = "#{spTS_6}",
+                        spTS_7  = "#{spTS_7}",
+                        spTS_8  = "#{spTS_8}",
+                        spTS_9  = "#{spTS_9}",
+                        spTS_10 = "#{spTS_10}",
+                        spTS_11 = "#{spTS_11}"
                     WHERE id = #{id}
                 SQL
 
