@@ -183,26 +183,26 @@ a {
         transform: scale(0.9);
         transition: opacity linear 500ms, transform ease-out 600ms;
 
-        width: 50%;
+        width: 60%;
         height: auto;
         border: none;
         position: absolute;
 
         &:nth-child(1) {
-            left: 2%;
-            bottom: 48%;
+            left: 0;
+            bottom: 49%;
         }
         &:nth-child(2) {
-            right: 5%;
-            bottom: 45%;
+            right: 2%;
+            bottom: 47%;
         }
         &:nth-child(3) {
-            left: 4%;
-            top: 47%;
+            left: 3%;
+            top: 50%;
         }
         &:nth-child(4) {
-            right: 2%;
-            top: 45%;
+            right: 0;
+            top: 48%;
         }
     }
 
