@@ -73,17 +73,22 @@ class Showtime
         end
     end
 
-    def self.debug_assign_vips(performance_id)
+    def self.debug_assign_vips_and_consent(performance_id)
         db = SQLite3::Database.new(Yal::DB_FILE)
         ids = db.execute(<<~SQL).to_a.collect {|row| row[0]}
             SELECT id
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
         SQL
-        ids.shuffle!
+        db.execute(<<~SQL)
+            UPDATE datastore_patron
+            SET vipStatus = NULL
+            WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
+        SQL
+        vip_ids = ids.dup.shuffle
         ['P-A', 'P-B', 'P-C', 'P-D'].each do |slot|
             3.times do
-                id = ids.pop
+                id = vip_ids.pop
                 puts "setting #{id} to #{slot}"
                 db.execute(<<~SQL)
                     UPDATE datastore_patron
@@ -91,6 +96,15 @@ class Showtime
                     WHERE id = #{id}
                 SQL
             end
+        end
+
+        ids.each do |id|
+            consent = rand < 0.9 ? 1 : 0
+            db.execute(<<~SQL)
+                UPDATE datastore_patron
+                SET consented = #{consent}
+                WHERE id = #{id}
+            SQL
         end
     end
 
@@ -121,18 +135,18 @@ class Showtime
         end
 
 
-        # # VIPs
-        # ids = db.execute(<<~SQL).collect {|r| r[0]}
-        #     SELECT pid
-        #     FROM datastore_patron
-        #     WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
-        #     AND consented != 0 AND vipchoice = 1
-        # SQL
+        # VIPs
+        vips = {}
+        ids = db.execute(<<~SQL).each {|r| vips[r[1]] ||= r[0]}
+            SELECT pid, vipStatus
+            FROM datastore_patron
+            WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
+            AND consented != 0 AND vipStatus IS NOT NULL
+        SQL
 
-        # File.open(VIP_FILE, "w") do |f|
-        #     o = ids.collect {|i| "%03d" % i}.join("\n")
-        #     f.puts(o)
-        # end
+        File.open(VIP_FILE, "w") do |f|
+            f.write(JSON.pretty_generate(vips))
+        end
     end
 
     def self.opt_outs
@@ -140,7 +154,7 @@ class Showtime
     end
 
     def self.vips
-        return Set.new([])
+        return JSON.parse(File.read(VIP_FILE))
     end
 end
 
@@ -158,8 +172,8 @@ class Yal
         Showtime.debug_assign_random_seats(get_performance_id(args[0]))
     end
 
-    def cli_debug_assign_vips(*args)
-        Showtime.debug_assign_vips(get_performance_id(args[0]))
+    def cli_debug_assign_vips_and_consent(*args)
+        Showtime.debug_assign_vips_and_consent(get_performance_id(args[0]))
     end
 
     def cli_finalize_last_minute_data(*args)
