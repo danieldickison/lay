@@ -145,7 +145,9 @@ class Showtime
         SQL
 
         File.open(VIP_FILE, "w") do |f|
-            f.write(JSON.pretty_generate(vips))
+            ['P-A', 'P-B', 'P-C', 'P-D'].each do |which|
+                f.puts('%03d' % (vips[which] || raise("no consented vip #{which}")))
+            end
         end
     end
 
@@ -154,7 +156,7 @@ class Showtime
     end
 
     def self.vips
-        return JSON.parse(File.read(VIP_FILE))
+        return File.read(VIP_FILE).lines.collect {|l| l.to_i}
     end
 end
 
