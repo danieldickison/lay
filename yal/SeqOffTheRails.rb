@@ -51,7 +51,7 @@ class SeqOffTheRails
 
     FIRST_TV_ITEM_MAX_DELAY = 5
     TV_ITEM_INTERVAL_RANGE = 14..25
-    TV_FEED_DELAY = 30
+    FEED_DELAY = 38
 
 
     def self.export(performance_id)
@@ -454,10 +454,6 @@ class SeqOffTheRails
             TablettesController.send_osc_cue('/playback/media_tablets/112-OTR/112-201-C60-OTR_All.mp4', @start_time + @prepare_delay)
             sleep(@start_time + @prepare_delay - Time.now)
             @is.send('/isadora/1', '1100')
-            
-            @tablet_items.each do |t, items|
-                TablettesController.queue_command(t, 'offtherails', items)
-            end
 
             @tv_names.each do |tv, names|
                 addrs = TV_NAME_ADDRESS[tv.to_s]
@@ -466,7 +462,12 @@ class SeqOffTheRails
                 @is.send(addrs[1], names.collect {|n| n[:isa_profile_num]}.join(','))
             end
 
-            sleep(TV_FEED_DELAY) #quick and dirty pre-delay for isadora tweets
+            sleep(FEED_DELAY) #quick and dirty pre-delay for tweets
+            return if !@run
+
+            @tablet_items.each do |t, items|
+                TablettesController.queue_command(t, 'offtherails', items)
+            end
 
             rails = @tv_items.collect {|tv, items| TVRunner.new(tv, TV_POST_ADDRESS[tv.to_s], @is, items)}
 
