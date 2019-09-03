@@ -217,13 +217,11 @@ Slots correspond to zones as follows: (8 per zone)
 
         @tablet_images = {}
         # 1 => [IMG_URL + photo_name, IMG_URL + photo_name, IMG_URL + photo_name]
-        if defined?(TablettesController)
-            enum = TablettesController.tablet_enum(nil)
-        else
-            enum = 1..25
-        end
+
+        living_tablets = Set.new(TablettesController.tablet_enum(nil))
+
         # First pass: each table gets first dibs on friend photos from opted-in people at the table. This also destructively alters the :pid_tables value arrays to remove opted-out folks.
-        enum.each do |t|
+        TablettesController::ALL_TABLETS.each do |t|
             #puts "table #{t} all people: #{pbdata[:pid_tables][t].inspect}"
             people = pbdata[:pid_tables][t] || []
             people.delete_if {|p| opt_outs.include?(p)}
@@ -231,32 +229,30 @@ Slots correspond to zones as follows: (8 per zone)
 
             images = []
             people.each do |p|
-                if img = pbdata[:pid_photos][p]&.pop # or shift? how are the images ordered? if the "best" ones are first, we should use shift so the target table gets the best one.
+                person_photos = pbdata[:pid_photos][p] || []
+                if img = person_photos[0] # just use the first photo for each person
                     images << img
                 end
                 break if images.length == 3
             end
-            @tablet_images[t] = images
+            if living_tablets.include?(t)
+                @tablet_images[t] = images
+            end
         end
+
         # Second pass: for any table with fewer than 3 images, we look for opted-in images from "far away" tables.
-        enum.each do |t|
-            images = @tablet_images[t]
+        @tablet_images.each do |t, images|
             if images.length < 3
-                puts "table #{t} only has #{images.length} images; finding other tables' photos"
-                current_table = t + 10
-                current_table = 1 if t > 25
-                while images.length < 3 && current_table != t && t <= 25 # last condition to avoid infinite loop while testing with tablet numbers > 25.
+                # "far" meaning they're not 3 of the table numbering scheme. Might want to get more sophisticated about this...
+                close_tables = (t - 3) .. (t + 3)
+                far_tables = TablettesController::ALL_TABLETS.reject {|u| close_tables.cover?(u)}
+                puts "table #{t} only has #{images.length} images; borrowing photos from far tables #{far_tables.inspect}"
+                far_tables.shuffle.each do |u|
                     # Note that we've already deleted opted-out people from these arrays
-                    people = pbdata[:pid_tables][current_table] || []
-                    people.each do |p|
-                        if img = pbdata[:pid_photos][p]&.pop
-                            puts "  one from #{p} at table #{current_table}"
-                            images << img
-                        end
-                        break if images.length == 3
-                    end
-                    current_table += 1
-                    current_table = 1 if current_table > 25
+                    spares = (pbdata[:pid_tables][u] || []).collect {|pid| pbdata[:pid_photos][pid] || []}.flatten.sample(3 - images.length)
+                    puts "#{spares.length} from table #{u}"
+                    images.concat(spares)
+                    break if images.length >= 3
                 end
             end
             if images.length < 3
