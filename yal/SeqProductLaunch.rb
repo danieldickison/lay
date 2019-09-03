@@ -102,7 +102,7 @@ class SeqProductLaunch < Sequence
             pid = row[-1]
             b = {:pid => pid}
             img = row[-2]
-            if img
+            if img && img != ""
                 b[:company] = isa_special_index
                 dst = ISADORA_PRODUCTLAUNCH_SPECIAL_FMT % isa_special_index
                 isa_special_index += 1
