@@ -4,6 +4,7 @@ Rails.application.routes.draw do
   root 'tablettes#install'
 
   get 'tablettes/index'
+  get 'tablettes/cast'
   get 'tablettes/director'
   post 'tablettes/stats'
   post 'tablettes/ping'
