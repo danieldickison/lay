@@ -205,6 +205,9 @@ class SeqProductLaunch < Sequence
             d[:liked] = nil
             d[:tweet1] = row[37]
             d[:tweet2] = row[38]
+            d[:tweet3] = nil
+            d[:tweet4] = nil
+            d[:relevant_text] = ""
             (0..12).each do |i|
                 img = row[i]
                 cat = row[i+13]
