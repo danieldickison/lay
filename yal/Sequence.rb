@@ -21,6 +21,9 @@ class Sequence
         end
     end
 
+    def self.export(*_)
+    end
+
 
     attr_accessor(:debug)
 
