@@ -122,10 +122,8 @@ Slots correspond to zones as follows: (8 per zone)
                 db_photo = DATABASE_DIR + pp.path
                 # puts "#{tv}-#{slot} '#{db_photo}', '#{dst}'"
                 if File.exist?(db_photo)
-                    puts "exists"
                     GraphicsMagick.thumbnail(db_photo, ISADORA_GHOSTING_DIR + dst, 180, 180, "jpg", 85)
                 else
-                    # puts "doesn't exist!"
                     while true
                         r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
                         break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25

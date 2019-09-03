@@ -5,6 +5,7 @@ High level actions that happen before, during and after the show.
 
 . cmu_pull
 (debug_assign_random_seats <performance number>)
+(debug_assign_vips_and_consent <performance number>)
 . export <performance number>
 . isadora_push
 . finalize_last_minute_data <performance number>
