@@ -15,7 +15,6 @@ require('SeqGeekTrio')
 require('SeqExterminator')
 require('SeqOffTheRails')
 require('SeqProductLaunch')
-require('SeqTabletCrossFadeTest')
 require('Showtime')
 # require('YalRunner')
 
@@ -184,8 +183,6 @@ module Lay
             SeqOffTheRails.new
         when 1200
             SeqProductLaunch.new
-        when 9000
-            SeqTabletCrossFadeTest.new
         else
             nil
         end
