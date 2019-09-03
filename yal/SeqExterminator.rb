@@ -252,7 +252,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
             @tablet_data[t] = {}
             CATEGORIES.each do |cat|
                 pid_img = exterminator_tablets.dig(t, cat)
-                if pid_img.length > 0
+                if pid_img && pid_img.length > 0
                     pids = pid_img.keys.reject {|pid| opt_outs.include?(pid)}.shuffle
                     @tablet_data[t][cat] = {
                         :img => pid_img[pids.first],
