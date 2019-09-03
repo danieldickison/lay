@@ -101,7 +101,15 @@ class SeqProductLaunch < Sequence
         vip_bs = rows.collect do |row|
             pid = row[-1]
             b = {:pid => pid}
-            b[:company] = row[-2]
+            img = row[-2]
+            if img
+                b[:company] = isa_special_index
+                dst = ISADORA_PRODUCTLAUNCH_SPECIAL_FMT % isa_special_index
+                isa_special_index += 1
+                img_thumbnail(img, dst, 600, 450, "pid #{pid}", ISADORA_PRODUCTLAUNCH_SPECIAL_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                b[:company_url] = TABLETS_PRODUCTLAUNCH_URL + dst
+                fn_pids[dst] = pid
+            end
             (0..12).each do |i|
                 img = row[i]
                 cat = row[i+13]
@@ -148,7 +156,12 @@ class SeqProductLaunch < Sequence
                     c[:face_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
                 when 'child'
-                    c[:child] = img
+                    c[:child] = isa_special_index
+                    dst = ISADORA_PRODUCTLAUNCH_SPECIAL_FMT % isa_special_index
+                    isa_special_index += 1
+                    img_thumbnail(img, dst, 600, 450, "pid #{pid}", ISADORA_PRODUCTLAUNCH_SPECIAL_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                    c[:child_url] = TABLETS_PRODUCTLAUNCH_URL + dst
+                    fn_pids[dst] = pid
                 end
             end
             c  # result
@@ -197,16 +210,26 @@ class SeqProductLaunch < Sequence
                 cat = row[i+13]
                 case cat
                 when 'face'
-                    d[:face] = isa_chosen_index
-                    dst = ISADORA_PRODUCTLAUNCH_CHOSEN_FMT % isa_chosen_index
-                    isa_chosen_index += 1
-                    img_thumbnail(img, dst, 600, 600, "pid #{pid}", ISADORA_PRODUCTLAUNCH_CHOSEN_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                    d[:face] = isa_threat_index
+                    dst = ISADORA_PRODUCTLAUNCH_THREAT_FMT % isa_threat_index
+                    isa_threat_index += 1
+                    img_thumbnail(img, dst, 600, 600, "pid #{pid}", ISADORA_PRODUCTLAUNCH_THREAT_DIR, TABLETS_PRODUCTLAUNCH_DIR)
                     d[:face_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
                 when 'friends'
-                    d[:friends] = img
+                    d[:friends] = isa_mined_index
+                    dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
+                    isa_mined_index += 1
+                    img_thumbnail(img, dst, 640, 640, "pid #{pid}", ISADORA_PRODUCTLAUNCH_MINED_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                    d[:friends_url] = TABLETS_PRODUCTLAUNCH_URL + dst
+                    fn_pids[dst] = pid
                 when 'relevant'
-                    d[:relevant_photo] = img
+                    d[:relevant] = isa_mined_index
+                    dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
+                    isa_mined_index += 1
+                    img_thumbnail(img, dst, 640, 640, "pid #{pid}", ISADORA_PRODUCTLAUNCH_MINED_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                    d[:relevant_url] = TABLETS_PRODUCTLAUNCH_URL + dst
+                    fn_pids[dst] = pid
                 end
             end
             d  # result
@@ -215,6 +238,7 @@ class SeqProductLaunch < Sequence
 
 
         PlaybackData.write(TABLETS_PRODUCTLAUNCH_DIR, pbdata)
+        PlaybackData.merge_filename_pids(fn_pids)
     end
 
 
