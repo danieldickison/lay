@@ -3,8 +3,12 @@ require('Media')
 =begin
 High level actions that happen before, during and after the show.
 
-For Isadoras and tablets: export <performance number>
-Right before showtime: finalize_last_minute_data <performance number>
+. cmu_pull
+(debug_assign_random_seats <performance number>)
+. export <performance number>
+. isadora_push
+. finalize_last_minute_data <performance number>
+. isadora_push_opt_out
 =end
 
 
@@ -44,7 +48,7 @@ class Showtime
             SQL
         end
 
-        
+
     end
 
     def self.debug_assign_random_seats(performance_id)

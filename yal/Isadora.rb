@@ -27,7 +27,7 @@ class Isadora
     USERS = ["hereuser", "hereuser", "hereuser"]
     DST_DIRS = ["Desktop/LAY_Video_221/LAY_HERE/2_Current/media", "Desktop/LAY_Video_222/LAY_HERE/2_Current/media", "Desktop/LAY_Video_223/LAY_HERE/2_Current/media"]
 
-    def self.push_media
+    def self.push
         playback_data = Media::DATA_DIR.chomp("/")
         playback_media_dynamic = Media::ISADORA_DIR.chomp("/")
 
@@ -50,10 +50,10 @@ end
 
 class Yal
     def cli_isadora_push
-        Isadora.push_media
+        Isadora.push
     end
 
-    def cli_isadora_opt_out
+    def cli_isadora_push_opt_out
         Isadora.push_opt_out
     end
 end

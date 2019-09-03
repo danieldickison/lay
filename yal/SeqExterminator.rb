@@ -37,9 +37,6 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
 
         db = SQLite3::Database.new(Yal::DB_FILE)
 
-        # @@@
-        # special images with travel, interested in, shared, friends with
-        # ideally different travel from off the rails
         rows = db.execute(<<~SQL).to_a
             SELECT
                 pid, seating,
