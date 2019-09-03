@@ -239,14 +239,14 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
 
         # 1 => [IMG_BASE + profile_image_name, IMG_BASE + profile_image_name, IMG_BASE + profile_image_name]
         if defined?(TablettesController)
-            enum = TablettesController.tablet_enum(nil)
+            living_tablets = TablettesController.tablet_enum(nil)
         else
             raise
         end
         all_images = CATEGORIES.collect {|cat| [cat, []]}.to_h
         @tablet_data = {}
         exterminator_tablets = pbdata[:exterminator_tablets]
-        enum.each do |t|
+        TablettesController::ALL_TABLETS.each do |t|
             @tablet_data[t] = {}
             CATEGORIES.each do |cat|
                 pid_img = exterminator_tablets.dig(t, cat)
@@ -260,7 +260,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                 end
             end
         end
-        enum.each do |t|
+        living_tablets.each do |t|
             CATEGORIES.each do |cat|
                 if !@tablet_data[t][cat]
                     puts "Did not find any #{cat} image for table #{t}; using spares"

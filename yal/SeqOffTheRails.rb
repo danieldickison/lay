@@ -406,13 +406,9 @@ class SeqOffTheRails
             employee_posts.delete(pid)
         end
         @tablet_items = {}
-        if defined?(TablettesController)
-            enum = TablettesController.tablet_enum(nil)
-        else
-            enum = 1..25
-        end
-        enum.each do |t|
-            people = pbdata[:employee_tables][t]
+        living_tablets = TablettesController.tablet_enum(nil)
+        TablettesController::ALL_TABLETS.each do |t|
+            people = pbdata[:employee_tables][t] || []
             items = []
             people.each do |p|
                 items.concat(employee_posts[p] || [])
@@ -427,15 +423,17 @@ class SeqOffTheRails
                 end
                 borrow_table = (borrow_table + 1) % 25
             end
-            @tablet_items[t] = items.shuffle.collect do |item|
-                tab_item = {
-                    :profile_img => item[:tab_profile],
-                }
-                case item[:type]
-                when 'tw' then tab_item[:tweet] = item[:text]
-                else tab_item[:photo] = item[:tab_photo]
+            if living_tablets.include?(t)
+                @tablet_items[t] = items.shuffle.collect do |item|
+                    tab_item = {
+                        :profile_img => item[:tab_profile],
+                    }
+                    case item[:type]
+                    when 'tw' then tab_item[:tweet] = item[:text]
+                    else tab_item[:photo] = item[:tab_photo]
+                    end
+                    tab_item
                 end
-                tab_item
             end
         end
     end
