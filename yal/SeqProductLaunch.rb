@@ -189,7 +189,8 @@ class SeqProductLaunch < Sequence
 
         # ?? liked
         # ?? relevant text
-
+        # use institution if no company_name
+        
         vip_ds = rows.collect do |row|
             pid = row[-1]
             d = {:pid => pid}

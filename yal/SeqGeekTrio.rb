@@ -257,10 +257,6 @@ Slots correspond to zones as follows: (32 per zone)
         end
     end
 
-    def debug
-        puts self.inspect
-    end
-
     def run
         if @tablet_chorus_index / 4 >= CHORUS_OFFSETS.length
             @run = false
