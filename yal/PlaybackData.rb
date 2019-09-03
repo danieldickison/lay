@@ -125,6 +125,53 @@ module PlaybackData
             {:profile => 16, :tweet => "Also, my iPhone really gets me tonight. This pizza is genius."},
             {:profile => 16, :tweet => "Theater is a competitive sport. #lilysrevenge"},
             {:profile => 16, :tweet => "You can be ugly and stupid as long as you have a big shaft. -spam email"},
-        ]
+        ],
+
+        :vip_as => [{
+            :pid => 1,
+            :face => 10,
+            :face_url => Media::TABLETS_URL + 'placeholder.jpg', # for tablets
+            :love => 11,
+            :love_url => Media::TABLETS_URL + 'placeholder.jpg', # for tablets
+            :pet => 12,
+            :pet_url => Media::TABLETS_URL + 'placeholder.jpg', # for tablets
+        }],
+        :vip_bs => [{
+            :pid => 2,
+            :face => 20,
+            :face_url => Media::TABLETS_URL + 'placeholder.jpg', # for tablets
+            :company => 21,
+            :company_url => Media::TABLETS_URL + 'placeholder.jpg', # for tablets
+        }],
+        :vip_cs => [{
+            :pid => 3,
+            :face => 30,
+            :face_url => Media::TABLETS_URL + 'placeholder.jpg', # for tablets
+            :child => 31,
+            :child_url => Media::TABLETS_URL + 'placeholder.jpg', # for tablets
+        }],
+        :vip_ds => [{
+            :pid => 4,
+            :face => 41,
+            :face_url => Media::TABLETS_URL + 'placeholder.jpg', # for tablets
+            :first_name => "Daniel",
+            :works_at => "Programmer at Bandcamp",
+            :hometown => "Tokyo",
+            :birthday => "12/25",
+            :university => "Studied cognitive science at CMU",
+            :high_school => "Went to ASIJ",
+            :traveled_to => "Recently traveled to Burlington",
+            :spouse_first_name => "Amanda",
+            :listens_to => "Jay Som",
+            :liked => "Looking at You",
+            :tweet1 => "personal tweet 1",
+            :tweet2 => "personal tweet 2",
+            :tweet3 => "political tweet 1",
+            :tweet4 => "political tweet 2",
+            :photo1 => 42,
+            :photo2 => 43,
+            :photo2_caption => "this is a caption for photo 2",
+        }],
+
     }.freeze
 end

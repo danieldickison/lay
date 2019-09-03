@@ -178,35 +178,9 @@ class SeqProductLaunch
     end
 
 
-
-  SHOW_DATE = "2/9/2018"
-  CARE_ABOUT_IDD = true
-  CARE_ABOUT_DATE = true
-  CARE_ABOUT_OPT = true
-
-  FIRST_SPECTATOR_ROW = 3
-
-  @@run = false
-
-  @@patrons = []
-  INTERESTING_COLUMNS = ["Patron ID", "Table (auto)", "Isadora OSC Channel 9", "Isadora OSC Channel 10", "Isadora OSC Channel 11", "First Name", "Family Member 1", "Hometown", "Education 1", "Current Occupation 1", "Uncommon Interest 1", "Uncommon Interest 2"]
-  ONE_OF_THESE_COLUMNS = ["Family Member 1", "Hometown", "Education 1", "Current Occupation 1", "Uncommon Interest 1", "Uncommon Interest 2",  "Isadora OSC Channel 9", "Isadora OSC Channel 10", "Isadora OSC Channel 11"]
-
-
-  NAME_CHANNEL = 2  # 10
-  FACT2_CHANNEL = 3  # 8
-  HOMETOWN_CHANNEL = 4  # 8
-  FACT1_CHANNEL = 5   # 12
-  FAMILY_CHANNEL = 6  # 8
-  OCCUPATION_CHANNEL = 7  # 4
-  EDUCATION_CHANNEL = 8  # 5
-  IMG1_CHANNEL = 9
-  IMG2_CHANNEL = 10
-  IMG3_CHANNEL = 11
-
-  TIMINGS = [nil, nil, 10, 8, 8, 12, 8, 4, 5]
-
     TABLET_DYNAMIC = "/playback/media_tablet_dynamic"
+    VIP_D_TEXT_KEYS = [:works_at, :hometown, :birthday, :university, :high_school, :traveled_to, :spouse_first_name, :listens_to, :liked].freeze
+    VIP_D_TEXT_CHANNELS = (12..18).to_a
 
     attr_accessor(:start_time, :debug)
 
@@ -227,15 +201,17 @@ class SeqProductLaunch
         # @data[EDUCATION_CHANNEL] = p_data["Education 1"]
         # @data[OCCUPATION_CHANNEL] = p_data["Current Occupation 1"]
 
+        @is = Isadora.new
+        @prepare_delay = 1.0
+
         pbdata = PlaybackData::DEV_DATA #.read(TABLETS_PRODUCTLAUNCH_DIR)
+        vip_pids = [1, 2, 3, 4] # TODO: read from data
+        vip_a = pbdata[:vip_as].find {|a| a[:pid] == vip_pids[0]}
+        vip_b = pbdata[:vip_bs].find {|b| b[:pid] == vip_pids[1]}
+        vip_c = pbdata[:vip_cs].find {|c| c[:pid] == vip_pids[2]}
+        vip_d = pbdata[:vip_ds].find {|d| d[:pid] == vip_pids[3]}
 
         # @disp = [NAME_CHANNEL, HOMETOWN_CHANNEL, FACT1_CHANNEL, FACT2_CHANNEL, FAMILY_CHANNEL, OCCUPATION_CHANNEL, EDUCATION_CHANNEL].shuffle
-
-        @is = Isadora.new
-        @state = :idle
-        @time = nil
-        @end_time = Time.now
-        @prepare_delay = 1.0
 
         person_1 = 1 # TODO: pbdata[:product_launch_profile_1] or something like that
         facebook_1a = 1
@@ -251,90 +227,91 @@ class SeqProductLaunch
             {
                 :channel => '/isadora-multi/2',
                 :args => [
-                    person_1,       # profile image id
-                    facebook_1a,    # with loved one image
-                    facebook_1a,    # pet pic image
+                    vip_a[:face],
+                    vip_a[:love],
+                    vip_a[:pet],
                 ]
             },
             {
                 :channel => '/isadora-multi/3',
                 :args => [
-                    person_2,       # profile image id
-                    facebook_2a,    # workplace image
+                    vip_b[:face],
+                    vip_b[:company],
                 ]
             },
             {
                 :channel => '/isadora-multi/4',
                 :args => [
-                    person_3,       # profile image id
-                    facebook_3a,    # child image
+                    vip_c[:face],
+                    vip_c[:child],
                 ]
             },
 
             # For latter part of sequence with target person:
             {
                 :channel => '/isadora/10',
-                :args => [
-                    person_4,       # profile image id
-                ]
+                :args => [vip_d[:face]],
             },
             {
                 :channel => '/isadora/11',
-                :args => ['daniel'], # target name
+                :args => [vip_d[:first_name]],
             },
-            # other target text items
-            {
-                :channel => '/isadora/12',
-                :args => ['foo'],
-            },
-            {
-                :channel => '/isadora/13',
-                :args => ['bar'],
-            },
-            #...
             # target person tweets
             {
                 :channel => '/isadora/30',
-                :args => ['this is tweet 1'],
+                :args => [vip_d[:tweet1]],
             },
             {
                 :channel => '/isadora/31',
-                :args => ['this is tweet 2'],
+                :args => [vip_d[:tweet2]],
             },
             {
                 :channel => '/isadora/32',
-                :args => ['this is tweet 3'],
+                :args => [vip_d[:tweet3]],
             },
+            {
+                :channel => '/isadora/33',
+                :args => [vip_d[:tweet4]],
+            },
+
             # target person images
             {
                 :channel => '/isadora/50',
-                :args => [1], # image id
+                :args => [vip_d[:photo1]], # image id
             },
             {
-                :channel => '/isadora/52',
-                :args => [2], # image id
+                :channel => '/isadora/60',
+                :args => [vip_d[:photo2]], # image id
             },
             {
-                :channel => '/isadora/53',
-                :args => [3], # image id
+                :channel => '/isadora/61',
+                :args => [vip_d[:photo2_caption]], # caption
             },
         ]
+        text_keys = VIP_D_TEXT_KEYS.dup
+        VIP_D_TEXT_CHANNELS.each do |channel|
+            text = vip_d[text_keys.shift] || ''
+            @tv_osc_messages << {
+                :channel => "/isadora/#{channel}",
+                :args => [text]
+            }
+        end
 
         @tablet_images = [
             # Person 1
             {
                 :position => :front,
-                :src => TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_1],
+                :src => vip_a[:face_url],
                 :in_offset => 109.0, # s from start of video
             },
             {
                 :position => :back,
-                :src => TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_1a],
+                :src => vip_a[:love_url],
                 :in_offset => 111.97,
             },
             {
                 :position => :back,
-                :src => TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_1b],
+                :src => vip_a[:pet_url],
                 :in_offset => 125.57,
                 :out_offset => 130.03,
             },
@@ -342,12 +319,12 @@ class SeqProductLaunch
             # Person 2
             {
                 :position => :front,
-                :src => TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_2],
+                :src => vip_b[:face_url],
                 :in_offset => 139.0,
             },
             {
                 :position => :back,
-                :src => TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_2a],
+                :src => vip_b[:company_url],
                 :in_offset => 152.33,
                 :out_offset => 157.47,
             },
@@ -355,12 +332,12 @@ class SeqProductLaunch
             # Person 3
             {
                 :position => :front,
-                :src => TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_3],
+                :src => vip_c[:face_url],
                 :in_offset => 167.0, # s from start of video
             },
             {
                 :position => :back,
-                :src => TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_3a],
+                :src => vip_c[:child_url],
                 :in_offset => 178.43,
                 :out_offset => 185.93,
             },
@@ -368,7 +345,7 @@ class SeqProductLaunch
             # Person 4
             {
                 :position => :front,
-                :src => TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_4],
+                :src => vip_d[:face_url],
                 :in_offset => 232.0, # s from start of video
                 :out_offset => 364.8,
             },
@@ -404,7 +381,6 @@ class SeqProductLaunch
     end
 
     def start
-        @@run = true
         Thread.new do
             TablettesController.send_osc_cue('/playback/media_tablets/113-Launch/113-411-C60-ProductLaunch_HERE.mp4', @start_time + @prepare_delay)
             sleep(@start_time + @prepare_delay - Time.now)
@@ -422,52 +398,10 @@ class SeqProductLaunch
             end
             target_x_time = ((img_start_time + @target_x_offset).to_f * 1000).round
             TablettesController.queue_command(nil, 'productlaunch', @tablet_images, target_x_time)
-
-            # while true
-            #     @@patrons.each do |patron|
-            #         patron.run
-            #     return if !@@run
-            #     sleep(0.1)
-            # end
         end
     end
 
     def stop
-        @@run = false
     end
 
-    # def pause
-    # end
-
-    # def unpause
-    # end
-
-    # def run
-    #     @is.send("/channel/9", @img1 || "")
-    #     @is.send("/channel/10", @img2 || "")
-    #     @is.send("/channel/11", @img3 || "")
-
-    #     while true
-    #         break if !@@run
-    #         case @state
-    #         when :idle
-    #             if @disp.empty?
-    #                 if Time.now > (@end_time - 2)
-    #                     return
-    #                 end
-    #             else
-    #                 ch = @disp.pop
-    #                 @is.send("/channel/#{ch}", @data[ch] || "")
-    #                 @end_time = [Time.now + TIMINGS[ch], @end_time].max
-    #                 @time = Time.now + rand
-    #                 @state = :disp
-    #             end
-    #         when :disp
-    #             if Time.now > @time
-    #                 @state = :idle
-    #             end
-    #         end
-    #         sleep(0.1)
-    #     end
-    # end
 end
