@@ -374,18 +374,22 @@ class SeqOffTheRails
 
         @tv_items = {}
         pbdata[:tv_posts].each do |tv, posts|
-            @tv_items[tv] = posts.reject {|p| opt_outs.include?(p[:employee_id])}
+            filtered_posts = posts.reject {|p| opt_outs.include?(p[:employee_id])}
+            if filtered_posts.length > 0
+                @tv_items[tv] = filtered_posts
+            end
         end
 
         @tv_names = {}
         spare_tv_names = []
         Media::TVS.each do |tv|
-            names = pbdata[:tv_names][tv] || []
+            names = pbdata[:tv_names][tv.to_sym] || []
+            #puts "tv #{tv.to_sym.inspect} names #{names.inspect}"
             all_tv_names = names.reject {|p| opt_outs.include?(p[:employee_id])}.shuffle
+            #puts "all_tv_names: #{all_tv_names.inspect}"
             @tv_names[tv] = all_tv_names[0...4]
             spare_tv_names.concat(all_tv_names)
         end
-        puts spare_tv_names.inspect
         @tv_names.each do |tv, names|
             if names.length < 4
                 puts "tv #{tv} had too few names (#{names.join(', ')}); picking from spares"
@@ -396,7 +400,6 @@ class SeqOffTheRails
                 names.concat(spare_tv_names.slice(0, 4 - names.length))
             end
         end
-        puts @tv_names.inspect
 
         employee_posts = pbdata[:employee_posts]
         opt_outs.each do |pid|
