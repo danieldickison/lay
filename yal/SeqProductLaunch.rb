@@ -252,24 +252,9 @@ class SeqProductLaunch < Sequence
     attr_accessor(:start_time)
 
     def initialize
-        # @id = p_data["Patron ID"]
-        # @table = p_data["Table (auto)"]
-
-        # @img1 = p_data["Isadora OSC Channel 9"]
-        # @img2 = p_data["Isadora OSC Channel 10"]
-        # @img3 = p_data["Isadora OSC Channel 11"]
-
-        # @data = []
-        # @data[NAME_CHANNEL] = p_data["First Name"]
-        # @data[HOMETOWN_CHANNEL] = p_data["Hometown"]
-        # @data[FACT1_CHANNEL] = p_data["Uncommon Interest 1"]
-        # @data[FACT2_CHANNEL] = p_data["Uncommon Interest 2"]
-        # @data[FAMILY_CHANNEL] = p_data["Family Member 1"]
-        # @data[EDUCATION_CHANNEL] = p_data["Education 1"]
-        # @data[OCCUPATION_CHANNEL] = p_data["Current Occupation 1"]
-
         @is = Isadora.new
         @prepare_delay = 1.0
+        @debug = false
 
         pbdata = PlaybackData.read(TABLETS_PRODUCTLAUNCH_DIR)
         vip_pids = Showtime.vips

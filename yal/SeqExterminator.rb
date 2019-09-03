@@ -333,22 +333,6 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         end
     end
 
-    def pause
-    end
-
-    def unpause
-    end
-
-    def load
-    end
-
-    def kill
-    end
-
-    def debug
-        puts self.inspect
-    end
-
     def run
         if !@next_tablet_trigger
             @run = false
