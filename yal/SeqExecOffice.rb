@@ -52,7 +52,8 @@ class SeqExecOffice < Sequence
 
         fn_pids = {}  # for updating LAY_filename_pids.txt
 
-        photos.each_with_index do |photo, i|
+        100.times do |i|
+            photo = photos[i % photos.length]  # hack to repeat images
             dst = ISADORA_EXEC_OFFICE_IMG_FMT % i
             img_thumbnail(photo[:path], dst, 600, 600, "pid #{photo[:pid]}", ISADORA_EXEC_OFFICE_DIR)
             fn_pids[dst] = photo[:pid]
