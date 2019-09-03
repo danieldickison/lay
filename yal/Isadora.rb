@@ -8,7 +8,12 @@ class Isadora
     attr_accessor(:clients, :disable)
 
     def initialize
-        @clients = IPS.collect {|ip| OSC::Client.new(ip, PORT)}
+        begin
+            @clients = IPS.collect {|ip| OSC::Client.new(ip, PORT)}
+        rescue
+            puts "ERROR: failed to connect to isadora: #{$!}"
+            @clients = []
+        end
         @disable = false
     end
 
