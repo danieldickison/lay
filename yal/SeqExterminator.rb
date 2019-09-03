@@ -246,20 +246,20 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         else
             raise
         end
-        remaining_images = CATEGORIES.collect {|cat| [cat, []]}.to_h
+        all_images = CATEGORIES.collect {|cat| [cat, []]}.to_h
         @tablet_data = {}
         exterminator_tablets = pbdata[:exterminator_tablets]
         enum.each do |t|
             @tablet_data[t] = {}
             CATEGORIES.each do |cat|
                 pid_img = exterminator_tablets.dig(t, cat)
-                if pid_img.length > 0
+                if pid_img && pid_img.length > 0
                     pids = pid_img.keys.reject {|pid| opt_outs.include?(pid)}.shuffle
                     @tablet_data[t][cat] = {
                         :img => pid_img[pids.first],
                         :conclusion => TABLET_CONCLUSIONS[cat][t % TABLET_CONCLUSIONS[cat].length]
                     }
-                    remaining_images[cat].concat(pids[1..-1].collect {|pid| pid_img[pid]})
+                    all_images[cat].concat(pid_img.values)
                 end
             end
         end
@@ -268,7 +268,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                 if !@tablet_data[t][cat]
                     puts "Did not find any #{cat} image for table #{t}; using spares"
                     @tablet_data[t][cat] = {
-                        :img => remaining_images[cat].sample,
+                        :img => all_images[cat].sample,
                         :conclusion => TABLET_CONCLUSIONS[cat][t % TABLET_CONCLUSIONS[cat].length]
                     }
                 end

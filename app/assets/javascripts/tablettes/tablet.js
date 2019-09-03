@@ -287,7 +287,7 @@ function preShowInit() {
                 preShow.style.opacity = 0;
             }, 1000);
             setTimeout(() => {
-                layNativeInterface.setVideoCue(null, 0, 0);
+                //layNativeInterface.setVideoCue(null, 0, 0);
                 reset();
             }, 5000);
         } else {
