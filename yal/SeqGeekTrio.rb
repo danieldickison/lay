@@ -202,18 +202,20 @@ Slots correspond to zones as follows: (32 per zone)
         @tablet_images = {}
         # 1 => [IMG_BASE + profile_image_name, IMG_BASE + profile_image_name, IMG_BASE + profile_image_name]
         if defined?(TablettesController)
-            enum = TablettesController.tablet_enum(nil)
+            living_tablets = Set.new(TablettesController.tablet_enum(nil))
         else
             raise
         end
         remaining_images = []
-        enum.each do |t|
+        TablettesController::ALL_TABLETS.each do |t|
             #puts "table #{t} all people: #{pbdata[:pid_tables][t].inspect}"
             people = pbdata[:pid_tables][t] || []
             people.delete_if {|p| opt_outs.include?(p)}
             table_images = people.collect {|p| pbdata[:pid_photos][p]}.flatten.shuffle
             puts "table #{t} opted in people: #{people.inspect} has #{table_images.length} photos"
-            @tablet_images[t] = table_images.slice!(0, 16)
+            if living_tablets.include?(t)
+                @tablet_images[t] = table_images.slice!(0, 16)
+            end
             remaining_images.concat(table_images) # All the remainders go into the fallback pool
         end
         remaining_images.shuffle!

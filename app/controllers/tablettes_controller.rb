@@ -17,6 +17,7 @@ class TablettesController < ApplicationController
         11 => 'XX',
     }
     TABLET_GROUPS = 6
+    ALL_TABLETS = (1..26).to_a.freeze
 
     PRESHOW_BG = (0..10).collect {|t| '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % t}
     PRESHOW_BG[11] = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 3
