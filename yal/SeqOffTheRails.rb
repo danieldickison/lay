@@ -379,11 +379,13 @@ class SeqOffTheRails
 
         @tv_names = {}
         spare_tv_names = []
-        pbdata[:tv_names].each do |tv, names|
+        Media::TVS.each do |tv|
+            names = pbdata[:tv_names][tv] || []
             all_tv_names = names.reject {|p| opt_outs.include?(p[:employee_id])}.shuffle
             @tv_names[tv] = all_tv_names[0...4]
-            spare_tv_names.concat(all_tv_names[4..-1] || [])
+            spare_tv_names.concat(all_tv_names)
         end
+        puts spare_tv_names.inspect
         @tv_names.each do |tv, names|
             if names.length < 4
                 puts "tv #{tv} had too few names (#{names.join(', ')}); picking from spares"
@@ -394,6 +396,7 @@ class SeqOffTheRails
                 names.concat(spare_tv_names.slice(0, 4 - names.length))
             end
         end
+        puts @tv_names.inspect
 
         employee_posts = pbdata[:employee_posts]
         opt_outs.each do |pid|
@@ -414,7 +417,7 @@ class SeqOffTheRails
             borrow_table = (t + 1) % 25
             while items.length < 20 && borrow_table != t
                 puts "not enough posts for table #{t}; borrowing from table #{borrow_table}"
-                borrow_people = pbdata[:employee_tables][borrow_table]
+                borrow_people = pbdata[:employee_tables][borrow_table] || []
                 borrow_people.each do |p|
                     items.concat(employee_posts[p] || [])
                     break if items.length >= 20
