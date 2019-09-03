@@ -164,7 +164,7 @@ module Lay
         when 510
             TablettesController.send_osc_fade_out(5)
         when 700
-            SeqSimpleVideo.new(700, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
+            SeqSimpleVideo.new(700, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 1}
         when 710
             SeqGeekTrio.new
         when 800
