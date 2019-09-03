@@ -374,7 +374,10 @@ class SeqOffTheRails
 
         @tv_items = {}
         pbdata[:tv_posts].each do |tv, posts|
-            @tv_items[tv] = posts.reject {|p| opt_outs.include?(p[:employee_id])}
+            filtered_posts = posts.reject {|p| opt_outs.include?(p[:employee_id])}
+            if filtered_posts.length > 0
+                @tv_items[tv] = filtered_posts
+            end
         end
 
         @tv_names = {}
