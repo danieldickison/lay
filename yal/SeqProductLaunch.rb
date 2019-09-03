@@ -271,8 +271,8 @@ class SeqProductLaunch < Sequence
         @is = Isadora.new
         @prepare_delay = 1.0
 
-        pbdata = PlaybackData::DEV_DATA #.read(TABLETS_PRODUCTLAUNCH_DIR)
-        vip_pids = [1, 2, 3, 4] # TODO: read from data
+        pbdata = PlaybackData.read(TABLETS_PRODUCTLAUNCH_DIR)
+        vip_pids = Showtime.vips
         vip_a = pbdata[:vip_as].find {|a| a[:pid] == vip_pids[0]}
         vip_b = pbdata[:vip_bs].find {|b| b[:pid] == vip_pids[1]}
         vip_c = pbdata[:vip_cs].find {|c| c[:pid] == vip_pids[2]}
@@ -334,33 +334,36 @@ class SeqProductLaunch < Sequence
             },
             {
                 :channel => '/isadora/32',
-                :args => [vip_d[:tweet3]],
+                :args => [vip_d[:tweet3] || ''],
             },
             {
                 :channel => '/isadora/33',
-                :args => [vip_d[:tweet4]],
+                :args => [vip_d[:tweet4] || ''],
             },
 
             # target person images
             {
                 :channel => '/isadora/50',
-                :args => [vip_d[:photo1]], # image id
+                :args => [vip_d[:photo1] || -1], # image id
             },
             {
                 :channel => '/isadora/60',
-                :args => [vip_d[:photo2]], # image id
+                :args => [vip_d[:photo2] || -1], # image id
             },
             {
                 :channel => '/isadora/61',
-                :args => [vip_d[:photo2_caption]], # caption
+                :args => [vip_d[:photo2_caption] || ''], # caption
             },
         ]
         text_keys = VIP_D_TEXT_KEYS.dup
         VIP_D_TEXT_CHANNELS.each do |channel|
-            text = vip_d[text_keys.shift] || ''
+            text = nil
+            while !text && text_keys.length > 0
+                text = vip_d[text_keys.shift]
+            end
             @tv_osc_messages << {
                 :channel => "/isadora/#{channel}",
-                :args => [text]
+                :args => [text || '']
             }
         end
 
