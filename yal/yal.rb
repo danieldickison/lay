@@ -26,6 +26,7 @@ require('Fake')
 require('Dummy')
 require('CMUServer')
 require('Showtime')
+require('Sequence')
 
 
 class Yal
@@ -44,7 +45,9 @@ class Yal
         @seqs = []
         Dir.glob("#{YAL_DIR}/Seq*.rb").each do |seq_file|
             require(seq_file)
-            @seqs << File.basename(seq_file, ".rb")[3..-1]
+            name = File.basename(seq_file, ".rb")[3..-1]
+            next if name == "uence"
+            @seqs << name
         end
         @seqs.sort!
         @seq = nil

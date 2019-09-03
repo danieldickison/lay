@@ -181,6 +181,8 @@ module Lay
             end
         when 1100
             SeqOffTheRails.new
+        # when 1105
+            SeqSimpleVideo.new(1105, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 1}
         when 1200
             SeqProductLaunch.new
         else

@@ -54,7 +54,7 @@ class SeqExecOffice < Sequence
 
         photos.each_with_index do |photo, i|
             dst = ISADORA_EXEC_OFFICE_IMG_FMT % i
-            img_thumbnail(photo[:path], dst, 600, 400, "pid #{photo[:pid]}", ISADORA_EXEC_OFFICE_DIR)
+            img_thumbnail(photo[:path], dst, 600, 600, "pid #{photo[:pid]}", ISADORA_EXEC_OFFICE_DIR)
             fn_pids[dst] = photo[:pid]
         end
 

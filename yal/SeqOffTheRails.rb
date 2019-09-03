@@ -14,8 +14,8 @@ require('PlaybackData')
 class SeqOffTheRails
     ISADORA_OFFTHERAILS_PROFILE_DIR = Media::ISADORA_DIR + "s_510-OTR_profile/"
     ISADORA_OFFTHERAILS_RECENT_DIR  = Media::ISADORA_DIR + "s_520-OTR_recent/"
-    ISADORA_OFFTHERAILS_TRAVEL_DIR  = Media::ISADORA_DIR + "s_531-Travel/"
-    ISADORA_OFFTHERAILS_FOOD_DIR    = Media::ISADORA_DIR + "s_532-Food/"
+    ISADORA_OFFTHERAILS_TRAVEL_DIR  = Media::ISADORA_DIR + "s_540-OTR_travel/"
+    ISADORA_OFFTHERAILS_FOOD_DIR    = Media::ISADORA_DIR + "s_550-OTR_food/"
 
     TABLETS_OFFTHERAILS_DIR = Media::TABLETS_DIR + "offtherails/"
     TABLETS_OFFTHERAILS_URL = Media::TABLETS_URL + "offtherails/"

@@ -4,12 +4,16 @@ require('Media')
 High level actions that happen before, during and after the show.
 
 . cmu_pull
-(debug_assign_random_seats <performance number>)
-(debug_assign_vips_and_consent <performance number>)
 . export <performance number>
 . isadora_push
 . finalize_last_minute_data <performance number>
 . isadora_push_opt_out
+
+debugging:
+. debug_dupe_show
+(debug_assign_random_seats <performance number>)
+(debug_assign_vips_and_consent <performance number>)
+
 =end
 
 
@@ -17,13 +21,22 @@ class Showtime
     OPT_OUT_FILE = Media::DATA_DIR + "LAY_opt_outs.txt"
     VIP_FILE     = Media::DATA_DIR + "LAY_vips.txt"
 
-    # assign pids before doing any exports
     def self.prepare_export(performance_id)
         db = SQLite3::Database.new(Yal::DB_FILE)
 
         # check seating
+        unassigned = db.execute(<<~SQL).first[0]
+            SELECT COUNT(*)
+            FROM datastore_patron
+            WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
+            AND (seating IS NULL OR seating = "")
+        SQL
+        if unassigned > 0
+            puts "HEY: #{unassigned} seat(s), you can't do that"
+            exit
+        end
 
-
+        # assign pids before doing any exports
         starting_pid = db.execute(<<~SQL).first[0] || 0
             SELECT MAX(pid)
             FROM datastore_patron

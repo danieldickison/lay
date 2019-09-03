@@ -278,17 +278,6 @@ class SeqProductLaunch < Sequence
         vip_c = pbdata[:vip_cs].find {|c| c[:pid] == vip_pids[2]}
         vip_d = pbdata[:vip_ds].find {|d| d[:pid] == vip_pids[3]}
 
-        # @disp = [NAME_CHANNEL, HOMETOWN_CHANNEL, FACT1_CHANNEL, FACT2_CHANNEL, FAMILY_CHANNEL, OCCUPATION_CHANNEL, EDUCATION_CHANNEL].shuffle
-
-        person_1 = 1 # TODO: pbdata[:product_launch_profile_1] or something like that
-        facebook_1a = 1
-        facebook_1b = 2
-        person_2 = 2 # TODO: pbdata[:product_launch_profile_2]
-        facebook_2a = 3
-        person_3 = 3 # TODO: pbdata[:product_launch_profile_3]
-        facebook_3a = 4
-        person_4 = 4 # the target person profile image
-
         @tv_osc_messages = [
             # First part of sequence with 3 selected audience members:
             {
@@ -326,11 +315,11 @@ class SeqProductLaunch < Sequence
             # target person tweets
             {
                 :channel => '/isadora/30',
-                :args => [vip_d[:tweet1]],
+                :args => [vip_d[:tweet1] || ''],
             },
             {
                 :channel => '/isadora/31',
-                :args => [vip_d[:tweet2]],
+                :args => [vip_d[:tweet2] || ''],
             },
             {
                 :channel => '/isadora/32',
@@ -344,15 +333,15 @@ class SeqProductLaunch < Sequence
             # target person images
             {
                 :channel => '/isadora/50',
-                :args => [vip_d[:photo1] || -1], # image id
+                :args => [vip_d[:friends] || -1],
             },
             {
                 :channel => '/isadora/60',
-                :args => [vip_d[:photo2] || -1], # image id
+                :args => [vip_d[:relevant] || -1],
             },
             {
                 :channel => '/isadora/61',
-                :args => [vip_d[:photo2_caption] || ''], # caption
+                :args => [vip_d[:relevant_text] || ''],
             },
         ]
         text_keys = VIP_D_TEXT_KEYS.dup
@@ -429,27 +418,6 @@ class SeqProductLaunch < Sequence
         @is.disable = @debug
     end
 
-
-    def load
-        db = SpectatorsDB.new
-        @@patrons = []
-
-        p = {}
-        INTERESTING_COLUMNS.each do |col_name|
-            col = db.col[col_name]
-            if db.ws[r, col] != ""
-                p[col_name] = db.ws[r, col]
-            end
-        end
-
-        if !(p.keys & ONE_OF_THESE_COLUMNS).empty?
-            patron = new(p)
-            @@patrons.push(patron)
-        end
-        puts "got #{@@patrons.length} patrons"
-        puts @@patrons.inspect
-    end
-
     def start
         Thread.new do
             TablettesController.send_osc_cue('/playback/media_tablets/113-Launch/113-411-C60-ProductLaunch_HERE.mp4', @start_time + @prepare_delay)
@@ -469,9 +437,6 @@ class SeqProductLaunch < Sequence
             target_x_time = ((img_start_time + @target_x_offset).to_f * 1000).round
             TablettesController.queue_command(nil, 'productlaunch', @tablet_images, target_x_time)
         end
-    end
-
-    def stop
     end
 
 end
