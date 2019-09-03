@@ -233,7 +233,7 @@ Slots correspond to zones as follows: (8 per zone)
 
             images = []
             people.each do |p|
-                if img = pbdata[:pid_photos][p].pop # or shift? how are the images ordered? if the "best" ones are first, we should use shift so the target table gets the best one.
+                if img = pbdata[:pid_photos][p]&.pop # or shift? how are the images ordered? if the "best" ones are first, we should use shift so the target table gets the best one.
                     images << img
                 end
                 break if images.length == 3
@@ -251,7 +251,7 @@ Slots correspond to zones as follows: (8 per zone)
                     # Note that we've already deleted opted-out people from these arrays
                     people = pbdata[:pid_tables][current_table] || []
                     people.each do |p|
-                        if img = pbdata[:pid_photos][p].pop
+                        if img = pbdata[:pid_photos][p]&.pop
                             puts "  one from #{p} at table #{current_table}"
                             images << img
                         end
