@@ -133,7 +133,8 @@ Slots correspond to zones as follows: (32 per zone)
                 db_photo = DATABASE_DIR + pp.path ## BS probably should be Media::DATABASE_IMAGES_DIR
                 # puts "#{tv}-#{slot} '#{db_photo}', '#{dst}'"
                 if File.exist?(db_photo)
-                    GraphicsMagick.fit(db_photo, ISADORA_GEEKTRIO_DIR + dst, 640, 640, "jpg", 85)
+                    annotate = "#{pp.path}, pid #{pp.pid}, table #{pp.table}"
+                    GraphicsMagick.fit("-gravity", "center", GraphicsMagick.anno_args(annotate, width), db_photo, ISADORA_GEEKTRIO_DIR + dst, 640, 640, "jpg", 85)
                 else
                     while true
                         r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
