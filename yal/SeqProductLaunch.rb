@@ -357,10 +357,13 @@ class SeqProductLaunch < Sequence
         ]
         text_keys = VIP_D_TEXT_KEYS.dup
         VIP_D_TEXT_CHANNELS.each do |channel|
-            text = vip_d[text_keys.shift] || ''
+            text = nil
+            while !text && text_keys.length > 0
+                text = vip_d[text_keys.shift]
+            end
             @tv_osc_messages << {
                 :channel => "/isadora/#{channel}",
-                :args => [text]
+                :args => [text || '']
             }
         end
 
