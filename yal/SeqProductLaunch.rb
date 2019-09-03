@@ -1,21 +1,23 @@
-
 require('Isadora')
 require('Media')
 require('PlaybackData')
+require('Sequence')
 
-class SeqProductLaunch
-    DATABASE_DIR = Media::DATABASE_DIR
-
-    ISADORA_PRODUCTLAUNCH_FACES_DIR = Media::ISADORA_DIR + "s_610-ProductLaunch_faces/"
-    ISADORA_PRODUCTLAUNCH_CHOSEN_DIR = Media::ISADORA_DIR + "s_620-ProductLaunch_chosen_profile/"
+class SeqProductLaunch < Sequence
+    ISADORA_PRODUCTLAUNCH_CHOSEN_DIR  = Media::ISADORA_DIR + "s_620-ProductLaunch_chosen_profile/"
     ISADORA_PRODUCTLAUNCH_SPECIAL_DIR = Media::ISADORA_DIR + "s_630-ProductLaunch_special_detail/"
-    ISADORA_PRODUCTLAUNCH_THREAT_DIR = Media::ISADORA_DIR + "s_640-ProductLaunch_threat_profile/"
-    ISADORA_PRODUCTLAUNCH_MINED_DIR = Media::ISADORA_DIR + "s_650-ProductLaunch_threat_mined/"
+    ISADORA_PRODUCTLAUNCH_THREAT_DIR  = Media::ISADORA_DIR + "s_640-ProductLaunch_threat_profile/"
+    ISADORA_PRODUCTLAUNCH_MINED_DIR   = Media::ISADORA_DIR + "s_650-ProductLaunch_threat_mined/"
+
+    ISADORA_PRODUCTLAUNCH_CHOSEN_FMT  = "620-%03d-R06-ProductLaunch_chosen_profile.jpg"
+    ISADORA_PRODUCTLAUNCH_SPECIAL_FMT = "630-%03d-R07-ProductLaunch_special_detail.jpg"
+    ISADORA_PRODUCTLAUNCH_THREAT_FMT  = "640-%03d-R06-ProductLaunch_threat_profile.jpg"
+    ISADORA_PRODUCTLAUNCH_MINED_FMT   = "650-%03d-R03-ProductLaunch_threat_mined.jpg"
+
     TABLETS_PRODUCTLAUNCH_DIR = Media::TABLETS_DIR + "productlaunch/"
     TABLETS_PRODUCTLAUNCH_URL = Media::TABLETS_URL + "productlaunch/"
 
     def self.export(performance_id)
-        `mkdir -p '#{ISADORA_PRODUCTLAUNCH_FACES_DIR}'`
         `mkdir -p '#{ISADORA_PRODUCTLAUNCH_CHOSEN_DIR}'`
         `mkdir -p '#{ISADORA_PRODUCTLAUNCH_SPECIAL_DIR}'`
         `mkdir -p '#{ISADORA_PRODUCTLAUNCH_THREAT_DIR}'`
@@ -27,12 +29,16 @@ class SeqProductLaunch
         pbdata = {}
         fn_pids = {}  # for updating LAY_filename_pids.txt
 
+        isa_chosen_index = 1
+        isa_special_index = 1
+        isa_threat_index = 1
+        isa_mined_index = 1
+
         # data mining requirements for VIPs
         # https://docs.google.com/document/d/172KsxBACZxxpWOKCSr7JLrobK78df-1DihZlKbKmtZA/edit
 
-
-        # Person A (12)
-        # special image face 600x600 (faces), special image with loved one 600x600, special image pet 600x450
+        # Person A (3)
+        # face 600x600 (faces), with loved one (special details), pet (special details)
 
         rows = db.execute(<<~SQL).to_a
             SELECT
@@ -41,21 +47,37 @@ class SeqProductLaunch
                 pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
-            AND vipStatus = "P-A"
+            AND vipstatus = "P-A"
         SQL
 
         vip_as = rows.collect do |row|
-            a = {:pid => row[-1]}
+            pid = row[-1]
+            a = {:pid => pid}
             (0..12).each do |i|
                 img = row[i]
                 cat = row[i+13]
                 case cat
                 when 'face'
-                    a[:face] = img
+                    a[:face] = isa_chosen_index
+                    dst = ISADORA_PRODUCTLAUNCH_CHOSEN_FMT % isa_chosen_index
+                    isa_chosen_index += 1
+                    img_thumbnail(img, dst, 600, 600, "pid #{pid}", ISADORA_PRODUCTLAUNCH_CHOSEN_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                    a[:face_url] = TABLETS_PRODUCTLAUNCH_URL + dst
+                    fn_pids[dst] = pid
                 when 'love'
-                    a[:love] = img
+                    a[:love] = isa_special_index
+                    dst = ISADORA_PRODUCTLAUNCH_SPECIAL_FMT % isa_special_index
+                    isa_special_index += 1
+                    img_thumbnail(img, dst, 600, 450, "pid #{pid}", ISADORA_PRODUCTLAUNCH_SPECIAL_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                    a[:love_url] = TABLETS_PRODUCTLAUNCH_URL + dst
+                    fn_pids[dst] = pid
                 when 'pet'
-                    a[:pet] = img
+                    a[:pet] = isa_special_index
+                    dst = ISADORA_PRODUCTLAUNCH_SPECIAL_FMT % isa_special_index
+                    isa_special_index += 1
+                    img_thumbnail(img, dst, 600, 450, "pid #{pid}", ISADORA_PRODUCTLAUNCH_SPECIAL_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                    a[:pet_url] = TABLETS_PRODUCTLAUNCH_URL + dst
+                    fn_pids[dst] = pid
                 end
             end
             a  # result
@@ -63,7 +85,7 @@ class SeqProductLaunch
         pbdata[:vip_as] = vip_as
 
 
-        # Person B (12)
+        # Person B (3)
         # special image face 600x600 (faces), special image workspace or company logo 600x600
 
         rows = db.execute(<<~SQL).to_a
@@ -77,14 +99,20 @@ class SeqProductLaunch
         SQL
 
         vip_bs = rows.collect do |row|
-            b = {:pid => row[-1]}
+            pid = row[-1]
+            b = {:pid => pid}
             b[:company] = row[-2]
             (0..12).each do |i|
                 img = row[i]
                 cat = row[i+13]
                 case cat
                 when 'face'
-                    b[:face] = img
+                    b[:face] = isa_chosen_index
+                    dst = ISADORA_PRODUCTLAUNCH_CHOSEN_FMT % isa_chosen_index
+                    isa_chosen_index += 1
+                    img_thumbnail(img, dst, 600, 600, "pid #{pid}", ISADORA_PRODUCTLAUNCH_CHOSEN_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                    b[:face_url] = TABLETS_PRODUCTLAUNCH_URL + dst
+                    fn_pids[dst] = pid
                 end
             end
             b  # result
@@ -92,7 +120,7 @@ class SeqProductLaunch
         pbdata[:vip_bs] = vip_bs
 
 
-        # Person C (12)
+        # Person C (3)
         # face, child
 
         rows = db.execute(<<~SQL).to_a
@@ -106,13 +134,19 @@ class SeqProductLaunch
         SQL
 
         vip_cs = rows.collect do |row|
-            c = {:pid => row[-1]}
+            pid = row[-1]
+            c = {:pid => pid}
             (0..12).each do |i|
                 img = row[i]
                 cat = row[i+13]
                 case cat
                 when 'face'
-                    c[:face] = img
+                    c[:face] = isa_chosen_index
+                    dst = ISADORA_PRODUCTLAUNCH_CHOSEN_FMT % isa_chosen_index
+                    isa_chosen_index += 1
+                    img_thumbnail(img, dst, 600, 600, "pid #{pid}", ISADORA_PRODUCTLAUNCH_CHOSEN_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                    c[:face_url] = TABLETS_PRODUCTLAUNCH_URL + dst
+                    fn_pids[dst] = pid
                 when 'child'
                     c[:child] = img
                 end
@@ -122,7 +156,7 @@ class SeqProductLaunch
         pbdata[:vip_cs] = vip_cs
 
 
-        # Person D (4)
+        # Person D (3)
         # face, with friends, personally relevant photo
         # data: First Name, Works at ... as, Hometown, Birthday, Studied [subject] at [institution], Went to [high school], Recently Traveled to,
         #   Spouse or partner first name, Personally relevant short text, Liked, Listens to
@@ -144,7 +178,8 @@ class SeqProductLaunch
         # ?? relevant text
 
         vip_ds = rows.collect do |row|
-            d = {:pid => row[-1]}
+            pid = row[-1]
+            d = {:pid => pid}
             d[:first_name] = row[26]
             d[:works_at] = "#{row[27]} at #{row[28]}"
             d[:hometown] = row[29]
@@ -162,7 +197,12 @@ class SeqProductLaunch
                 cat = row[i+13]
                 case cat
                 when 'face'
-                    d[:face] = img
+                    d[:face] = isa_chosen_index
+                    dst = ISADORA_PRODUCTLAUNCH_CHOSEN_FMT % isa_chosen_index
+                    isa_chosen_index += 1
+                    img_thumbnail(img, dst, 600, 600, "pid #{pid}", ISADORA_PRODUCTLAUNCH_CHOSEN_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                    d[:face_url] = TABLETS_PRODUCTLAUNCH_URL + dst
+                    fn_pids[dst] = pid
                 when 'friends'
                     d[:friends] = img
                 when 'relevant'
@@ -182,7 +222,7 @@ class SeqProductLaunch
     VIP_D_TEXT_KEYS = [:works_at, :hometown, :birthday, :university, :high_school, :traveled_to, :spouse_first_name, :listens_to, :liked].freeze
     VIP_D_TEXT_CHANNELS = (12..18).to_a
 
-    attr_accessor(:start_time, :debug)
+    attr_accessor(:start_time)
 
     def initialize
         # @id = p_data["Patron ID"]

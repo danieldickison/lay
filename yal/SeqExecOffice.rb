@@ -1,12 +1,7 @@
 require('Isadora')
 require('Media')
 require('PlaybackData')
-
-class SeqExecOffice
-    DATABASE_DIR = Media::DATABASE_DIR
-
-    ISADORA_EXEC_OFFICE_DIR = Media::ISADORA_DIR + "s_470-ExecutiveOffice_profile/"
-    ISADORA_EXEC_OFFICE_IMG_FMT = '470-%03d-R04-ExecutiveOffice_profile.jpg'
+require('Sequence')
 
 =begin
 http://projectosn.heinz.cmu.edu:8000/admin/datastore/patron/
@@ -24,16 +19,16 @@ No zones
 ?? images total
 =end
 
-    ProfilePhoto = Struct.new(:path, :pid)
+class SeqExecOffice < Sequence
+    ISADORA_EXEC_OFFICE_DIR = Media::ISADORA_DIR + "s_470-ExecutiveOffice_profile/"
+    ISADORA_EXEC_OFFICE_IMG_FMT = '470-%03d-R04-ExecutiveOffice_profile.jpg'
 
-    # export <performance #> ExecOffice
     def self.export(performance_id)
         `mkdir -p '#{ISADORA_EXEC_OFFICE_DIR}'`
         pbdata = {}
         db = SQLite3::Database.new(Yal::DB_FILE)
 
-        # @@@
-        # special images face
+        # Needs to be special images face
 
         # Query to fetch profile photos
         rows = db.execute(<<~SQL).to_a
@@ -51,7 +46,7 @@ No zones
             fb = r[1]
             path = fb && fb != '' ? fb : tw # prefer fb over tw if both present
             if path && path != ''
-                photos << ProfilePhoto.new(path, pid)
+                photos << {:path => path, :pid => pid}
             end
         end
 
@@ -59,19 +54,8 @@ No zones
 
         photos.each_with_index do |photo, i|
             dst = ISADORA_EXEC_OFFICE_IMG_FMT % i
-            db_photo = DATABASE_DIR + photo.path
-            if File.exist?(db_photo)
-                GraphicsMagick.thumbnail(db_photo, ISADORA_EXEC_OFFICE_DIR + dst, 600, 600, "jpg", 85)
-            else
-                while true
-                    r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
-                    break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
-                end
-                color = "rgb(#{r}%,#{g}%,#{b}%)"
-                annotate = "#{photo.path}, employee ID #{photo.pid}"
-                GraphicsMagick.convert("-size", "600x600", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 600), GraphicsMagick.format_args(ISADORA_EXEC_OFFICE_DIR + dst, "jpg"))
-            end
-            fn_pids[dst] = photo.pid
+            img_thumbnail(photo[:path], dst, 600, 400, "pid #{photo[:pid]}", ISADORA_EXEC_OFFICE_DIR)
+            fn_pids[dst] = photo[:pid]
         end
 
         PlaybackData.merge_filename_pids(fn_pids)
