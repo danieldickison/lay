@@ -116,7 +116,7 @@ Slots correspond to zones as follows: (32 per zone)
 
         # group photos by TV zone
         tv_photos = photos.group_by do |p|
-            tvs = Media::TABLE_TVS[r[-1][0]] + Media::TABLE_TVS[r[-1][0]] + ["C01"]
+            tvs = Media::TABLE_TVS[p.table] + Media::TABLE_TVS[p.table] + ["C01"]
             tvs[rand(tvs.length)]  # result
         end
 
@@ -130,7 +130,7 @@ Slots correspond to zones as follows: (32 per zone)
 
                 slot = "%03d" % (slot_base + i)
                 dst = "s_420-#{slot}-R03-GeekTrio.jpg"
-                db_photo = DATABASE_DIR + pp.path ## BS probably should be Media::DATABASE_IMG_DIR
+                db_photo = DATABASE_DIR + pp.path ## BS probably should be Media::DATABASE_IMAGES_DIR
                 # puts "#{tv}-#{slot} '#{db_photo}', '#{dst}'"
                 if File.exist?(db_photo)
                     GraphicsMagick.fit(db_photo, ISADORA_GEEKTRIO_DIR + dst, 640, 640, "jpg", 85)

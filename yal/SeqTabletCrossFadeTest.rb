@@ -16,10 +16,6 @@ require('PlaybackData')
 
 class SeqTabletCrossFadeTest
 
-    MEDIA_DYNAMIC = Media::PLAYBACK + "/media_dynamic/s_410-Ghosting_profile/"
-    DATA_DYNAMIC  = Media::PLAYBACK + "/data_dynamic/105-Ghosting/"
-    DATABASE      = Media::DATABASE
-
     def self.export(performance_id)
     end
 

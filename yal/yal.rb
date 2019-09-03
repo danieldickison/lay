@@ -256,11 +256,6 @@ class Yal
         GraphicsMagick.scrub(file, file + ".jpg", "jpg", 85)
     end
 
-    def cli_gm
-        f = Media::YAL + "/photo.png"
-        GraphicsMagick.fit(f, Media::PLAYBACK + "/test.jpg", 640, 640, "jpg", 85, "images/blahblah.jpg, employeeID 12, table X")
-    end
-
     def cli_quit
         exit(0)
     end

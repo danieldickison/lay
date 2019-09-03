@@ -8,41 +8,15 @@ class Media
     end
 
 
-    # Tablet media goes in VOLUME + "/playback/media_tablet_dynamic/"
-    # PLAYBACK = "/playback"
-    #           Media::VOLUME + Media::PLAYBACK + "/media_tablet_dynamic"
-    # PLAYBACK_DIR = VOLUME + PLAYBACK
-    #           Media::PLAYBACK_DIR + "/media_tablet_dynamic"
-    # Tablet URLs are like "/playback/media_tablet_dynamic/"
-    #           Media::PLAYBACK + "/media_tablet_dynamic"
-    # TABLET_DIR = PLAYBACK_DIR + "/media_tablet_dynamic"
-    #           Media::TABLET_DIR + "/ghosting.jpg"
-
-    # Isadora media goes in VOLUME + "/playback/media_dynamic/<sequence>/"
-    #           Media::VOLUME + Media::PLAYBACK + "/media_dynamic/<sequence>/"
-
-
+    DATA_DIR = VOLUME + "/playback/data/"
     ISADORA_DIR = VOLUME + "/playback/media_dynamic/"
-
-    TABLETS_URL = "/playback/media_tablet_dynamic/"
     TABLETS_DIR = VOLUME + "/playback/media_tablet_dynamic/"
 
+    TABLETS_URL = "/playback/media_tablet_dynamic/"
+
     DATABASE_DIR = VOLUME + "/db/"
-    DATABASE_IMG_DIR = DATABASE_DIR + "images/"
+    DATABASE_IMAGES_DIR = DATABASE_DIR + "images/"
 
-
-    # THIS IS A MESS
-    DATABASE = VOLUME + "/db"
-    PLAYBACK = VOLUME + "/playback"
-    YAL = YAL_DIR + "/media"
-
-    DYNAMIC = VOLUME + "/playback/media_dynamic"
-    DATA_DYNAMIC = VOLUME + "/data_dynamic"
-
-    DIR = PLAYBACK + "/media"
-    DATA_DIR = PLAYBACK + "/data"
-
-    TABLET_DYNAMIC = "/playback/media_tablet_dynamic"
 
     TVS = ["TV23","TV22","TV21","C01","TV31","TV32","TV33"].freeze
     TVS_NO_CENTER = ["TV23","TV22","TV21","TV31","TV32","TV33"].freeze

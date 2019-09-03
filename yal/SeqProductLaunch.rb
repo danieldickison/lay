@@ -206,6 +206,8 @@ class SeqProductLaunch
 
   TIMINGS = [nil, nil, 10, 8, 8, 12, 8, 4, 5]
 
+    TABLET_DYNAMIC = "/playback/media_tablet_dynamic"
+
     attr_accessor(:start_time, :debug)
 
     def initialize
@@ -322,17 +324,17 @@ class SeqProductLaunch
             # Person 1
             {
                 :position => :front,
-                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_1],
+                :src => TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_1],
                 :in_offset => 109.0, # s from start of video
             },
             {
                 :position => :back,
-                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_1a],
+                :src => TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_1a],
                 :in_offset => 111.97,
             },
             {
                 :position => :back,
-                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_1b],
+                :src => TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_1b],
                 :in_offset => 125.57,
                 :out_offset => 130.03,
             },
@@ -340,12 +342,12 @@ class SeqProductLaunch
             # Person 2
             {
                 :position => :front,
-                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_2],
+                :src => TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_2],
                 :in_offset => 139.0,
             },
             {
                 :position => :back,
-                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_2a],
+                :src => TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_2a],
                 :in_offset => 152.33,
                 :out_offset => 157.47,
             },
@@ -353,12 +355,12 @@ class SeqProductLaunch
             # Person 3
             {
                 :position => :front,
-                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_3],
+                :src => TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_3],
                 :in_offset => 167.0, # s from start of video
             },
             {
                 :position => :back,
-                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_3a],
+                :src => TABLET_DYNAMIC + '/' + pbdata[:facebook_image_names][facebook_3a],
                 :in_offset => 178.43,
                 :out_offset => 185.93,
             },
@@ -366,7 +368,7 @@ class SeqProductLaunch
             # Person 4
             {
                 :position => :front,
-                :src => Media::TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_4],
+                :src => TABLET_DYNAMIC + '/' + pbdata[:profile_image_names][person_4],
                 :in_offset => 232.0, # s from start of video
                 :out_offset => 364.8,
             },

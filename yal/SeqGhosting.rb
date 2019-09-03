@@ -103,14 +103,16 @@ Slots correspond to zones as follows: (8 per zone)
 
         # group photos by TV zone
         tv_photos = photos.group_by do |p|
-            tvs = Media::TABLE_TVS[r[-1][0]] + Media::TABLE_TVS[r[-1][0]]
+            tvs = Media::TABLE_TVS[p.table]
             tvs[rand(tvs.length)]  # result
         end
 
         slot_base = 1
         Media::TVS_NO_CENTER.each do |tv|
             # 8 random photos for each tv
-            ph = tv_photos[tv].shuffle
+            ph = tv_photos[tv]
+            next if !ph
+            ph = ph.shuffle
             (0..7).each do |i|
                 pp = ph[i]
                 break if !pp

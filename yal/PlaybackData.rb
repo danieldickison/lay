@@ -39,7 +39,11 @@ module PlaybackData
         end
     end
 
-    FILENAME_PIDS_FILE = Media::DATA_DIR + "/LAY_filename_pids.txt"
+    FILENAME_PIDS_FILE = Media::DATA_DIR + "LAY_filename_pids.txt"
+
+    def self.reset_filename_pids
+        File.delete(FILENAME_PIDS_FILE)
+    end
 
     def self.merge_filename_pids(fn_pids)
         `mkdir -p '#{Media::DATA_DIR}'`

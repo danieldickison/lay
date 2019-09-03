@@ -9,12 +9,15 @@ Right before showtime: finalize_last_minute_data <performance number>
 
 
 class Showtime
-    OPT_OUT_FILE = Media::DATA_DIR + "/LAY_opt_outs.txt"
-    VIP_FILE     = Media::DATA_DIR + "/LAY_vips.txt"
+    OPT_OUT_FILE = Media::DATA_DIR + "LAY_opt_outs.txt"
+    VIP_FILE     = Media::DATA_DIR + "LAY_vips.txt"
 
     # assign pids before doing any exports
     def self.prepare_export(performance_id)
         db = SQLite3::Database.new(Yal::DB_FILE)
+
+        # check seating
+
 
         starting_pid = db.execute(<<~SQL).first[0] || 0
             SELECT MAX(pid)
@@ -37,6 +40,30 @@ class Showtime
                 UPDATE datastore_patron
                 SET
                     pid = "#{pid}"
+                WHERE id = #{id}
+            SQL
+        end
+
+        
+    end
+
+    def self.debug_assign_random_seats(performance_id)
+        db = SQLite3::Database.new(Yal::DB_FILE)
+        ids = db.execute(<<~SQL).to_a
+            SELECT id
+            FROM datastore_patron
+            WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
+        SQL
+
+        tables = Media::TABLE_TVS.keys
+
+        ids.each_with_index do |row, i|
+            id = row[0]
+            seating = tables[rand(tables.length)] + "0"
+            db.execute(<<~SQL)
+                UPDATE datastore_patron
+                SET
+                    seating = "#{seating}"
                 WHERE id = #{id}
             SQL
         end
@@ -94,13 +121,19 @@ end
 
 
 class Yal
-    def cli_finalize_last_minute_data(*args)
-        performance_number = args.shift
+    def get_performance_id(performance_number)
         raise "bad performance_number" if !performance_number
         db = SQLite3::Database.new(DB_FILE)
-        performance_id = db.execute(<<~SQL).first[0]
+        return db.execute(<<~SQL).first[0]
             SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
         SQL
-        Showtime.finalize_last_minute_data(performance_id)
+    end
+
+    def cli_debug_assign_random_seats(*args)
+        Showtime.debug_assign_random_seats(get_performance_id(args[0]))
+    end
+
+    def cli_finalize_last_minute_data(*args)
+        Showtime.finalize_last_minute_data(get_performance_id(args[0]))
     end
 end

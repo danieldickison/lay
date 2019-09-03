@@ -20,21 +20,6 @@ class SeqOffTheRails
     TABLETS_OFFTHERAILS_DIR = Media::TABLETS_DIR + "offtherails/"
     TABLETS_OFFTHERAILS_URL = Media::TABLETS_URL + "offtherails/"
 
-    # MEDIA_PROFILE   = Media::DYNAMIC + "/s_510-OTR_profile"
-    # MEDIA_FACEBOOK  = Media::DYNAMIC + "/s_511-Facebook"
-    # MEDIA_INSTAGRAM = Media::DYNAMIC + "/s_512-Instagram"
-    # MEDIA_TRAVEL    = Media::DYNAMIC + "/s_531-Travel"
-    # MEDIA_FOOD      = Media::DYNAMIC + "/s_532-Food"
-
-    # IMG_PROFILE     = Media::TABLET_DYNAMIC + "/s_510-OTR_profile"  # broken
-    # IMG_FACEBOOK    = Media::TABLET_DYNAMIC + "/s_511-Facebook"
-    # IMG_INSTAGRAM   = Media::TABLET_DYNAMIC + "/s_512-Instagram"
-    # IMG_TRAVEL      = Media::TABLET_DYNAMIC + "/s_531-Travel"
-    # IMG_FOOD        = Media::TABLET_DYNAMIC + "/s_532-Food"
-    # DATA_DIR        = Media::PLAYBACK + "/data_dynamic/112-OTR/"
-    # DATABASE        = Media::DATABASE
-
-
     TV_POST_ADDRESS = {
         # TVs:
         'TV21' => '/isadora-multi/2',
@@ -104,7 +89,7 @@ class SeqOffTheRails
             table = row[1][0]
             name = row[2]
 
-            puts "table: #{table} employee #{pid}"
+            # puts "table: #{table} employee #{pid}"
             tvs = Media::TABLE_TVS[table] + Media::TABLE_TVS[table] + ["C01"]
             tv = tvs[rand(tvs.length)]
 
@@ -122,7 +107,7 @@ class SeqOffTheRails
             isadora_profile_slot += 1
             slot = "%03d" % isa_profile_num
             isa_profile = "510-#{slot}-R02-OTR_profile.png"
-            db_photo = Media::DATABASE_IMG_DIR + db_profile
+            db_photo = Media::DATABASE_IMAGES_DIR + db_profile
             if File.exist?(db_photo)
                 GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, 180, 180, "png")
             else
@@ -152,7 +137,7 @@ class SeqOffTheRails
                     isadora_recent_slot += 1
                     slot = "%03d" % isa_photo_num
                     isa_photo = "520-#{slot}-R03-OTR_recent.jpg"
-                    db_photo = Media::DATABASE_IMG_DIR + row[i]
+                    db_photo = Media::DATABASE_IMAGES_DIR + row[i]
                     if File.exist?(db_photo)
                         GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, 640, 640, "jpg", 85)
                     else
@@ -192,7 +177,7 @@ class SeqOffTheRails
                     isadora_recent_slot += 1
                     slot = "%03d" % isa_photo_num
                     isa_photo = "520-#{slot}-R03-OTR_recent.jpg"
-                    db_photo = Media::DATABASE_IMG_DIR + row[i]
+                    db_photo = Media::DATABASE_IMAGES_DIR + row[i]
                     if File.exist?(db_photo)
                         GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, 640, 640, "jpg", 85)
                     else
@@ -289,14 +274,12 @@ class SeqOffTheRails
             slot_base = 1
             Media::TVS.each do |tv|
                 # 8 random photos for each tv
-                ph = tv_rows[tv].shuffle
+                ph = tv_rows[tv]
+                next if !ph
+                ph = ph.shuffle
                 (0..7).each do |i|
                     pp = ph[i]
-                    if !pp
-                        puts "WARNING: duplicating a tv row image"
-                        pp = ph[0]
-                        # pp = dummy
-                    end
+                    break if !pp
 
                     # pull out extra columns
                     pid = pp[-2].to_i
@@ -305,7 +288,7 @@ class SeqOffTheRails
                     slot = "%03d" % (slot_base + i)
 
                     dst = dst_template.gsub("#", slot)
-                    db_photo = Media::DATABASE_IMG_DIR + pp[0]
+                    db_photo = Media::DATABASE_IMAGES_DIR + pp[0]
                     if File.exist?(db_photo)
                         GraphicsMagick.fit(db_photo, isadora_dir + dst, 640, 640, "jpg", 85)
                     else

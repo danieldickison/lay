@@ -28,10 +28,13 @@ class Isadora
     DST_DIRS = ["Desktop/LAY_Video_221/LAY_HERE/2_Current/media", "Desktop/LAY_Video_222/LAY_HERE/2_Current/media", "Desktop/LAY_Video_223/LAY_HERE/2_Current/media"]
 
     def self.push_media
+        playback_data = Media::DATA_DIR.chomp("/")
+        playback_media_dynamic = Media::ISADORA_DIR.chomp("/")
+
         IPS.each_with_index do |addr, i|
             user    = USERS[i]
             dst_dir = DST_DIRS[i]
-            U.sh("/usr/bin/rsync", "-a", "#{Media::PLAYBACK}/data", "#{Media::PLAYBACK}/media_dynamic", "#{user}@#{addr}:'#{dst_dir}/'")
+            U.sh("/usr/bin/rsync", "-a", playback_data, playback_media_dynamic, "#{user}@#{addr}:'#{dst_dir}/'")
         end
     end
 
@@ -39,7 +42,7 @@ class Isadora
         IPS.each_with_index do |addr, i|
             user    = USERS[i]
             dst_dir = DST_DIRS[i]
-            U.sh("/usr/bin/rsync", "-a", "#{Media::PLAYBACK}/data/LAY_opt_outs.txt", "#{user}@#{addr}:'#{dst_dir}/data/'")
+            U.sh("/usr/bin/rsync", "-a", "#{Media::DATA_DIR}LAY_opt_outs.txt", "#{user}@#{addr}:'#{dst_dir}/data/'")
         end
     end
 end
