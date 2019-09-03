@@ -385,7 +385,7 @@ class SeqOffTheRails
         Media::TVS.each do |tv|
             names = pbdata[:tv_names][tv.to_sym] || []
             #puts "tv #{tv.to_sym.inspect} names #{names.inspect}"
-            all_tv_names = names.reject {|p| opt_outs.include?(p[:employee_id]) && puts("rejecting #{p.inspect}")}.shuffle
+            all_tv_names = names.reject {|p| opt_outs.include?(p[:employee_id])}.shuffle
             #puts "all_tv_names: #{all_tv_names.inspect}"
             @tv_names[tv] = all_tv_names[0...4]
             spare_tv_names.concat(all_tv_names)
