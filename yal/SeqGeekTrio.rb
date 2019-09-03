@@ -134,7 +134,7 @@ Slots correspond to zones as follows: (32 per zone)
                 # puts "#{tv}-#{slot} '#{db_photo}', '#{dst}'"
                 if File.exist?(db_photo)
                     annotate = "#{pp.path}, pid #{pp.pid}, table #{pp.table}"
-                    GraphicsMagick.fit("-gravity", "center", GraphicsMagick.anno_args(annotate, width), db_photo, ISADORA_GEEKTRIO_DIR + dst, 640, 640, "jpg", 85)
+                    GraphicsMagick.fit("-gravity", "center", GraphicsMagick.anno_args(annotate, 500), db_photo, ISADORA_GEEKTRIO_DIR + dst, 640, 640, "jpg", 85)
                 else
                     while true
                         r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
