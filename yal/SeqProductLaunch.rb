@@ -194,12 +194,12 @@ class SeqProductLaunch < Sequence
             pid = row[-1]
             d = {:pid => pid}
             d[:first_name] = row[26]
-            d[:works_at] = "#{row[27]} at #{row[28]}"
+            d[:works_at] = (row[27] && row[27] != "" && row[28] && row[28] != "") ? "#{row[27]} at #{row[28]}" : nil
             d[:hometown] = row[29]
             d[:birthday] = row[30]
-            d[:university] = "Studied #{row[31]} at #{row[32]}"
-            d[:high_school] = "Went to #{row[33]}"
-            d[:traveled_to] = "Recently traveled to #{row[34]}"
+            d[:university] = (row[31] && row[31] != "" && row[32] && row[32] != "") ? "Studied #{row[31]} at #{row[32]}" : nil
+            d[:high_school] = (row[33] && row[33] != "") ? "Went to #{row[33]}" : nil
+            d[:traveled_to] = (row[34] && row[34] != "") ? "Recently traveled to #{row[34]}" : nil
             d[:spouse_first_name] = row[35]
             d[:listens_to] = row[36]
             d[:liked] = nil
