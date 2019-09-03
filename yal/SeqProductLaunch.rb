@@ -419,6 +419,7 @@ class SeqProductLaunch < Sequence
     end
 
     def start
+        @run = true
         Thread.new do
             TablettesController.send_osc_cue('/playback/media_tablets/113-Launch/113-411-C60-ProductLaunch_HERE.mp4', @start_time + @prepare_delay)
             sleep(@start_time + @prepare_delay - Time.now)
@@ -436,7 +437,20 @@ class SeqProductLaunch < Sequence
             end
             target_x_time = ((img_start_time + @target_x_offset).to_f * 1000).round
             TablettesController.queue_command(nil, 'productlaunch', @tablet_images, target_x_time)
+
+            while @run
+                run
+                sleep(0.1)
+            end
+            @run = false
         end
     end
 
+    def stop
+        if @run
+            @run = false
+            TablettesController.queue_command(nil, 'stop')
+            TablettesController.send_osc('/tablet/stop')
+        end
+    end
 end
