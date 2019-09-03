@@ -7,7 +7,7 @@
 // Help local debugging in chrome
 if (!window.layNativeInterface) {
     window.layNativeInterface = {
-        getTabletNumber: function () { return 1; },
+        getTabletNumber: function () { return 26; },
         getBuildName: function () { return 'fake'; },
         getCacheInfo: function () { return ''; },
         getBatteryPercent: function () { return -1; },
