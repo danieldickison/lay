@@ -52,6 +52,11 @@ class TablettesController < ApplicationController
     def index
     end
 
+    def cast
+        data = TablettesHelper::CastData.new
+        @vips = data.vips
+    end
+
     def director
         @assets = self.class.assets.collect {|a| a[:path]}
         @volume = self.class.volume

@@ -1,0 +1,15 @@
+<div id="cast-page">
+    <ol id="vips">
+        <% for vip in @vips -%>
+            <li>
+                <h2 class="vip-letter"><%= vip.letter %></h2>
+                <img src="<%= vip.face_src %>">
+                <ul>
+                    <% for kv in vip.info %>
+                        <li><strong><%= kv[:key] %>:</strong> <%= kv[:value] %></li>
+                    <% end -%>
+                </ul>
+            </li>
+        <% end -%>
+    </ol>
+</div>

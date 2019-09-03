@@ -1,0 +1,38 @@
+// Place all the styles related to the Tablettes controller here.
+// They will automatically be included in application.css.
+// You can use Sass (SCSS) here: http://sass-lang.com/
+
+#cast-page {
+    background: black;
+    color: #6699ff;
+    font-size: 24px;
+
+    #vips {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-flow: row nowrap;
+        height: 100%;
+
+        > li {
+            width: 700px;
+            height: 1200px;
+            flex-shrink: 0;
+            overflow-y: scroll;
+            border: 2px solid #6699ff;
+            background: #001122;
+            margin: 15px;
+            padding: 10px;
+
+            > img {
+                display: block;
+                width: 100%;
+                height: auto;
+                margin: 20px auto;
+                border: 2px solid #6699ff;
+                border-radius: 10px;
+            }
+        }
+    }
+}

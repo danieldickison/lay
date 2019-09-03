@@ -12,7 +12,7 @@ class SeqGeekTrio
 
 
     TABLET_TRIGGER_PREROLL = 10 # seconds; give them enough time to load dynamic images before presenting.
-    TABLET_IMAGE_INTERVAL = 750 # ms; 2 beats @ 160 bpm
+    TABLET_IMAGE_INTERVAL = 1500 # ms; 4 beats @ 160 bpm
     TABLET_CHORUS_DURATIONS = [
         18_000, # ms; 12 bars of 4 beats at @ 160 bpm
         18_000,
