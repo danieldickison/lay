@@ -237,40 +237,43 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         pbdata = PlaybackData.read(TABLETS_EXTERMINATOR_DIR)
         opt_outs = Showtime.opt_outs
 
-        # 1 => [IMG_BASE + profile_image_name, IMG_BASE + profile_image_name, IMG_BASE + profile_image_name]
-        if defined?(TablettesController)
-            living_tablets = TablettesController.tablet_enum(nil)
-        else
-            raise
-        end
+        living_tablets = Set.new(TablettesController.tablet_enum(nil))
+
         all_images = CATEGORIES.collect {|cat| [cat, []]}.to_h
         @tablet_data = {}
         exterminator_tablets = pbdata[:exterminator_tablets]
         TablettesController::ALL_TABLETS.each do |t|
-            @tablet_data[t] = {}
+            @tablet_data[t] = {} if living_tablets.include?(t)
+            tdata = @tablet_data[t]
             CATEGORIES.each do |cat|
                 pid_img = exterminator_tablets.dig(t, cat)
                 if pid_img && pid_img.length > 0
                     pids = pid_img.keys.reject {|pid| opt_outs.include?(pid)}.shuffle
-                    @tablet_data[t][cat] = {
-                        :img => pid_img[pids.first],
-                        :conclusion => TABLET_CONCLUSIONS[cat][t % TABLET_CONCLUSIONS[cat].length]
-                    }
-                    all_images[cat].concat(pid_img.values)
+                    if tdata
+                        tdata[cat] = {
+                            :img => pid_img[pids.first],
+                            :conclusion => TABLET_CONCLUSIONS[cat][t % TABLET_CONCLUSIONS[cat].length]
+                        }
+                    end
+                    all_images[cat].concat(pids.collect {|pid| pid_img[pid]})
+                else
+
                 end
             end
         end
-        living_tablets.each do |t|
+        #puts "all_images: #{all_images.inspect}"
+        @tablet_data.each do |t, tdata|
             CATEGORIES.each do |cat|
-                if !@tablet_data[t][cat]
+                if !tdata[cat]
                     puts "Did not find any #{cat} image for table #{t}; using spares"
-                    @tablet_data[t][cat] = {
+                    tdata[cat] = {
                         :img => all_images[cat].sample,
                         :conclusion => TABLET_CONCLUSIONS[cat][t % TABLET_CONCLUSIONS[cat].length]
                     }
                 end
             end
         end
+        #puts @tablet_data.inspect
     end
 
     # override
@@ -287,21 +290,16 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
             sleep(@start_time + ISADORA_DELAY - Time.now)
             @is.send('/isadora/1', '800')
 
-            if defined?(TablettesController)
-                enum = TablettesController.tablet_enum(nil)
-            else
-                raise
-            end
             @tablet_triggers = CATEGORIES.collect do |cat|
                 timing = TABLET_LITE_TIMING[cat]
                 tablets = {
                     :trigger_time => @start_time + timing[:in] - TABLET_TRIGGER_PREROLL
                 }
-                enum.each do |t|
+                @tablet_data.each do |t, tdata|
                     tablets[t] = {
                         :title => CATEGORY_TITLES[cat],
-                        :src => @tablet_data[t][cat][:img],
-                        :conclusion => @tablet_data[t][cat][:conclusion],
+                        :src => tdata[cat][:img],
+                        :conclusion => tdata[cat][:conclusion],
                         :in_time => (1000 * (@start_time.to_f + timing[:in])).round,
                         :conclusion_time => (1000 * (@start_time.to_f + timing[:conclusion])).round,
                     }
