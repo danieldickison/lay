@@ -256,8 +256,6 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                         }
                     end
                     all_images[cat].concat(pids.collect {|pid| pid_img[pid]})
-                else
-
                 end
             end
         end
