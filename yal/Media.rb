@@ -15,7 +15,6 @@ class Media
     TABLETS_URL = "/playback/media_tablet_dynamic/"
 
     DATABASE_DIR = VOLUME + "/db/"
-    DATABASE_IMAGES_DIR = DATABASE_DIR + "images/"
 
 
     TVS = ["TV23","TV22","TV21","C01","TV31","TV32","TV33"].freeze

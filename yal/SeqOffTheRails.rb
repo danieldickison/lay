@@ -222,8 +222,8 @@ class SeqOffTheRails
 
         # fill Isadora with 56 travel and food pictures, using dummy if we've run out
         # ZONED
-        [   ["travel", "540-#-R03-OTR_travel.jpg", ISADORA_OFFTHERAILS_TRAVEL_DIR],
-            ["food", "550-#-R03-Food.jpg", ISADORA_OFFTHERAILS_FOOD_DIR]
+        [   ["travel", "540-%03d-R03-OTR_travel.jpg", ISADORA_OFFTHERAILS_TRAVEL_DIR],
+            ["food", "550-%03d-R03-Food.jpg", ISADORA_OFFTHERAILS_FOOD_DIR]
         ].each do |category, dst_template, isadora_dir|
             rows = db.execute(<<~SQL).to_a
                 SELECT spImage_1, pid, seating
@@ -266,6 +266,8 @@ class SeqOffTheRails
                 FROM datastore_patron WHERE spCat_13 = "#{category}" AND performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
             SQL
 
+            rows.reject! {|r| !r[0] || r[0] == ""}  # some cats have no image
+
             tv_rows = rows.group_by do |r|
                 tvs = Media::TABLE_TVS[r[-1][0]] + Media::TABLE_TVS[r[-1][0]] + ["C01"]
                 tvs[rand(tvs.length)]  # result
@@ -285,9 +287,7 @@ class SeqOffTheRails
                     pid = pp[-2].to_i
                     table = pp[-1][0]
 
-                    slot = "%03d" % (slot_base + i)
-
-                    dst = dst_template.gsub("#", slot)
+                    dst = dst_template % (slot_base + i)
                     db_photo = Media::DATABASE_DIR + pp[0]
                     if File.exist?(db_photo)
                         GraphicsMagick.fit(db_photo, isadora_dir + dst, 640, 640, "jpg", 85)
