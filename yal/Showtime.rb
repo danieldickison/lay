@@ -32,8 +32,14 @@ class Showtime
             AND (seating IS NULL OR seating = "")
         SQL
         if unassigned > 0
-            puts "HEY: #{unassigned} seat(s), you can't do that"
-            exit
+            puts "HEY: There are #{unassigned} unassigned seat(s)."
+            puts "They are being assigned to table Z."
+            db.execute(<<~SQL)
+                UPDATE datastore_patron
+                SET seating = "Z0"
+                WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
+                AND (seating IS NULL OR seating = "")
+            SQL
         end
 
         # assign pids before doing any exports

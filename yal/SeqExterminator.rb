@@ -70,7 +70,9 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
             matches = images.find_all {|img| img[cat]}
             matches.shuffle[0...20].each_with_index do |img, i|
                 dst = ISADORA_EXTERMINATOR_NAMES[cat] % (i + 1)
-                db_photo = Media::DATABASE_IMAGES_DIR + img[cat]
+                db_photo = Media::DATABASE_DIR + img[cat]
+puts db_photo
+pp matches
                 if File.exist?(db_photo)
                     GraphicsMagick.fit(db_photo, dir + dst, 640, 640, "jpg", 85)
                 else
@@ -109,7 +111,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                     if img[cat]
                         dst = "%03d-%s.jpg" % [img[:pid], cat]
                         pid_img[img[:pid]] = TABLETS_EXTERMINATOR_URL + dst
-                        db_photo = Media::DATABASE_IMAGES_DIR + img[cat]
+                        db_photo = Media::DATABASE_DIR + img[cat]
                         if File.exist?(db_photo)
                             GraphicsMagick.fit(db_photo, TABLETS_EXTERMINATOR_DIR + dst, 700, 700, "jpg", 85)
                         else
