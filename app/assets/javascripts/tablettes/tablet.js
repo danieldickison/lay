@@ -267,6 +267,8 @@ function preShowInit() {
         .catch(error => {
             log("login submit error: ", error);
             alert("Please double check your Employee ID number and try again.");
+            // native alert brings up the back button so hide it again.
+            layNativeInterface.hideChrome();
             reset();
         });
     }
