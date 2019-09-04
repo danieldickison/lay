@@ -461,7 +461,7 @@ class SeqOffTheRails
             end
 
             sleep(FEED_DELAY) #quick and dirty pre-delay for tweets
-            return if !@run
+            Thread.exit if !@run
 
             @tablet_items.each do |t, items|
                 TablettesController.queue_command(t, 'offtherails', items)
