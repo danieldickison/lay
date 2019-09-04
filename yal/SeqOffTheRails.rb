@@ -49,9 +49,15 @@ class SeqOffTheRails
         'ig' => 3,
     }.freeze
 
-    FIRST_TV_ITEM_MAX_DELAY = 5
-    TV_ITEM_INTERVAL_RANGE = 6..10
-    FEED_DELAY = 38
+    TABLET_DELAY = 36
+    TV_FEED_TIMES = [
+        36, 39, 42, 45,
+        50, 53, 56, 59,
+        65, 68, 71, 74,
+        122, 125, 128, 131,
+        178, 181, 184, 187
+    ].freeze
+    TV_JITTER = 1.5
 
 
     def self.export(performance_id)
@@ -468,18 +474,21 @@ class SeqOffTheRails
                 @is.send(addrs[1], names.collect {|n| n[:isa_profile_num]}.join(','))
             end
 
-            sleep(FEED_DELAY) #quick and dirty pre-delay for tweets
-            Thread.exit if !@run
-
-            @tablet_items.each do |t, items|
-                TablettesController.queue_command(t, 'offtherails', items)
-            end
-
-            rails = @tv_items.collect {|tv, items| TVRunner.new(tv, TV_POST_ADDRESS[tv.to_s], @is, items)}
-
+            tv_trigger_times = TV_FEED_TIMES.collect {|time| @start_time + time}
+            rails = @tv_items.collect {|tv, items| TVRunner.new(tv, TV_POST_ADDRESS[tv.to_s], @is, items, tv_trigger_times)}
+            tablet_time = @start_time + TABLET_DELAY
+            triggered_tablets = false
             end_time = @start_time + @prepare_delay + @duration
             while @run && Time.now < end_time
                 rails.each(&:run)
+
+                if !triggered_tablets && Time.now > tablet_time
+                    triggered_tablets = true
+                    @tablet_items.each do |t, items|
+                        TablettesController.queue_command(t, 'offtherails', items)
+                    end
+                end
+
                 sleep(0.1)
             end
             TablettesController.queue_command(nil, 'stop') if @run
@@ -512,14 +521,14 @@ class SeqOffTheRails
     end
 
     class TVRunner
-        def initialize(tv, osc_address, is, all_items)
+        def initialize(tv, osc_address, is, all_items, trigger_times)
             puts "tv #{tv.inspect} address #{osc_address.inspect}"
             @tv = tv
             @osc_address = osc_address
             @is = is
             @all_items = all_items
+            @trigger_times = trigger_times.dup
 
-            @first_time = true
             @state = :idle
             @item_queue = []
         end
@@ -527,12 +536,9 @@ class SeqOffTheRails
         def run
             case @state
             when :idle
-                if @first_time
-                    @time = Time.now + rand * FIRST_TV_ITEM_MAX_DELAY
-                    @first_time = false
-                else
-                    @time = Time.now + TV_ITEM_INTERVAL_RANGE.min + rand * (TV_ITEM_INTERVAL_RANGE.max - TV_ITEM_INTERVAL_RANGE.min)
-                end
+                @time = @trigger_times.shift
+                return if !@time
+                @time += TV_JITTER * rand
                 if @item_queue.empty?
                     @item_queue = @all_items.dup.shuffle
                 end
