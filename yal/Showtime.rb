@@ -21,6 +21,15 @@ class Showtime
     OPT_OUT_FILE = Media::DATA_DIR + "LAY_opt_outs.txt"
     VIP_FILE     = Media::DATA_DIR + "LAY_vips.txt"
 
+    # Can't easily require yal.rb in the rails server so quick and dirty copy-and-paste here
+    if PRODUCTION
+        RUNTIME_DB_FILE = "/Users/blackwidow/Looking at You Media/db/db.sqlite3"
+    elsif JOE_DEVELOPMENT
+        RUNTIME_DB_FILE = Media::VOLUME + "/db/db.sqlite3"
+    else
+        RUNTIME_DB_FILE = Media::VOLUME + "/db/db.sqlite3"
+    end
+
     def self.prepare_export(performance_id)
         db = SQLite3::Database.new(Yal::DB_FILE)
 
@@ -69,6 +78,41 @@ class Showtime
         end
 
 
+    end
+
+    def self.update_patron(performance_number, employee_id, drink, opted_in)
+        employee_id = Integer(employee_id) # validate, and also prevent catastrophic db injection
+        employee_id_pattern = "'%#{employee_id}'"
+
+        db = SQLite3::Database.new(RUNTIME_DB_FILE)
+        performance_id = db.execute(<<~SQL).first[0]
+            SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
+        SQL
+        raise "bad performance number #{performance_number}" if !performance_id
+
+        patron = db.execute(<<~SQL).first
+            SELECT pid FROM datastore_patron
+            WHERE
+                employeeID LIKE #{employee_id_pattern}
+                AND (
+                    performance_1_id = #{performance_id} OR
+                    performance_2_id = #{performance_id}
+                )
+        SQL
+        raise "employee #{employee_id} not found" if !patron
+
+        pid = patron[0]
+        consent = opted_in ? 1 : 0
+        db.execute(<<~SQL)
+            UPDATE datastore_patron
+            SET consented = #{consent}
+            WHERE
+                pid = #{pid}
+                AND (
+                    performance_1_id = #{performance_id} OR
+                    performance_2_id = #{performance_id}
+                )
+        SQL
     end
 
     def self.finalize_last_minute_data(performance_id)

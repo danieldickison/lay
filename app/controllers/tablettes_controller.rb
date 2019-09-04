@@ -250,7 +250,8 @@ class TablettesController < ApplicationController
             drink = 'none' if !drink || drink == ''
             opt = params[:opt]
             puts "update_patron: #{params.inspect}"
-            #Lay::OSCApplication::Patrons.update(tablet, login_id, drink, opt)
+            performance_number = 0 # TODO: add field to director interface
+            Showtime.update_patron(performance_number, login_id, drink, opt == 'Y')
             render json: {
                 :error => false
             }
