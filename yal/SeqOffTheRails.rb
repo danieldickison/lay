@@ -50,7 +50,7 @@ class SeqOffTheRails
     }.freeze
 
     FIRST_TV_ITEM_MAX_DELAY = 5
-    TV_ITEM_INTERVAL_RANGE = 14..25
+    TV_ITEM_INTERVAL_RANGE = 6..10
     FEED_DELAY = 38
 
 
