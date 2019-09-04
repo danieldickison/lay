@@ -14,6 +14,7 @@
         padding: 0;
         display: flex;
         flex-flow: row nowrap;
+        align-items: flex-start;
         height: 100%;
 
         .info-value {
@@ -22,9 +23,7 @@
 
         > li {
             width: 700px;
-            height: 1200px;
             flex-shrink: 0;
-            overflow-y: scroll;
             border: 2px solid #6699ff;
             background: #001122;
             margin: 15px;
