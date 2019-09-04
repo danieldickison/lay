@@ -46,7 +46,7 @@ class Yal
         Dir.glob("#{YAL_DIR}/Seq*.rb").each do |seq_file|
             require(seq_file)
             name = File.basename(seq_file, ".rb")[3..-1]
-            next if name == "uence"
+            next if name == "uence"  # heh
             @seqs << name
         end
         @seqs.sort!

@@ -16,12 +16,28 @@ Fallback Folder: s_471-ExecutiveOffice_profile_fallback
 Details
 600x600 px square
 No zones
-?? images total
+40 total
 =end
 
 class SeqExecOffice < Sequence
     ISADORA_EXEC_OFFICE_DIR = Media::ISADORA_DIR + "s_470-ExecutiveOffice_profile/"
     ISADORA_EXEC_OFFICE_IMG_FMT = '470-%03d-R04-ExecutiveOffice_profile.jpg'
+
+
+    def self.dummy(images)
+        d_ISADORA_EXEC_OFFICE_DIR = Media::ISADORA_DIR + "s_471-ExecutiveOffice_profile_fallback/"
+        return if File.exist?(d_ISADORA_EXEC_OFFICE_DIR)
+        `mkdir -p '#{d_ISADORA_EXEC_OFFICE_DIR}'`
+
+        face = images[:face].shuffle
+
+        (1..40).each do |i|
+            src = face[i % face.length]
+            dst = "471-%03d-R04-ExecutiveOffice_profile_fallback.jpg" % i
+            GraphicsMagick.thumbnail(src, d_ISADORA_EXEC_OFFICE_DIR + dst, 600, 600, "jpg", 85)
+        end
+    end
+
 
     def self.export(performance_id)
         `mkdir -p '#{ISADORA_EXEC_OFFICE_DIR}'`

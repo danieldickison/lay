@@ -1,4 +1,27 @@
 class Dummy
+
+    def self.dummy(*args)
+        seqs = [SeqGhosting, SeqExecOffice]
+
+        images = collect_images
+        seqs.each {|s| s.dummy(images)}
+    end
+
+    def self.collect_images
+        import_dir = ENV["HOME"] + "/Dropbox/profiles/"
+        images = {}
+        [
+            [:face, "DummyFaces"], [:interested, "DummyInterestedIn"], [:profile, "DummyProfilePhotos"],
+            [:food, "FoodPhotos"], [:friends, "FriendsWith"], [:shared, "SharedByDummy"], [:travel, "TravelPhotos"]
+        ].each do |cat, dir|
+            images[cat] = `find #{import_dir + dir} -print`.lines.collect {|l| l.strip}.find_all {|f| f =~ /\.(jpg|jpeg|png)$/}
+        end
+        puts "Dummy images:"
+        images.each_pair do |k, v|
+            puts "  #{v.length} #{k}"
+        end
+    end
+
     def self.import(performance_number, dummy_file = nil)
         raise "need a performance_number" if !performance_number
         performance_number = performance_number.to_i
@@ -200,6 +223,10 @@ class Yal
         return db.execute(<<~SQL).first[0]
             SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
         SQL
+    end
+
+    def cli_dummy(*args)
+        Dummy.dummy(*args)
     end
 
     def cli_dummy_import(*args)

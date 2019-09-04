@@ -26,6 +26,38 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
 
 =end
 
+
+    def self.dummy(images)
+        d_ISADORA_EXTERMINATOR_DIRS = {
+            :travel     => Media::ISADORA_DIR + "s_431-Exterminator_travel_fallback/",
+            :interest   => Media::ISADORA_DIR + "s_441-Exterminator_interested_fallback/",
+            :friend     => Media::ISADORA_DIR + "s_451-Exterminator_friends_fallback/",
+            :shared     => Media::ISADORA_DIR + "s_461-Exterminator_shared_fallback/",
+        }.freeze
+        d_ISADORA_EXTERMINATOR_NAMES = {
+            :travel     => "s_431-%03d-R05-Exterminator_travel_fallback.jpg",
+            :interest   => "s_441-%03d-R05-Exterminator_interested_fallback.jpg",
+            :friend     => "s_451-%03d-R05-Exterminator_friends_fallback.jpg",
+            :shared     => "s_461-%03d-R05-Exterminator_shared_fallback.jpg",
+        }
+
+        return if d_ISADORA_EXTERMINATOR_DIRS.values.all? {|p| File.exist?(p)}
+        d_ISADORA_EXTERMINATOR_DIRS.values.each {|p| `mkdir -p '#{p}'`}
+
+        travel = images[:travel].shuffle
+        (1..40).each do |i|
+            src = travel[i % travel.length]
+            dst = d_ISADORA_EXTERMINATOR_NAMES[:travel] % i
+            GraphicsMagick.thumbnail(src, d_ISADORA_EXTERMINATOR_DIRS[:travel] + dst, 600, 600, "jpg", 85)
+        end
+
+        face = images[:face].shuffle
+
+
+    end
+
+
+
     # export <performance #> Exterminator
 
     ExportImage = Struct.new(:pid, :table, :friend, :travel, :interest, :shared)
