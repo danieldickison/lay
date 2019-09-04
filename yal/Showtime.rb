@@ -115,6 +115,42 @@ class Showtime
         SQL
     end
 
+    def self.update_patron_by_seat(performance_number, table, seat, drink, opted_in)
+        raise "bad table" if !/[A-Z]/.match?(table)
+        seat = Integer(seat) % 10 # validate, and also prevent catastrophic db injection
+        seating = "'#{table}#{seat}'"
+
+        db = SQLite3::Database.new(RUNTIME_DB_FILE)
+        performance_id = db.execute(<<~SQL).first[0]
+            SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
+        SQL
+        raise "bad performance number #{performance_number}" if !performance_id
+
+        patron = db.execute(<<~SQL).first
+            SELECT pid FROM datastore_patron
+            WHERE
+                seating = #{seating}
+                AND (
+                    performance_1_id = #{performance_id} OR
+                    performance_2_id = #{performance_id}
+                )
+        SQL
+        raise "seat #{seating} not found" if !patron
+
+        pid = patron[0]
+        consent = opted_in ? 1 : 0
+        db.execute(<<~SQL)
+            UPDATE datastore_patron
+            SET consented = #{consent}
+            WHERE
+                pid = #{pid}
+                AND (
+                    performance_1_id = #{performance_id} OR
+                    performance_2_id = #{performance_id}
+                )
+        SQL
+    end
+
     def self.finalize_last_minute_data(performance_id)
         `mkdir -p '#{Media::DATA_DIR}'`
         db = SQLite3::Database.new(Yal::DB_FILE)

@@ -65,32 +65,32 @@ let TABLET_NUMBER = layNativeInterface.getTabletNumber();
 let BUILD_NAME = layNativeInterface.getBuildName();
 
 let EMPLOYEE_ID_PREFIXES = {
-    1:  'RIXA', // Applied Validation
-    2:  'RIXB', // Biofinity Architecture
-    3:  'RIXC', // Cell Logics
-    4:  'RIXD', // Disaster Recovery
-    5:  'RIXE', // Embedded Datamatics
-    6:  'RIXF', // Failure Analysis
-    7:  'RIXG', // Geoframeworking
-    8:  'RIXH', // Human Factors
-    9:  'RIXI', // Illocution Processing
-    10: 'RIXJ', // Juice Platforming 
-    11: 'RIXK', // Ketogenesis Validation
-    12: 'RIXL', // Life Cycle Metrics
-    13: 'RIXM', // Machine Evangelism
-    14: 'RIXN', // Natural Language Illocution
-    15: 'RIXO', // Orange Mandarin Visioning
-    16: 'RIXP', // Physiology Analytics
-    17: 'RIXQ', // Quartermaster Research
-    18: 'RIXR', // Retrieval Environments
-    19: 'RIXS', // Substance Restriction
-    20: 'RIXT', // Thin Film Interface
-    21: 'RIXU', // UX Sculpting
-    22: 'RIXV', // Vibration & Noise
-    23: 'RIXW', // Wagonette Rendering
-    24: 'RIXX', // Xylographics
-    25: 'RIXY', // Yellowback Algoretrieval
-    26: 'RIXZ',
+    1:  'A-XXXXX-', //'RIXA', // Applied Validation
+    2:  'B-XXXXX-', //'RIXB', // Biofinity Architecture
+    3:  'C-XXXXX-', //'RIXC', // Cell Logics
+    4:  'D-XXXXX-', //'RIXD', // Disaster Recovery
+    5:  'E-XXXXX-', //'RIXE', // Embedded Datamatics
+    6:  'F-XXXXX-', //'RIXF', // Failure Analysis
+    7:  'G-XXXXX-', //'RIXG', // Geoframeworking
+    8:  'H-XXXXX-', //'RIXH', // Human Factors
+    9:  'I-XXXXX-', //'RIXI', // Illocution Processing
+    10: 'J-XXXXX-', //'RIXJ', // Juice Platforming 
+    11: 'K-XXXXX-', //'RIXK', // Ketogenesis Validation
+    12: 'L-XXXXX-', //'RIXL', // Life Cycle Metrics
+    13: 'M-XXXXX-', //'RIXM', // Machine Evangelism
+    14: 'N-XXXXX-', //'RIXN', // Natural Language Illocution
+    15: 'O-XXXXX-', //'RIXO', // Orange Mandarin Visioning
+    16: 'P-XXXXX-', //'RIXP', // Physiology Analytics
+    17: 'Q-XXXXX-', //'RIXQ', // Quartermaster Research
+    18: 'R-XXXXX-', //'RIXR', // Retrieval Environments
+    19: 'S-XXXXX-', //'RIXS', // Substance Restriction
+    20: 'T-XXXXX-', //'RIXT', // Thin Film Interface
+    21: 'U-XXXXX-', //'RIXU', // UX Sculpting
+    22: 'V-XXXXX-', //'RIXV', // Vibration & Noise
+    23: 'W-XXXXX-', //'RIXW', // Wagonette Rendering
+    24: 'X-XXXXX-', //'RIXX', // Xylographics
+    25: 'Y-XXXXX-', //'RIXY', // Yellowback Algoretrieval
+    26: 'Z-XXXXX-', //'RIXZ',
 };
 let TABLE_TITLES = {
     1: 'Applied Validation',
@@ -190,7 +190,7 @@ function preShowInit() {
     let popup = document.getElementById('consent-popup');
     let thankYou = document.getElementById('pre-show-thank-you');
 
-    document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || 'RIX#';
+    document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || 'X-XXXXX-';
     document.getElementById('pre-show-table-title').innerText = ''; //TABLE_TITLES[TABLET_NUMBER] || '';
 
     preShow.addEventListener('click', event => {
@@ -201,7 +201,7 @@ function preShowInit() {
         loginID.focus();
     });
     loginID.addEventListener('input', () => {
-        let valid = loginID.value.trim().length >= 3;
+        let valid = loginID.value.trim().length >= 1;
         loginContinue.disabled = !valid;
     });
     loginID.addEventListener('keydown', event => {

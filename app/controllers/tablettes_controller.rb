@@ -242,14 +242,19 @@ class TablettesController < ApplicationController
 
     def update_patron
         begin
-            tablet = params[:tablet]
+            tablet = params[:tablet].to_i
+            table = ('A'.ord + tablet - 1).chr
             login_id = params[:login_id]
             drink = params[:drink]
             drink = 'none' if !drink || drink == ''
             opt = params[:opt]
             puts "update_patron: #{params.inspect}"
             performance_number = 0 # TODO: add field to director interface
-            Showtime.update_patron(performance_number, login_id, drink, opt == 'Y')
+            #Showtime.update_patron(performance_number, login_id, drink, opt == 'Y')
+
+            # temp hack to use table+seat to identify folks:
+            seat = login_id
+            Showtime.update_patron_by_seat(performance_number, table, seat, drink, opt == 'Y')
             render json: {
                 :error => false
             }
