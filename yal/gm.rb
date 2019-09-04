@@ -40,6 +40,7 @@ module GraphicsMagick
     # instead of sometimes being composited onto white, and sometimes having the alpha
     # bumped up all the way
     def self.convert(*args)
+        #puts "convert #{args.join(' ')}"
         success, output = gm("convert", args)
         if !success
             puts output
@@ -260,6 +261,19 @@ module GraphicsMagick
                 format_args(dst, format, quality)
             )
         end
+    end
+
+    def self.fixed_height(src, dst, max_width, fixed_height, format = nil, quality = nil, annotate = nil)
+        src_info, src = info_and_src(src)
+        convert(
+            "#{src}[0]",
+            "-auto-orient",
+            "-resize", "1x#{fixed_height}^",                # use minimum sizes to make sure height is filled
+            "-gravity", "center",                           # then center it...
+            "-crop", "#{max_width}x#{fixed_height}+0+0",    # and crop the width if necessary.
+            anno_args(annotate, max_width),
+            format_args(dst, format, quality)
+        )
     end
 
     # Scrub an image. Maintain size but convert to RGB, and process/remove orientation info.

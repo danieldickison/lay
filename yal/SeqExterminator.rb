@@ -105,7 +105,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                 dst = ISADORA_EXTERMINATOR_NAMES[cat] % (i + 1)
                 db_photo = Media::DATABASE_DIR + img[cat]
                 if File.exist?(db_photo)
-                    GraphicsMagick.fit(db_photo, dir + dst, 640, 640, "jpg", 85)
+                    GraphicsMagick.fixed_height(db_photo, dir + dst, 1137, 640, "jpg", 85)
                 else
                     while true
                         r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
@@ -113,13 +113,8 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                     end
                     color = "rgb(#{r}%,#{g}%,#{b}%)"
                     annotate = "#{img[cat]}, pid #{img[:pid]}, table #{img[:table]}"
-                    if rand(2) == 1
-                        width  = 640
-                        height = rand(640) + 320
-                    else
-                        height = 640
-                        width  = rand(640) + 320
-                    end
+                    height = 640
+                    width = 480 + rand(657)
                     GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(dir + dst, "jpg"))
                 end
                 fn_pids[dst] = img[:pid]

@@ -17,6 +17,15 @@
         </form>
     </section>
 
+    <form id="debug-form" class="director-form">
+        <button id="play-timecode-button">Play Timecode</button>
+        <button id="stop-tablets-button">Stop Tablets</button>
+        <button id="reload-tablets-button">Reload Tablets</button>
+        <label>
+            Debug: <input id="debug-checkbox" type="checkbox" <% if @debug %>checked<% end %>>
+        </label>
+    </form>
+
     <section id="director-messages">
     </section>
 
@@ -48,15 +57,6 @@
         </textarea>
             </label>
             <p><input type="submit"></p>
-        </form>
-
-        <form id="debug-form" class="director-form">
-            <button id="play-timecode-button">Play Timecode</button>
-            <button id="stop-tablets-button">Stop Tablets</button>
-            <button id="reload-tablets-button">Reload Tablets</button>
-            <label>
-                Debug: <input id="debug-checkbox" type="checkbox" <% if @debug %>checked<% end %>>
-            </label>
         </form>
 
         <form id="cue-form" class="director-form">

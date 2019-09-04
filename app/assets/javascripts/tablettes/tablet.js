@@ -65,32 +65,32 @@ let TABLET_NUMBER = layNativeInterface.getTabletNumber();
 let BUILD_NAME = layNativeInterface.getBuildName();
 
 let EMPLOYEE_ID_PREFIXES = {
-    1:  'RIXA', // Applied Validation
-    2:  'RIXB', // Biofinity Architecture
-    3:  'RIXC', // Cell Logics
-    4:  'RIXD', // Disaster Recovery
-    5:  'RIXE', // Embedded Datamatics
-    6:  'RIXF', // Failure Analysis
-    7:  'RIXG', // Geoframeworking
-    8:  'RIXH', // Human Factors
-    9:  'RIXI', // Illocution Processing
-    10: 'RIXJ', // Juice Platforming 
-    11: 'RIXK', // Ketogenesis Validation
-    12: 'RIXL', // Life Cycle Metrics
-    13: 'RIXM', // Machine Evangelism
-    14: 'RIXN', // Natural Language Illocution
-    15: 'RIXO', // Orange Mandarin Visioning
-    16: 'RIXP', // Physiology Analytics
-    17: 'RIXQ', // Quartermaster Research
-    18: 'RIXR', // Retrieval Environments
-    19: 'RIXS', // Substance Restriction
-    20: 'RIXT', // Thin Film Interface
-    21: 'RIXU', // UX Sculpting
-    22: 'RIXV', // Vibration & Noise
-    23: 'RIXW', // Wagonette Rendering
-    24: 'RIXX', // Xylographics
-    25: 'RIXY', // Yellowback Algoretrieval
-    26: 'RIXZ',
+    1:  'A-VX###-', //'RIXA', // Applied Validation
+    2:  'B-AX###-', //'RIXB', // Biofinity Architecture
+    3:  'C-LX###-', //'RIXC', // Cell Logics
+    4:  'D-RX###-', //'RIXD', // Disaster Recovery
+    5:  'E-DX###-', //'RIXE', // Embedded Datamatics
+    6:  'F-AX###-', //'RIXF', // Failure Analysis
+    7:  'G-FX###-', //'RIXG', // Geoframeworking
+    8:  'H-FX###-', //'RIXH', // Human Factors
+    9:  'I-PX###-', //'RIXI', // Illocution Processing
+    10: 'J-PX###-', //'RIXJ', // Juice Platforming 
+    11: 'K-VX###-', //'RIXK', // Ketogenesis Validation
+    12: 'L-MX###-', //'RIXL', // Life Cycle Metrics
+    13: 'M-EX###-', //'RIXM', // Machine Evangelism
+    14: 'N-LX###-', //'RIXN', // Natural Language Illocution
+    15: 'O-VX###-', //'RIXO', // Orange Mandarin Visioning
+    16: 'P-AX###-', //'RIXP', // Physiology Analytics
+    17: 'Q-RX###-', //'RIXQ', // Quartermaster Research
+    18: 'R-EX###-', //'RIXR', // Retrieval Environments
+    19: 'S-RX###-', //'RIXS', // Substance Restriction
+    20: 'T-FX###-', //'RIXT', // Thin Film Interface
+    21: 'U-SX###-', //'RIXU', // UX Sculpting
+    22: 'V-NX###-', //'RIXV', // Vibration & Noise
+    23: 'W-RX###-', //'RIXW', // Wagonette Rendering
+    24: 'X-YX###-', //'RIXX', // Xylographics
+    25: 'Y-AX###-', //'RIXY', // Yellowback Algoretrieval
+    26: 'Z-GX###-', //'RIXZ',
 };
 let TABLE_TITLES = {
     1: 'Applied Validation',
@@ -179,7 +179,6 @@ function preShowInit() {
     var params;
 
     let preShow = document.getElementById('tablettes-pre-show');
-    let intro = document.getElementById('intro-button-container');
     let dataEntry = document.getElementById('pre-show-data-entry');
     let loginForm = document.getElementById('login-form');
     let loginID = document.getElementById('login-id-input');
@@ -191,19 +190,18 @@ function preShowInit() {
     let popup = document.getElementById('consent-popup');
     let thankYou = document.getElementById('pre-show-thank-you');
 
-    document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || 'RIX#';
-    document.getElementById('pre-show-table-title').innerText = TABLE_TITLES[TABLET_NUMBER] || '';
+    document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || 'X-XXXXX-';
+    document.getElementById('pre-show-table-title').innerText = ''; //TABLE_TITLES[TABLET_NUMBER] || '';
 
     preShow.addEventListener('click', event => {
         if (dataEntry.style.display === 'block') return;
 
         params = new URLSearchParams();
-        intro.style.display = 'none';
         dataEntry.style.display = 'block';
         loginID.focus();
     });
     loginID.addEventListener('input', () => {
-        let valid = loginID.value.trim().length >= 3;
+        let valid = loginID.value.trim().length >= 1;
         loginContinue.disabled = !valid;
     });
     loginID.addEventListener('keydown', event => {
@@ -269,6 +267,8 @@ function preShowInit() {
         .catch(error => {
             log("login submit error: ", error);
             alert("Please double check your Employee ID number and try again.");
+            // native alert brings up the back button so hide it again.
+            layNativeInterface.hideChrome();
             reset();
         });
     }
@@ -294,7 +294,6 @@ function preShowInit() {
     function reset() {
         preShow.style.opacity = 1
         thankYou.style.opacity = 0;
-        intro.style.display = 'block';
         optInButton.disabled = false;
         optOutButton.disabled = false;
         popup.style.display = 'none';

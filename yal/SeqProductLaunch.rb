@@ -283,8 +283,25 @@ class SeqProductLaunch < Sequence
 
 
     TABLET_DYNAMIC = "/playback/media_tablet_dynamic"
-    VIP_D_TEXT_KEYS = [:works_at, :hometown, :birthday, :university, :high_school, :traveled_to, :spouse_first_name, :listens_to, :liked].freeze
-    VIP_D_TEXT_CHANNELS = (12..18).to_a
+    VIP_D_TEXT_KEYS = [:first_name, :works_at, :hometown, :birthday, :university, :high_school, :traveled_to, :spouse_first_name, :listens_to, :liked].freeze
+    VIP_D_TEXT_CHANNELS = (11..23).to_a
+    VIP_D_DEFAULTS = {
+        :works_at => "interested in relocation",
+        :institution => "buys expensive toiletries", # currently unused
+        :hometown => "haircut budget",
+        :birthday => "premillenial",
+        :university => "gentrifier",
+        :university_subject => "searched for coffee nearby", # currently unused
+        :high_school => "searched for mortgage",
+        :traveled_to => "late adopter",
+        :spouse_first_name => "makes donations",
+        :listens_to => "Listens to Visible Cloaks",
+        :liked => "Liked Boots Riley",
+        :tweet1 => "Just emailed my Senators urging them to pass Smarter Gun Laws.",
+        :tweet2 => "From @972mag: How to tell the stories of the Gaza siege.",
+        :tweet3 => "Kim Hyesoon's book, translated by Don Mee Choi, will destroy you.",
+        :tweet4 => "Mike sent me a joke avatar and I may use it for everything",
+    }.freeze
 
     attr_accessor(:start_time)
 
@@ -330,26 +347,22 @@ class SeqProductLaunch < Sequence
                 :channel => '/isadora/10',
                 :args => [vip_d[:face]],
             },
-            {
-                :channel => '/isadora/11',
-                :args => [vip_d[:first_name]],
-            },
             # target person tweets
             {
                 :channel => '/isadora/30',
-                :args => [vip_d[:tweet1] || ''],
+                :args => [vip_d[:tweet1] || VIP_D_DEFAULTS[:tweet1]],
             },
             {
                 :channel => '/isadora/31',
-                :args => [vip_d[:tweet2] || ''],
+                :args => [vip_d[:tweet2] || VIP_D_DEFAULTS[:tweet2]],
             },
             {
                 :channel => '/isadora/32',
-                :args => [vip_d[:tweet3] || ''],
+                :args => [vip_d[:tweet3] || VIP_D_DEFAULTS[:tweet3]],
             },
             {
                 :channel => '/isadora/33',
-                :args => [vip_d[:tweet4] || ''],
+                :args => [vip_d[:tweet4] || VIP_D_DEFAULTS[:tweet4]],
             },
 
             # target person images
@@ -367,14 +380,12 @@ class SeqProductLaunch < Sequence
             },
         ]
         text_keys = VIP_D_TEXT_KEYS.dup
-        VIP_D_TEXT_CHANNELS.each do |channel|
-            text = nil
-            while (!text || text == '') && text_keys.length > 0
-                text = vip_d[text_keys.shift]
-            end
+        VIP_D_TEXT_CHANNELS.each_with_index do |channel, i|
+            key = VIP_D_TEXT_KEYS[i]
+            text = vip_d[key] || VIP_D_DEFAULTS[key] || ''
             @tv_osc_messages << {
                 :channel => "/isadora/#{channel}",
-                :args => [text || '']
+                :args => [text]
             }
         end
 

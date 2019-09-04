@@ -19,9 +19,8 @@ class TablettesController < ApplicationController
     TABLET_GROUPS = 6
     ALL_TABLETS = (1..26).to_a.freeze
 
-    PRESHOW_BG = (0..10).collect {|t| '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % t}
-    PRESHOW_BG[11] = '/lay/Tablet/Tablettes/Preshow/RixLogo_Black_Letters_%05d.png' % 3
-    DEFAULT_PRESHOW_BG = '/tablet-util/tablette.png'
+    PRESHOW_BG = ALL_TABLETS.collect {|t| '/playback/media_tablets/000-Preshow/100-021-C60-TableID_assistant_Teams_%05d.jpg' % t}.freeze
+    DEFAULT_PRESHOW_BG = '/playback/media_tablets/000-Preshow/100-021-C60-TableID_assistant_Teams_99999.jpg'
 
     PUBLIC_DIR = File.expand_path('../../public', __dir__)
     ASSETS_FILE = File.expand_path('../../tablet-assets.txt', __dir__)
@@ -229,8 +228,7 @@ class TablettesController < ApplicationController
             :tablet_ip => ip,
             :tablet_number => tablet,
             :tablet_group => group,
-            #:preshow_bg => PRESHOW_BG[tablet] || DEFAULT_PRESHOW_BG,
-            :preshow_bg => DEFAULT_PRESHOW_BG,
+            :preshow_bg => PRESHOW_BG[tablet-1] || DEFAULT_PRESHOW_BG,
             :commands => commands,
             :next_cue_file => cue[:file],
             :next_cue_time => (cue[:time] * 1000).round,
@@ -244,13 +242,19 @@ class TablettesController < ApplicationController
 
     def update_patron
         begin
-            tablet = params[:tablet]
+            tablet = params[:tablet].to_i
+            table = ('A'.ord + tablet - 1).chr
             login_id = params[:login_id]
             drink = params[:drink]
             drink = 'none' if !drink || drink == ''
             opt = params[:opt]
             puts "update_patron: #{params.inspect}"
-            #Lay::OSCApplication::Patrons.update(tablet, login_id, drink, opt)
+            performance_number = 0 # TODO: add field to director interface
+            #Showtime.update_patron(performance_number, login_id, drink, opt == 'Y')
+
+            # temp hack to use table+seat to identify folks:
+            seat = login_id
+            Showtime.update_patron_by_seat(performance_number, table, seat, drink, opt == 'Y')
             render json: {
                 :error => false
             }
