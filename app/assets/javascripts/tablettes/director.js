@@ -182,7 +182,7 @@ function fetchStats() {
 
         messagesDiv.innerHTML = '';
 
-        if (!serverError && unresponsiveTablets.length === 0) {
+        if (!serverError) { // && unresponsiveTablets.length === 0) {
             messagesDiv.innerText = 'All good';
         } else {
             if (serverError) {
@@ -191,12 +191,12 @@ function fetchStats() {
                 p.innerText = "Restart playback server!";
                 messagesDiv.appendChild(p);
             }
-            unresponsiveTablets.forEach(t => {
-                let p = document.createElement('p');
-                p.classList.add('warning');
-                p.innerText = "Replace tablet #" + t;
-                messagesDiv.appendChild(p);
-            });
+            // unresponsiveTablets.forEach(t => {
+            //     let p = document.createElement('p');
+            //     p.classList.add('warning');
+            //     p.innerText = "Replace tablet #" + t;
+            //     messagesDiv.appendChild(p);
+            // });
         }
 
         prevUnresponsiveTablets = unresponsiveTablets;
