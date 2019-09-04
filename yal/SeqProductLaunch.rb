@@ -425,7 +425,7 @@ class SeqProductLaunch < Sequence
             TablettesController.queue_command(nil, 'productlaunch', @tablet_images, target_x_time)
 
             while @run
-                run
+         #       run
                 sleep(0.1)
             end
             @run = false

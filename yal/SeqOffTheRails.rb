@@ -106,10 +106,10 @@ class SeqOffTheRails
             isa_profile_num = isadora_profile_slot
             isadora_profile_slot += 1
             slot = "%03d" % isa_profile_num
-            isa_profile = "510-#{slot}-R02-OTR_profile.png"
-            db_photo = Media::DATABASE_IMAGES_DIR + db_profile
+            isa_profile = "510-#{slot}-R02-OTR_profile.jpg"
+            db_photo = Media::DATABASE_DIR + db_profile
             if File.exist?(db_photo)
-                GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, 180, 180, "png")
+                GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, 180, 180, "jpg")
             else
                 while true
                     r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
@@ -117,7 +117,7 @@ class SeqOffTheRails
                 end
                 color = "rgb(#{r}%,#{g}%,#{b}%)"
                 annotate = "profile, employee ID #{pid}"
-                GraphicsMagick.convert("-size", "180x180", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, "png"))
+                GraphicsMagick.convert("-size", "180x180", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, 180), GraphicsMagick.format_args(ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, "jpg"))
             end
             fn_pids[isa_profile] = pid
 
@@ -137,7 +137,7 @@ class SeqOffTheRails
                     isadora_recent_slot += 1
                     slot = "%03d" % isa_photo_num
                     isa_photo = "520-#{slot}-R03-OTR_recent.jpg"
-                    db_photo = Media::DATABASE_IMAGES_DIR + row[i]
+                    db_photo = Media::DATABASE_DIR + row[i]
                     if File.exist?(db_photo)
                         GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, 640, 640, "jpg", 85)
                     else
@@ -177,7 +177,7 @@ class SeqOffTheRails
                     isadora_recent_slot += 1
                     slot = "%03d" % isa_photo_num
                     isa_photo = "520-#{slot}-R03-OTR_recent.jpg"
-                    db_photo = Media::DATABASE_IMAGES_DIR + row[i]
+                    db_photo = Media::DATABASE_DIR + row[i]
                     if File.exist?(db_photo)
                         GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, 640, 640, "jpg", 85)
                     else
@@ -288,7 +288,7 @@ class SeqOffTheRails
                     slot = "%03d" % (slot_base + i)
 
                     dst = dst_template.gsub("#", slot)
-                    db_photo = Media::DATABASE_IMAGES_DIR + pp[0]
+                    db_photo = Media::DATABASE_DIR + pp[0]
                     if File.exist?(db_photo)
                         GraphicsMagick.fit(db_photo, isadora_dir + dst, 640, 640, "jpg", 85)
                     else
