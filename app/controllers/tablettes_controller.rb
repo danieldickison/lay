@@ -228,7 +228,7 @@ class TablettesController < ApplicationController
             :tablet_ip => ip,
             :tablet_number => tablet,
             :tablet_group => group,
-            :preshow_bg => PRESHOW_BG[tablet] || DEFAULT_PRESHOW_BG,
+            :preshow_bg => PRESHOW_BG[tablet-1] || DEFAULT_PRESHOW_BG,
             :commands => commands,
             :next_cue_file => cue[:file],
             :next_cue_time => (cue[:time] * 1000).round,
