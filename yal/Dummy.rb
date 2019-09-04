@@ -135,7 +135,7 @@ end
 class Yal
     def dummy_get_performance_id(performance_number)
         raise "bad performance_number" if !performance_number
-        raise "only work on dummy performances" if performance_number >= 0
+        raise "only work on dummy performances" if performance_number.to_i > 0
         db = SQLite3::Database.new(DB_FILE)
         return db.execute(<<~SQL).first[0]
             SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
