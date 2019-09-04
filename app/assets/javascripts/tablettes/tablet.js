@@ -52,15 +52,12 @@ window.setLastOSCMessage = function (msg) {
 window.setNowPlaying = function (np) {
     console.log("set now playing " + np.playerIndex + ":" + np.path);
     nowPlaying = np;
-    fadeLogo(false);
 };
 
 window.clearNowPlaying = function (np) {
     console.log("clear now playing " + np.playerIndex + ":" + np.path + "; currently " + nowPlaying.playerIndex + ":" + nowPlaying.path);
     if (nowPlaying.path === np.path && nowPlaying.playerIndex === np.playerIndex) {
         nowPlaying = {};
-        // Don't fade in the logo so last frame of video remains visible.
-        //fadeLogo(true);
     }
 };
 
@@ -147,9 +144,6 @@ var currentAssetsStr = '';
 
 var nowPlaying = {};
 
-let LOGO_BG_INTERVAL = 20000;
-var currentLogoBgIndex = 0;
-
 let BATTERY_INTERVAL = 60000;
 var batteryPercent = -2;
 
@@ -168,7 +162,6 @@ document.addEventListener("DOMContentLoaded", event => {
     let version = document.getElementById('version');
     version.innerText = BUILD_NAME;
 
-    //setInterval(cycleLogoBg, LOGO_BG_INTERVAL);
     setInterval(sendPing, PING_INTERVAL);
     //setInterval(cueTick, 100);
     setInterval(updateBatteryStatus, BATTERY_INTERVAL);
@@ -460,20 +453,6 @@ function log() {
     console.log(text);
     let status = document.getElementById('status');
     status.innerText = text;
-}
-
-function cycleLogoBg() {
-    let list = document.querySelectorAll('#logo-bg > li');
-    currentLogoBgIndex = (currentLogoBgIndex + 1) % list.length;
-    list.forEach((el, i) => {
-        el.classList.toggle('logo-bg-active', i === currentLogoBgIndex);
-    });
-}
-
-function fadeLogo(visible) {
-    console.log("fadeLogo: " + visible);
-    let list = document.querySelectorAll('#logo-bg > li');
-    list.item(0).classList.toggle('logo-bg-active', visible);
 }
 
 function arraysEqual(a1, a2) {
