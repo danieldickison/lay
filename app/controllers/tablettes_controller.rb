@@ -53,7 +53,7 @@ class TablettesController < ApplicationController
     end
 
     def cast
-        data = TablettesHelper::CastData.new
+        data = CastData.new
         @vips = data.vips
     end
 

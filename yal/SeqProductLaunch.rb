@@ -44,7 +44,7 @@ class SeqProductLaunch < Sequence
             SELECT
                 spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
-                pid
+                firstName, info_PetName, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
             AND vipstatus = "P-A"
@@ -52,7 +52,11 @@ class SeqProductLaunch < Sequence
 
         vip_as = rows.collect do |row|
             pid = row[-1]
-            a = {:pid => pid}
+            a = {
+                :pid => pid,
+                :first_name => row[-3],
+                :pet_name => row[-2],
+            }
             (0..12).each do |i|
                 img = row[i]
                 cat = row[i+13]
@@ -92,7 +96,7 @@ class SeqProductLaunch < Sequence
             SELECT
                 spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
-                company_LogoImage, pid
+                firstName, company_Name, company_LogoImage, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
             AND vipStatus = "P-B"
@@ -100,7 +104,11 @@ class SeqProductLaunch < Sequence
 
         vip_bs = rows.collect do |row|
             pid = row[-1]
-            b = {:pid => pid}
+            b = {
+                :pid => pid,
+                :first_name => row[-4],
+                :company_name => row[-3],
+            }
             img = row[-2]
             if img && img != ""
                 b[:company] = isa_special_index
@@ -135,7 +143,7 @@ class SeqProductLaunch < Sequence
             SELECT
                 spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
-                pid
+                firstName, info_Relationship, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
             AND vipStatus = "P-C"
@@ -143,7 +151,11 @@ class SeqProductLaunch < Sequence
 
         vip_cs = rows.collect do |row|
             pid = row[-1]
-            c = {:pid => pid}
+            c = {
+                :pid => pid,
+                :first_name => row[-3],
+                :child_name => row[-2],
+            }
             (0..12).each do |i|
                 img = row[i]
                 cat = row[i+13]
@@ -333,7 +345,7 @@ class SeqProductLaunch < Sequence
         text_keys = VIP_D_TEXT_KEYS.dup
         VIP_D_TEXT_CHANNELS.each do |channel|
             text = nil
-            while !text && text_keys.length > 0
+            while (!text || text == '') && text_keys.length > 0
                 text = vip_d[text_keys.shift]
             end
             @tv_osc_messages << {
