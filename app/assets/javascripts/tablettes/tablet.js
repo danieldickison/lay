@@ -65,32 +65,32 @@ let TABLET_NUMBER = layNativeInterface.getTabletNumber();
 let BUILD_NAME = layNativeInterface.getBuildName();
 
 let EMPLOYEE_ID_PREFIXES = {
-    1:  'A-XXXXX-', //'RIXA', // Applied Validation
-    2:  'B-XXXXX-', //'RIXB', // Biofinity Architecture
-    3:  'C-XXXXX-', //'RIXC', // Cell Logics
-    4:  'D-XXXXX-', //'RIXD', // Disaster Recovery
-    5:  'E-XXXXX-', //'RIXE', // Embedded Datamatics
-    6:  'F-XXXXX-', //'RIXF', // Failure Analysis
-    7:  'G-XXXXX-', //'RIXG', // Geoframeworking
-    8:  'H-XXXXX-', //'RIXH', // Human Factors
-    9:  'I-XXXXX-', //'RIXI', // Illocution Processing
-    10: 'J-XXXXX-', //'RIXJ', // Juice Platforming 
-    11: 'K-XXXXX-', //'RIXK', // Ketogenesis Validation
-    12: 'L-XXXXX-', //'RIXL', // Life Cycle Metrics
-    13: 'M-XXXXX-', //'RIXM', // Machine Evangelism
-    14: 'N-XXXXX-', //'RIXN', // Natural Language Illocution
-    15: 'O-XXXXX-', //'RIXO', // Orange Mandarin Visioning
-    16: 'P-XXXXX-', //'RIXP', // Physiology Analytics
-    17: 'Q-XXXXX-', //'RIXQ', // Quartermaster Research
-    18: 'R-XXXXX-', //'RIXR', // Retrieval Environments
-    19: 'S-XXXXX-', //'RIXS', // Substance Restriction
-    20: 'T-XXXXX-', //'RIXT', // Thin Film Interface
-    21: 'U-XXXXX-', //'RIXU', // UX Sculpting
-    22: 'V-XXXXX-', //'RIXV', // Vibration & Noise
-    23: 'W-XXXXX-', //'RIXW', // Wagonette Rendering
-    24: 'X-XXXXX-', //'RIXX', // Xylographics
-    25: 'Y-XXXXX-', //'RIXY', // Yellowback Algoretrieval
-    26: 'Z-XXXXX-', //'RIXZ',
+    1:  'A-VX###-', //'RIXA', // Applied Validation
+    2:  'B-AX###-', //'RIXB', // Biofinity Architecture
+    3:  'C-LX###-', //'RIXC', // Cell Logics
+    4:  'D-RX###-', //'RIXD', // Disaster Recovery
+    5:  'E-DX###-', //'RIXE', // Embedded Datamatics
+    6:  'F-AX###-', //'RIXF', // Failure Analysis
+    7:  'G-FX###-', //'RIXG', // Geoframeworking
+    8:  'H-FX###-', //'RIXH', // Human Factors
+    9:  'I-PX###-', //'RIXI', // Illocution Processing
+    10: 'J-PX###-', //'RIXJ', // Juice Platforming 
+    11: 'K-VX###-', //'RIXK', // Ketogenesis Validation
+    12: 'L-MX###-', //'RIXL', // Life Cycle Metrics
+    13: 'M-EX###-', //'RIXM', // Machine Evangelism
+    14: 'N-LX###-', //'RIXN', // Natural Language Illocution
+    15: 'O-VX###-', //'RIXO', // Orange Mandarin Visioning
+    16: 'P-AX###-', //'RIXP', // Physiology Analytics
+    17: 'Q-RX###-', //'RIXQ', // Quartermaster Research
+    18: 'R-EX###-', //'RIXR', // Retrieval Environments
+    19: 'S-RX###-', //'RIXS', // Substance Restriction
+    20: 'T-FX###-', //'RIXT', // Thin Film Interface
+    21: 'U-SX###-', //'RIXU', // UX Sculpting
+    22: 'V-NX###-', //'RIXV', // Vibration & Noise
+    23: 'W-RX###-', //'RIXW', // Wagonette Rendering
+    24: 'X-YX###-', //'RIXX', // Xylographics
+    25: 'Y-AX###-', //'RIXY', // Yellowback Algoretrieval
+    26: 'Z-GX###-', //'RIXZ',
 };
 let TABLE_TITLES = {
     1: 'Applied Validation',
