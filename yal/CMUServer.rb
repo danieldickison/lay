@@ -17,9 +17,19 @@ class CMUServer
 
     def pull
         # add call to stop datamining server
-        U.sh("/usr/bin/rsync", "-a", "#{CMU_USER}@#{CMU_ADDR}:'#{CMU_DATABASE_DIR}db.sqlite3'", Yal::DB_FILE)
-        U.sh("/usr/bin/rsync", "-a", "#{CMU_USER}@#{CMU_ADDR}:'#{CMU_DATABASE_DIR}media/images'", "#{Media::DATABASE_DIR}")
-    end
+        success, out = U.sh("/usr/bin/rsync", "-a", "#{CMU_USER}@#{CMU_ADDR}:'#{CMU_DATABASE_DIR}db.sqlite3'", Yal::DB_FILE)
+        if !success
+            puts "problem getting db.sqlite3:"
+            puts out
+            exit 1
+        end
+        success, out = U.sh("/usr/bin/rsync", "-a", "--delete", "#{CMU_USER}@#{CMU_ADDR}:'#{CMU_DATABASE_DIR}media/images'", "#{Media::DATABASE_DIR}")
+        if !success
+            puts "problem getting images:"
+            puts out
+            exit 1
+        end 
+   end
 
     def push
         U.sh("/usr/bin/rsync", "-a", Yal::DB_FILE, "#{CMU_USER}@#{CMU_ADDR}:'#{CMU_DATABASE_DIR}db.sqlite3'")

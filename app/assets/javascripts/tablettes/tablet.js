@@ -7,7 +7,7 @@
 // Help local debugging in chrome
 if (!window.layNativeInterface) {
     window.layNativeInterface = {
-        getTabletNumber: function () { return 26; },
+        getTabletNumber: function () { return 99; },
         getBuildName: function () { return 'fake'; },
         getCacheInfo: function () { return ''; },
         getBatteryPercent: function () { return -1; },
@@ -90,6 +90,7 @@ let EMPLOYEE_ID_PREFIXES = {
     23: 'WR', // Wagonette Rendering
     24: 'XG', // Xylographics
     25: 'YA', // Yellowback Algoretrieval
+    26: 'ZG',
 };
 let TABLE_TITLES = {
     1: 'Applied Validation',
@@ -117,6 +118,7 @@ let TABLE_TITLES = {
     23: 'Wagonette Rendering',
     24: 'Xylographics',
     25: 'Yellowback Algoretrieval',
+    26: 'Zebra Genomics',
 };
 
 let PING_INTERVAL = 1000;
@@ -189,8 +191,8 @@ function preShowInit() {
     let popup = document.getElementById('consent-popup');
     let thankYou = document.getElementById('pre-show-thank-you');
 
-    document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || 'ZZ';
-    document.getElementById('pre-show-table-title').innerText = TABLE_TITLES[TABLET_NUMBER] || 'Zebra Genomics';
+    document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || '••';
+    document.getElementById('pre-show-table-title').innerText = TABLE_TITLES[TABLET_NUMBER] || '';
 
     preShow.addEventListener('click', event => {
         if (dataEntry.style.display === 'block') return;

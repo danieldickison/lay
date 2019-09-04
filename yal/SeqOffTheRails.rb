@@ -405,35 +405,39 @@ class SeqOffTheRails
         opt_outs.each do |pid|
             employee_posts.delete(pid)
         end
+
         @tablet_items = {}
         living_tablets = TablettesController.tablet_enum(nil)
-        TablettesController::ALL_TABLETS.each do |t|
+        living_tablets.each do |t|
             people = pbdata[:employee_tables][t] || []
             items = []
             people.each do |p|
+                # note: opt-outs already excluded from employee_posts
                 items.concat(employee_posts[p] || [])
             end
-            borrow_table = (t + 1) % 25
-            while items.length < 20 && borrow_table != t
-                puts "not enough posts for table #{t}; borrowing from table #{borrow_table}"
-                borrow_people = pbdata[:employee_tables][borrow_table] || []
-                borrow_people.each do |p|
-                    items.concat(employee_posts[p] || [])
+
+            if items.length < 20
+                TablettesController::ALL_TABLETS.shuffle.each do |u|
+                    next if u == t
+                    puts "not enough posts for table #{t}; borrowing from table #{u}"
+                    borrow_people = pbdata[:employee_tables][u] || []
+                    borrow_people.each do |p|
+                        items.concat(employee_posts[p] || [])
+                        break if items.length >= 20
+                    end
                     break if items.length >= 20
                 end
-                borrow_table = (borrow_table + 1) % 25
             end
-            if living_tablets.include?(t)
-                @tablet_items[t] = items.shuffle.collect do |item|
-                    tab_item = {
-                        :profile_img => item[:tab_profile],
-                    }
-                    case item[:type]
-                    when 'tw' then tab_item[:tweet] = item[:text]
-                    else tab_item[:photo] = item[:tab_photo]
-                    end
-                    tab_item
+
+            @tablet_items[t] = items.shuffle.collect do |item|
+                tab_item = {
+                    :profile_img => item[:tab_profile],
+                }
+                case item[:type]
+                when 'tw' then tab_item[:tweet] = item[:text]
+                else tab_item[:photo] = item[:tab_photo]
                 end
+                tab_item
             end
         end
     end
