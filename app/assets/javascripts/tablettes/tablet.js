@@ -65,32 +65,32 @@ let TABLET_NUMBER = layNativeInterface.getTabletNumber();
 let BUILD_NAME = layNativeInterface.getBuildName();
 
 let EMPLOYEE_ID_PREFIXES = {
-    1: 'AV', // Applied Validation
-    2: 'BA', // Biofinity Architecture
-    3: 'CL', // Cell Logics
-    4: 'DR', // Disaster Recovery
-    5: 'ED', // Embedded Datamatics
-    6: 'FA', // Failure Analysis
-    7: 'GF', // Geoframeworking
-    8: 'HF', // Human Factors
-    9: 'IP', // Illocution Processing
-    10: 'JP', // Juice Platforming 
-    11: 'KV', // Ketogenesis Validation
-    12: 'LCM', // Life Cycle Metrics
-    13: 'ME', // Machine Evangelism
-    14: 'NLI', // Natural Language Illocution
-    15: 'OMV', // Orange Mandarin Visioning
-    16: 'PA', // Physiology Analytics
-    17: 'QR', // Quartermaster Research
-    18: 'RE', // Retrieval Environments
-    19: 'SR', // Substance Restriction
-    20: 'TFI', // Thin Film Interface
-    21: 'UXS', // UX Sculpting
-    22: 'VN', // Vibration & Noise
-    23: 'WR', // Wagonette Rendering
-    24: 'XG', // Xylographics
-    25: 'YA', // Yellowback Algoretrieval
-    26: 'ZG',
+    1:  'RIXA', // Applied Validation
+    2:  'RIXB', // Biofinity Architecture
+    3:  'RIXC', // Cell Logics
+    4:  'RIXD', // Disaster Recovery
+    5:  'RIXE', // Embedded Datamatics
+    6:  'RIXF', // Failure Analysis
+    7:  'RIXG', // Geoframeworking
+    8:  'RIXH', // Human Factors
+    9:  'RIXI', // Illocution Processing
+    10: 'RIXJ', // Juice Platforming 
+    11: 'RIXK', // Ketogenesis Validation
+    12: 'RIXL', // Life Cycle Metrics
+    13: 'RIXM', // Machine Evangelism
+    14: 'RIXN', // Natural Language Illocution
+    15: 'RIXO', // Orange Mandarin Visioning
+    16: 'RIXP', // Physiology Analytics
+    17: 'RIXQ', // Quartermaster Research
+    18: 'RIXR', // Retrieval Environments
+    19: 'RIXS', // Substance Restriction
+    20: 'RIXT', // Thin Film Interface
+    21: 'RIXU', // UX Sculpting
+    22: 'RIXV', // Vibration & Noise
+    23: 'RIXW', // Wagonette Rendering
+    24: 'RIXX', // Xylographics
+    25: 'RIXY', // Yellowback Algoretrieval
+    26: 'RIXZ',
 };
 let TABLE_TITLES = {
     1: 'Applied Validation',
@@ -191,7 +191,7 @@ function preShowInit() {
     let popup = document.getElementById('consent-popup');
     let thankYou = document.getElementById('pre-show-thank-you');
 
-    document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || '••';
+    document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || 'RIX#';
     document.getElementById('pre-show-table-title').innerText = TABLE_TITLES[TABLET_NUMBER] || '';
 
     preShow.addEventListener('click', event => {
