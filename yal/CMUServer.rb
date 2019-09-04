@@ -15,7 +15,6 @@ class CMUServer
 
 #   CMU_DATABASE_DIR = "/home/joeh/lookingAtYou/"
 
-
     def pull
         # add call to stop datamining server
         U.sh("/usr/bin/rsync", "-a", "#{CMU_USER}@#{CMU_ADDR}:'#{CMU_DATABASE_DIR}db.sqlite3'", Yal::DB_FILE)
