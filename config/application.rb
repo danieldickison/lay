@@ -187,6 +187,8 @@ module Lay
             SeqSimpleVideo.new(1105, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 1}
         when 1200
             SeqProductLaunch.new
+        when 1205
+            TablettesController.send_osc_fade_out
         else
             nil
         end
