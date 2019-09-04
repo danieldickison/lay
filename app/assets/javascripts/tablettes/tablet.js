@@ -179,7 +179,6 @@ function preShowInit() {
     var params;
 
     let preShow = document.getElementById('tablettes-pre-show');
-    let intro = document.getElementById('intro-button-container');
     let dataEntry = document.getElementById('pre-show-data-entry');
     let loginForm = document.getElementById('login-form');
     let loginID = document.getElementById('login-id-input');
@@ -192,13 +191,12 @@ function preShowInit() {
     let thankYou = document.getElementById('pre-show-thank-you');
 
     document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || 'RIX#';
-    document.getElementById('pre-show-table-title').innerText = TABLE_TITLES[TABLET_NUMBER] || '';
+    document.getElementById('pre-show-table-title').innerText = ''; //TABLE_TITLES[TABLET_NUMBER] || '';
 
     preShow.addEventListener('click', event => {
         if (dataEntry.style.display === 'block') return;
 
         params = new URLSearchParams();
-        intro.style.display = 'none';
         dataEntry.style.display = 'block';
         loginID.focus();
     });
@@ -294,7 +292,6 @@ function preShowInit() {
     function reset() {
         preShow.style.opacity = 1
         thankYou.style.opacity = 0;
-        intro.style.display = 'block';
         optInButton.disabled = false;
         optOutButton.disabled = false;
         popup.style.display = 'none';
