@@ -6,6 +6,7 @@
     background: black;
     color: #6699ff;
     font-size: 32px;
+    font-family: Roboto, sans-serif;
 
     #vips {
         list-style: none;
@@ -14,6 +15,10 @@
         display: flex;
         flex-flow: row nowrap;
         height: 100%;
+
+        .info-value {
+            color: white;
+        }
 
         > li {
             width: 700px;

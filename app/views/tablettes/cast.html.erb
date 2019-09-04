@@ -6,7 +6,7 @@
                 <img src="<%= vip.face_src %>">
                 <ul>
                     <% for kv in vip.info %>
-                        <li><strong><%= kv[:key] %>:</strong> <%= kv[:value] %></li>
+                        <li><strong><%= kv[:key] %>:</strong> <span class="info-value"><%= kv[:value] %></span></li>
                     <% end -%>
                 </ul>
             </li>
