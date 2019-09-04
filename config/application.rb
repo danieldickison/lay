@@ -168,6 +168,7 @@ module Lay
         when 710
             SeqGeekTrio.new
         when 800
+            # SeqSimpleVideo.new(800, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 2}
             SeqExterminator.new
         when 850
             SeqSimpleVideo.new(850, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
