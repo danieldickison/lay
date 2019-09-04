@@ -84,6 +84,10 @@ class SeqProductLaunch < Sequence
                     fn_pids[dst] = pid
                 end
             end
+            if !a[:face]
+                puts "WARNING: missing face photo for #{a.inspect}"
+                a[:face] = 100
+            end
             a  # result
         end
         pbdata[:vip_as] = vip_as
@@ -131,6 +135,10 @@ class SeqProductLaunch < Sequence
                     fn_pids[dst] = pid
                 end
             end
+            if !b[:face]
+                puts "WARNING: missing face photo for #{b.inspect}"
+                b[:face] = 100
+            end
             b  # result
         end
         pbdata[:vip_bs] = vip_bs
@@ -143,7 +151,7 @@ class SeqProductLaunch < Sequence
             SELECT
                 spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
-                firstName, info_Relationship, pid
+                firstName, info_ChildName, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
             AND vipStatus = "P-C"
@@ -176,6 +184,10 @@ class SeqProductLaunch < Sequence
                     fn_pids[dst] = pid
                 end
             end
+            if !c[:face]
+                puts "WARNING: missing face photo for #{c.inspect}"
+                c[:face] = 100
+            end
             c  # result
         end
         pbdata[:vip_cs] = vip_cs
@@ -192,7 +204,7 @@ class SeqProductLaunch < Sequence
                 spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
                 firstName, company_Position, company_Name, fbHometown, fbBirthday, university_subject, university_Name, highSchool_Name,
-                info_TraveledTo, info_PartnerFirstName, info_ListensTo, tweetText_1, tweetText_2,
+                info_TraveledTo, info_PartnerFirstName, info_Relationship, info_ListensTo, tweetText_1, tweetText_2,
                 pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
@@ -207,17 +219,25 @@ class SeqProductLaunch < Sequence
             pid = row[-1]
             d = {:pid => pid}
             d[:first_name] = row[26]
-            d[:works_at] = (row[27] && row[27] != "" && row[28] && row[28] != "") ? "#{row[27]} at #{row[28]}" : nil
-            d[:hometown] = row[29]
-            d[:birthday] = row[30]
-            d[:university] = (row[31] && row[31] != "" && row[32] && row[32] != "") ? "Studied #{row[31]} at #{row[32]}" : nil
+            work_position = row[27] && row[27] != "" ? row[27] : 'Works'
+            d[:works_at] = (row[28] && row[28] != "") ? "#{work_position} at #{row[28]}" : nil
+            d[:hometown] = (row[29] && row[29] != "") ? "Hometown: #{row[29]}" : nil
+            d[:birthday] = (row[30] && row[30] != "") ? "Birthday: #{row[30]}" : nil
+            uni_subj = (row[31] && row[31] != "") ? row[31] + ' ' : ''
+            d[:university] = (row[32] && row[32] != "") ? "Studied #{uni_subj}at #{row[32]}" : nil
             d[:high_school] = (row[33] && row[33] != "") ? "Went to #{row[33]}" : nil
             d[:traveled_to] = (row[34] && row[34] != "") ? "Recently traveled to #{row[34]}" : nil
-            d[:spouse_first_name] = row[35]
-            d[:listens_to] = row[36]
+            partner_prefix = case row[36]
+            when 'spouse' then 'Spouse'
+            when 'fiance' then 'Fiance'
+            when 'fiancee' then 'Fiancee'
+            else 'Partner'
+            end
+            d[:spouse_first_name] = (row[35] && row[35] != "") ? "#{partner_prefix}: #{row[35]}" : nil
+            d[:listens_to] = row[37]
             d[:liked] = nil
-            d[:tweet1] = row[37]
-            d[:tweet2] = row[38]
+            d[:tweet1] = row[38]
+            d[:tweet2] = row[39]
             d[:tweet3] = nil
             d[:tweet4] = nil
             d[:relevant_text] = ""
@@ -247,6 +267,10 @@ class SeqProductLaunch < Sequence
                     d[:relevant_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
                 end
+            end
+            if !d[:face]
+                puts "WARNING: missing face photo for #{d.inspect}"
+                d[:face] = 100
             end
             d  # result
         end
