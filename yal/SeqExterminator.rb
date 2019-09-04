@@ -51,9 +51,9 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         images = rows.collect do |row|
             pid = row[0]
             table = row[1][0]
-            image_cats = row[2...15].zip(row[15...28]).reject! {|i| !i[0] || i[0] == ""}  # Some rows have cats but no image
+            image_cats = row[2...15].zip(row[15...28]).reject {|i| !i[0] || i[0] == ""}  # Some rows have cats but no image
 
-            #puts "image_cats: #{image_cats.inspect}"
+            # puts "image_cats: #{image_cats.inspect}"
             # We'll just take the first category image from each selected patron
             {
                 :pid => pid,
