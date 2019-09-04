@@ -74,7 +74,9 @@ class SeqOffTheRails
             SELECT pid, seating, firstName, fbProfilePhoto, twitterProfilePhoto,
             fbPostImage_1, fbPostImage_2, fbPostImage_3, fbPostImage_4, fbPostImage_5, fbPostImage_6,
             igPostImage_1, igPostImage_2, igPostImage_3, igPostImage_4, igPostImage_5, igPostImage_6,
-            tweetText_1, tweetText_2
+            tweetText_1, tweetText_2,
+            fbPostText_1, fbPostText_2, fbPostText_3, fbPostText_4, fbPostText_5, fbPostText_6,
+            igPostText_1, igPostText_2, igPostText_3, igPostText_4, igPostText_5, igPostText_6
             FROM datastore_patron
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
         SQL
@@ -163,7 +165,8 @@ class SeqOffTheRails
                     tablet_slot += 1
                     U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
-                    posts << post_struct.new("fb", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
+                    text = row[i + 14]
+                    posts << post_struct.new("fb", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, text)
                 end
             end
 
@@ -203,7 +206,8 @@ class SeqOffTheRails
                     tablet_slot += 1
                     U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
-                    posts << post_struct.new("ig", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
+                    text = row[i + 14]
+                    posts << post_struct.new("ig", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, text)
                 end
             end
 
