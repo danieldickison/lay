@@ -51,7 +51,8 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         images = rows.collect do |row|
             pid = row[0]
             table = row[1][0]
-            image_cats = row[2...15].zip(row[15...28])
+            image_cats = row[2...15].zip(row[15...28]).reject! {|i| !i[0] || i[0] == ""}  # Some rows have cats but no image
+
             #puts "image_cats: #{image_cats.inspect}"
             # We'll just take the first category image from each selected patron
             {
@@ -71,8 +72,6 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
             matches.shuffle[0...20].each_with_index do |img, i|
                 dst = ISADORA_EXTERMINATOR_NAMES[cat] % (i + 1)
                 db_photo = Media::DATABASE_DIR + img[cat]
-puts db_photo
-pp matches
                 if File.exist?(db_photo)
                     GraphicsMagick.fit(db_photo, dir + dst, 640, 640, "jpg", 85)
                 else
