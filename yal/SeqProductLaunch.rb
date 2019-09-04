@@ -283,8 +283,8 @@ class SeqProductLaunch < Sequence
 
 
     TABLET_DYNAMIC = "/playback/media_tablet_dynamic"
-    VIP_D_TEXT_KEYS = [:works_at, :hometown, :birthday, :university, :high_school, :traveled_to, :spouse_first_name, :listens_to, :liked].freeze
-    VIP_D_TEXT_CHANNELS = (12..18).to_a
+    VIP_D_TEXT_KEYS = [:first_name, :works_at, :hometown, :birthday, :university, :high_school, :traveled_to, :spouse_first_name, :listens_to, :liked].freeze
+    VIP_D_TEXT_CHANNELS = (11..23).to_a
 
     attr_accessor(:start_time)
 
@@ -330,10 +330,6 @@ class SeqProductLaunch < Sequence
                 :channel => '/isadora/10',
                 :args => [vip_d[:face]],
             },
-            {
-                :channel => '/isadora/11',
-                :args => [vip_d[:first_name]],
-            },
             # target person tweets
             {
                 :channel => '/isadora/30',
@@ -367,11 +363,8 @@ class SeqProductLaunch < Sequence
             },
         ]
         text_keys = VIP_D_TEXT_KEYS.dup
-        VIP_D_TEXT_CHANNELS.each do |channel|
-            text = nil
-            while (!text || text == '') && text_keys.length > 0
-                text = vip_d[text_keys.shift]
-            end
+        VIP_D_TEXT_CHANNELS.each_with_index do |channel, i|
+            text = vip_d[VIP_D_TEXT_KEYS[i]] || ''
             @tv_osc_messages << {
                 :channel => "/isadora/#{channel}",
                 :args => [text || '']
