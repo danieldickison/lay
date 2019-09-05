@@ -164,6 +164,8 @@ document.addEventListener("DOMContentLoaded", event => {
     let version = document.getElementById('version');
     version.innerText = BUILD_NAME;
 
+    document.getElementById('dupe-tablet-warning__number').innerText = TABLET_NUMBER;
+
     setInterval(sendPing, PING_INTERVAL);
     //setInterval(cueTick, 100);
     setInterval(updateBatteryStatus, BATTERY_INTERVAL);
@@ -373,6 +375,7 @@ function sendPing() {
 
         document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " Group #" + json.tablet_group + " — " + json.tablet_ip;
         document.getElementById('tablettes-debug').classList.toggle('visible', json.debug);
+        document.getElementById('dupe-tablet-warning').classList.toggle('visible', json.dupe);
         
         let preShow = document.getElementById('tablettes-pre-show');
         if (json.show_time) {
