@@ -118,7 +118,7 @@ class SeqOffTheRails
             isa_profile = "510-#{slot}-R02-OTR_profile.jpg"
             db_photo = Media::DATABASE_DIR + db_profile
             if File.exist?(db_photo)
-                GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, 180, 180, "jpg")
+                GraphicsMagick.thumbnail(db_photo, ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, 180, 180, "jpg")
             else
                 while true
                     r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
