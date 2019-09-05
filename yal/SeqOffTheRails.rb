@@ -20,6 +20,7 @@ class SeqOffTheRails
     TABLETS_OFFTHERAILS_DIR = Media::TABLETS_DIR + "offtherails/"
     TABLETS_OFFTHERAILS_URL = Media::TABLETS_URL + "offtherails/"
 
+    TEXT_MAX_LEN = 140
     TV_POST_ADDRESS = {
         # TVs:
         'TV21' => '/isadora-multi/2',
@@ -51,13 +52,13 @@ class SeqOffTheRails
 
     TABLET_DELAY = 36
     TV_FEED_TIMES = [
-        36, 39, 42, 45,
-        50, 53, 56, 59,
-        65, 68, 71, 74,
-        122, 125, 128, 131,
-        178, 181, 184, 187
-    ].freeze
-    TV_JITTER = 1.5
+        4.times.collect {|i| 31 + 4*i},
+        4.times.collect {|i| 45 + 4*i},
+        4.times.collect {|i| 60 + 4*i},
+        4.times.collect {|i| 117 + 4*i},
+        4.times.collect {|i| 173 + 4*i},
+    ].flatten.freeze
+    TV_JITTER = 1.0
 
 
     def self.export(performance_id)
@@ -556,12 +557,16 @@ class SeqOffTheRails
                 else
                     3
                 end
+                text = @item[:text] || ''
+                if text.length > TEXT_MAX_LEN
+                    text = text[0...(TEXT_MAX_LEN - 3)] + '...'
+                end
                 @is.send(@osc_address,
                     # The % 300 is a temporary hack to avoid sending references to images isadora hasn't loaded (max 300 per category)
                     @item[:isa_profile_num] ? (@item[:isa_profile_num] % 300) : -1,  # profile pic
                     @item[:isa_photo_num] ? (@item[:isa_photo_num] % 300) : -1,    # photo
                     type,
-                    @item[:text] || '' # text
+                    text
                 )
                 @state = :idle
             end
