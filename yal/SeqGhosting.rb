@@ -96,7 +96,7 @@ Slots correspond to zones as follows: (8 per zone)
 
         # select photos for this sequence
         if !is_fake
-            photos = photos.find_all {|p| p.category == "friend" || p.category == "friends"}
+            photos = photos.find_all {|p| p.category == "friend"}
         end
 
         photo_names = {}
