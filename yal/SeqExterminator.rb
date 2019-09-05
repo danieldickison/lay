@@ -141,6 +141,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
     # TABLET_CONCLUSION_DURATION = 4000 # ms for conclusion to stay on screen
     CATEGORIES = [:travel, :interest, :friend, :shared].freeze # in the order they're presented
     CATEGORY_TITLES = {
+        :grouping => 'Grouping…',
         :travel => 'Traveled to',
         :interest => 'Interested in',
         :friend  => 'Friends with',
@@ -189,6 +190,10 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
 
     # ExterminatorLite tablet js variant params
     TABLET_LITE_TIMING = {
+        :grouping => {
+            :in         =>  0.0,
+            :fade_out   => 45.1,
+        },
         :travel => {
             :in         => 46.1,
             :conclusion => 50.15,
@@ -284,7 +289,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
             sleep(@start_time + ISADORA_DELAY - Time.now)
             @is.send('/isadora/1', '800')
 
-            @tablet_triggers = CATEGORIES.collect do |cat|
+            @tablet_triggers = ([:grouping] + CATEGORIES).collect do |cat|
                 timing = TABLET_LITE_TIMING[cat]
                 tablets = {
                     :trigger_time => @start_time + timing[:in] - TABLET_TRIGGER_PREROLL
@@ -292,11 +297,15 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                 @tablet_data.each do |t, tdata|
                     tablets[t] = {
                         :title => CATEGORY_TITLES[cat],
-                        :src => tdata[cat][:img],
-                        :conclusion => tdata[cat][:conclusion],
                         :in_time => (1000 * (@start_time.to_f + timing[:in])).round,
-                        :conclusion_time => (1000 * (@start_time.to_f + timing[:conclusion])).round,
                     }
+                    if cat != :grouping
+                        tablets[t].merge!(
+                            :src => tdata[cat][:img],
+                            :conclusion => tdata[cat][:conclusion],
+                            :conclusion_time => (1000 * (@start_time.to_f + timing[:conclusion])).round
+                        )
+                    end
                     if timing[:fade_out]
                         tablets[t][:fade_out_time] = (1000 * (@start_time.to_f + timing[:fade_out])).round
                     else
@@ -307,7 +316,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
             end
             @next_tablet_trigger = @tablet_triggers.shift
             @next_tablet_trigger_time = @next_tablet_trigger.delete(:trigger_time)
-            @video_2_trigger_time = @next_tablet_trigger_time
+            @video_2_trigger_time = @tablet_triggers.first[:trigger_time]
 
             while @run
                 run
