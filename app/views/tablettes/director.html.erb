@@ -14,22 +14,20 @@
             <label class="volume-input-label">
                 Tablet Volume: <input id="volume-input" type="range" min="0" max="100" value=<%= @volume %>>
             </label>
+            <br>
+            <button id="play-timecode-button">Play Timecode</button>
+            <button id="stop-tablets-button">Stop Tablets</button>
+            <button id="reload-tablets-button">Reload Tablets</button>
+            <label>
+                Debug: <input id="debug-checkbox" type="checkbox" <% if @debug %>checked<% end %>>
+            </label>
         </form>
     </section>
 
-    <form id="debug-form" class="director-form">
-        <button id="play-timecode-button">Play Timecode</button>
-        <button id="stop-tablets-button">Stop Tablets</button>
-        <button id="reload-tablets-button">Reload Tablets</button>
-        <label>
-            Debug: <input id="debug-checkbox" type="checkbox" <% if @debug %>checked<% end %>>
-        </label>
-    </form>
-
-    <section id="director-messages">
+    <section id="director-messages" style="display: none;">
     </section>
 
-    <p><a id="toggle-deets-link" href="#">toggle deets</a></p>
+    <p><a id="toggle-deets-link" href="#" style="display: none;">toggle deets</a></p>
 
     <section id="director-deets" class="director-deets--show">
         <table id="tablet-stats">
