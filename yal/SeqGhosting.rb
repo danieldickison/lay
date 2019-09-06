@@ -120,6 +120,7 @@ Slots correspond to zones as follows: (8 per zone)
         end
 
         photos, dummy_photos = photos.partition {|p| p.pid < Dummy::STARTING_PID}
+        puts "we have #{photos.length} photos and #{dummy_photos.length} dummy photos"
 
         photo_names = {}
 
@@ -135,14 +136,22 @@ Slots correspond to zones as follows: (8 per zone)
             ph = tv_photos[tv]
             if !ph
                 ph = dummy_photos.slice!(8)
-                puts "using #{ph.length} dummy photos for tv #{tv}" # should always be 8
+                #puts "using #{ph.length} dummy photos for tv #{tv}" # should always be 8
+                if ph.length < 8
+                    puts "WARNING: not enough dummies for tv #{tv}; randomly sampling #{8 - ph.length} from all tv photos"
+                    ph.concat(photos.sample(8 - ph.length))
+                end
             end
+
             ph = ph.shuffle
             (0..7).each do |i|
                 pp = ph[i]
                 if !pp
                     pp = dummy_photos.pop
-                    puts "using dummy photo for tv #{tv} index #{i}: #{pp.inspect}"
+                    if !pp
+                        puts "WARNING: not enough dummies for tv #{tv} index #{i}; sampling from all tv photos"
+                        pp = photos.sample
+                    end
                 end
 
                 slot = "%03d" % (slot_base + i)
