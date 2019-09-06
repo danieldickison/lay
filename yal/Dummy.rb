@@ -1,6 +1,6 @@
 class Dummy
 
-    def self.dummy(*args)
+    def self.fallback(*args)
         seqs = [SeqGhosting, SeqExecOffice, SeqExterminator, SeqGeekTrio, SeqOffTheRails]
 
         images = collect_images
@@ -225,8 +225,8 @@ class Yal
         SQL
     end
 
-    def cli_dummy(*args)
-        Dummy.dummy(*args)
+    def cli_fallback(*args)
+        Dummy.fallback(*args)
     end
 
     def cli_dummy_import(*args)
