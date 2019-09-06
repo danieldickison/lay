@@ -1,16 +1,22 @@
 class CastData
     VIP = Struct.new(:letter, :face_src, :info)
-    INFO_FIELDS = SeqProductLaunch::VIP_D_TEXT_KEYS + [:tweet1, :tweet2, :tweet3, :tweet4]
+    INFO_FIELDS = SeqProductLaunch::VIP_D_TEXT_KEYS + [:tweet1, :tweet2, :tweet3, :tweet4, :pet_name, :company_name, :child_name, :loved_name]
 
     attr_reader(:vips)
 
-    def initialize
+    def initialize(include_all_candidates)
         pbdata = PlaybackData.read(SeqProductLaunch::TABLETS_PRODUCTLAUNCH_DIR)
-        vip_pids = Showtime.vips
+        vip_pids = include_all_candidates ? nil : Showtime.vips
         @vips = [:vip_as, :vip_bs, :vip_cs, :vip_ds].each_with_index.collect do |which, i|
-            data = pbdata[which].find {|vip| vip[:pid] == vip_pids[i]}
-            VIP.new(('A'.ord + i).chr, data[:face_url], make_vip_info(data))
-        end
+            if include_all_candidates
+                data = pbdata[which]
+            else
+                data = pbdata[which].find_all {|vip| vip[:pid] == vip_pids[i]}
+            end
+            data.collect do |d|
+                VIP.new(('A'.ord + i).chr, d[:face_url], make_vip_info(d))
+            end
+        end.flatten
     end
 
     def make_vip_info(data)

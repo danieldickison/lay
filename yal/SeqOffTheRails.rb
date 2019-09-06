@@ -116,7 +116,7 @@ class SeqOffTheRails
         pbdata = {}
         fn_pids = {}  # for updating LAY_filename_pids.txt
 
-        post_struct = Struct.new(:type, :employee_id, :name, :table, :tv, :isa_profile_num, :tab_profile, :isa_photo_num, :tab_photo, :text)
+        post_struct = Struct.new(:type, :pid, :name, :table, :tv, :isa_profile_num, :tab_profile, :isa_photo_num, :tab_photo, :text)
 
         # fill Isadora with 100 facebook and instagram pictures, using dummy if we've run out
         rows = db.execute(<<~SQL).to_a
@@ -130,9 +130,9 @@ class SeqOffTheRails
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
         SQL
 
-        posts = []
+        tweets = []
+        photos = []
         isadora_profile_slot = 1
-        isadora_recent_slot = 1
         tablet_slot = 1
 
         rows.each do |row|
@@ -182,15 +182,12 @@ class SeqOffTheRails
             # facebook posts
             (5..10).each do |i|
                 if row[i] && row[i] != ""
-                    # make the post image
-                    # for isadora
-                    isa_photo_num = isadora_recent_slot
-                    isadora_recent_slot += 1
-                    slot = "%03d" % isa_photo_num
-                    isa_photo = "520-#{slot}-R03-OTR_recent.jpg"
+                    # make the post image for tablets; we'll later copy a subset for isadora
+                    tab_photo = "offtherails-#{tablet_slot}.png"
+                    tablet_slot += 1
                     db_photo = Media::DATABASE_DIR + row[i]
                     if File.exist?(db_photo)
-                        GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, 640, 640, "jpg", 85)
+                        GraphicsMagick.fit(db_photo, TABLETS_OFFTHERAILS_DIR + tab_photo, 640, 640, "jpg", 85)
                     else
                         while true
                             r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
@@ -205,17 +202,11 @@ class SeqOffTheRails
                             height = 640
                             width  = rand(640) + 320
                         end
-                        GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, "jpg"))
+                        GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(TABLETS_OFFTHERAILS_DIR + tab_photo, "jpg"))
                     end
-                    fn_pids[isa_photo] = pid
-
-                    # for tablets
-                    tab_photo = "offtherails-#{tablet_slot}.png"
-                    tablet_slot += 1
-                    U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
                     text = row[i + 14]
-                    posts << post_struct.new("fb", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, text)
+                    photos << post_struct.new("fb", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, nil, TABLETS_OFFTHERAILS_URL + tab_photo, text)
                 end
             end
 
@@ -223,15 +214,12 @@ class SeqOffTheRails
             # instagram posts
             (11..16).each do |i|
                 if row[i] && row[i] != ""
-                    # make the post image
-                    # for isadora
-                    isa_photo_num = isadora_recent_slot
-                    isadora_recent_slot += 1
-                    slot = "%03d" % isa_photo_num
-                    isa_photo = "520-#{slot}-R03-OTR_recent.jpg"
+                    # make the post image for tablets; we'll later copy a subset for isadora
+                    tab_photo = "offtherails-#{tablet_slot}.png"
+                    tablet_slot += 1
                     db_photo = Media::DATABASE_DIR + row[i]
                     if File.exist?(db_photo)
-                        GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, 640, 640, "jpg", 85)
+                        GraphicsMagick.fit(db_photo, TABLETS_OFFTHERAILS_DIR + tab_photo, 640, 640, "jpg", 85)
                     else
                         while true
                             r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
@@ -246,17 +234,11 @@ class SeqOffTheRails
                             height = 640
                             width  = rand(640) + 320
                         end
-                        GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, "jpg"))
+                        GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(TABLETS_OFFTHERAILS_DIR + tab_photo, "jpg"))
                     end
-                    fn_pids[isa_photo] = pid
-
-                    # for tablets
-                    tab_photo = "offtherails-#{tablet_slot}.png"
-                    tablet_slot += 1
-                    U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
                     text = row[i + 14]
-                    posts << post_struct.new("ig", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, text)
+                    photos << post_struct.new("ig", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, nil, TABLETS_OFFTHERAILS_URL + tab_photo, text)
                 end
             end
 
@@ -265,10 +247,26 @@ class SeqOffTheRails
             # twitter posts
             (17..18).each do |i|
                 if row[i] && row[i] != ""
-                    posts << post_struct.new("tw", pid, table, name, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, nil, nil, row[i])
+                    tweets << post_struct.new("tw", pid, table, name, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, nil, nil, row[i])
                 end
             end
 
+        end
+
+        tablet_posts = photos + tweets
+        # we can only have up to 300 photos for tvs
+        tv_photos = photos.sample(300)
+        tv_posts = tv_photos + tweets
+        tv_posts.shuffle!
+
+        # render images for tv posts after we've culled it down to 300 posts
+        tv_photos.each_with_index do |post, i|
+            isa_photo_num = i + 1
+            isa_photo = "520-%03d-R03-OTR_recent.jpg" % isa_photo_num
+            tab_photo = post.tab_photo.split('/').last
+            U.sh("cp", "-a", TABLETS_OFFTHERAILS_DIR + tab_photo, ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo)
+            post.isa_photo_num = isa_photo_num
+            fn_pids[isa_photo] = post.pid
         end
 
         # preferably not used in previous sequence (travel only)
@@ -368,15 +366,14 @@ class SeqOffTheRails
 
 
 #pp posts  # debug
-        post_hashes = posts.collect(&:to_h)
-        pbdata[:employee_posts] = post_hashes.group_by {|p| p[:employee_id]}
-        pbdata[:tv_posts] = post_hashes.group_by {|p| p[:tv]}
-        pbdata[:tv_names] = posts
-            .uniq(&:employee_id)
+        pbdata[:employee_posts] = tablet_posts.collect(&:to_h).group_by {|p| p[:pid]}
+        pbdata[:tv_posts] = tv_posts.collect(&:to_h).group_by {|p| p[:tv]}
+        pbdata[:tv_names] = tablet_posts
+            .uniq(&:pid)
             .collect do |p|
                 {
                     :tv => p.tv,
-                    :employee_id => p.employee_id,
+                    :pid => p.pid,
                     :name => p.name,
                     :isa_profile_num => p.isa_profile_num
                 }
@@ -427,7 +424,7 @@ class SeqOffTheRails
 
         @tv_items = {}
         pbdata[:tv_posts].each do |tv, posts|
-            filtered_posts = posts.reject {|p| opt_outs.include?(p[:employee_id])}
+            filtered_posts = posts.reject {|p| opt_outs.include?(p[:pid])}
             if filtered_posts.length > 0
                 @tv_items[tv] = filtered_posts
             end
@@ -438,7 +435,7 @@ class SeqOffTheRails
         Media::TVS.each do |tv|
             names = pbdata[:tv_names][tv.to_sym] || []
             #puts "tv #{tv.to_sym.inspect} names #{names.inspect}"
-            all_tv_names = names.reject {|p| opt_outs.include?(p[:employee_id])}.shuffle
+            all_tv_names = names.reject {|p| opt_outs.include?(p[:pid])}.shuffle
             #puts "all_tv_names: #{all_tv_names.inspect}"
             @tv_names[tv] = all_tv_names[0...4]
             spare_tv_names.concat(all_tv_names)
@@ -456,7 +453,8 @@ class SeqOffTheRails
 
         employee_posts = pbdata[:employee_posts]
         opt_outs.each do |pid|
-            employee_posts.delete(pid)
+            deleted = employee_posts.delete(pid)
+            puts "deleted #{deleted&.length.inspect} posts for opted out pid #{pid}"
         end
 
         @tablet_items = {}
