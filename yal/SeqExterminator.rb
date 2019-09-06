@@ -67,6 +67,10 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
 
         db = SQLite3::Database.new(Yal::DB_FILE)
 
+        dummy_performance_id = db.execute(<<~SQL).first[0]
+            SELECT id FROM datastore_performance WHERE performance_number = #{Dummy::PERFORMANCE_NUMBER}
+        SQL
+
         rows = db.execute(<<~SQL).to_a
             SELECT
                 pid, seating,
@@ -76,6 +80,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                 spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13
             FROM datastore_patron
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+                OR performance_1_id = #{dummy_performance_id}
         SQL
 
         images = rows.collect do |row|
@@ -94,11 +99,20 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                 :shared => image_cats.find_all {|_, cat| cat == 'shared'}.collect {|img, _| img}[0],
             }
         end
+        images, dummy_images = images.partition {|i| i[:pid] < Dummy::STARTING_PID}
 
         fn_pids = {}
 
         ISADORA_EXTERMINATOR_DIRS.each do |cat, dir|
             matches = images.find_all {|img| img[cat]}
+            if matches.length < 20
+                dummy_cat = dummy_images.find_all {|img| img[cat]}
+                puts "using #{20 - matches.length} from #{dummy_cat.length} dummy images for tv category #{cat}"
+                matches.concat(dummy_cat.sample(20 - matches.length))
+                if matches.length < 20
+                    puts "WARNING: not enough images for #{cat} after using dummies"
+                end
+            end
             matches.shuffle[0...20].each_with_index do |img, i|
                 dst = ISADORA_EXTERMINATOR_NAMES[cat] % (i + 1)
                 db_photo = Media::DATABASE_DIR + img[cat]
