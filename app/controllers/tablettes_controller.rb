@@ -52,7 +52,7 @@ class TablettesController < ApplicationController
     end
 
     def cast
-        data = CastData.new
+        data = CastData.new(!self.class.show_time)
         @vips = data.vips
     end
 
