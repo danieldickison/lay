@@ -66,8 +66,9 @@ Slots correspond to zones as follows: (8 per zone)
         SQL
         is_fake = (performance_number < 0)
 
-        dummy_performance_number = -100
-
+        dummy_performance_id = db.execute(<<~SQL).first[0]
+            SELECT id FROM datastore_performance WHERE performance_number = #{Dummy::PERFORMANCE_NUMBER}
+        SQL
 
         # General query for selecting all the photos in a performance
         # row elements:
@@ -87,15 +88,16 @@ Slots correspond to zones as follows: (8 per zone)
                 pid, seating
             FROM datastore_patron
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+                OR performance_1_id = #{dummy_performance_id}
         SQL
 
         photos = []
         rows.each do |r|
             # pull out extra columns
             pid = r[-2].to_i
-            table = r[-1][0]
+            table = r[-1]&.slice(0)
             if !table || table == ""
-                puts "warn: patron without a table"
+                puts "warn: patron #{pid} without a table"
                 table = "A"
             end
 
@@ -117,6 +119,8 @@ Slots correspond to zones as follows: (8 per zone)
             photos = photos.find_all {|p| p.category == "friend"}
         end
 
+        photos, dummy_photos = photos.partition {|p| p.pid < Dummy::STARTING_PID}
+
         photo_names = {}
 
         # group photos by TV zone
@@ -129,11 +133,17 @@ Slots correspond to zones as follows: (8 per zone)
         Media::TVS_NO_CENTER.each do |tv|
             # 8 random photos for each tv
             ph = tv_photos[tv]
-            next if !ph
+            if !ph
+                ph = dummy_photos.slice!(8)
+                puts "using #{ph.length} dummy photos for tv #{tv}" # should always be 8
+            end
             ph = ph.shuffle
             (0..7).each do |i|
                 pp = ph[i]
-                break if !pp
+                if !pp
+                    pp = dummy_photos.pop
+                    puts "using dummy photo for tv #{tv} index #{i}: #{pp.inspect}"
+                end
 
                 slot = "%03d" % (slot_base + i)
                 dst = "410-#{slot}-R01-Ghosting_profile.jpg"
@@ -156,8 +166,6 @@ Slots correspond to zones as follows: (8 per zone)
             end
             slot_base += 8
         end
-
-
 
         pids = db.execute(<<~SQL).to_a
             SELECT
