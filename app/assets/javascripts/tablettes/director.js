@@ -106,17 +106,17 @@ function fetchStats() {
             }
             let tr = document.createElement('tr');
             tr.appendChild(td(tablet.id + (tablet.dupe ?  ' DUPE' : ''), tablet.dupe ? 'red' : null));
-            tr.appendChild(td(tablet.group));
+            tr.appendChild(td(tablet.group || ''));
             tr.appendChild(td(tablet.ip, !tablet.ip ? 'red' : null));
-            tr.appendChild(td(tablet.build));
-            tr.appendChild(td(tablet.ping + ' ms', isLagging ? 'red' : null));
-            tr.appendChild(td(tablet.osc_ping + ' ms', isOSCLagging ? 'red' : null));
-            tr.appendChild(td(tablet.battery + '%'));
-            tr.appendChild(td(tablet.clock && tablet.clock.median + ' ms'));
-            tr.appendChild(td(tablet.clock && tablet.clock.stdev + ' ms'));
+            tr.appendChild(td(tablet.build || ''));
+            tr.appendChild(td(formatPing(tablet.ping), isLagging ? 'red' : null));
+            tr.appendChild(td(formatPing(tablet.osc_ping), isOSCLagging ? 'red' : null));
+            tr.appendChild(td(tablet.battery !== null ? tablet.battery + '%' : '', tablet.battery < 10 ? 'red' : null));
+            tr.appendChild(td(tablet.clock && 'number' === typeof tablet.clock.median ? tablet.clock.median + ' ms' : ''));
+            tr.appendChild(td(tablet.clock && 'number' === typeof tablet.clock.stdev ? tablet.clock.stdev + ' ms' : ''));
 
             let cacheIncomplete = tablet.cache && tablet.cache.some(f => !f.end);
-            let cacheTD = td(tablet.cache && tablet.cache.length, cacheIncomplete ? 'orange' : null);
+            let cacheTD = td(tablet.cache ? tablet.cache.length : '', cacheIncomplete ? 'orange' : null);
             cacheTD.classList.add('cache');
             tr.appendChild(cacheTD);
             buildCacheHover(cacheTD, tablet.cache)
@@ -132,6 +132,18 @@ function fetchStats() {
         serverError = err;
     })
     .finally(updateMessages);
+
+    function formatPing(ping) {
+        if (ping === null || ping === undefined) {
+            return '';
+        } else if (ping > 3600000) {
+            return '>1 hour';
+        } else if (ping > 60000) {
+            return Math.floor(ping / 60000) + ' min';
+        } else {
+            return (ping / 1000).toFixed(1) + ' s';
+        }
+    }
 
     function td(text, color) {
         let td = document.createElement('td');
