@@ -271,7 +271,7 @@ class SeqProductLaunch < Sequence
             end
             if !d[:face]
                 puts "WARNING: missing face photo for #{d.inspect}"
-                d[:face] = 100
+                d[:face] = 4
             end
             d  # result
         end
@@ -287,6 +287,7 @@ class SeqProductLaunch < Sequence
     VIP_D_TEXT_KEYS = [:first_name, :works_at, :hometown, :birthday, :university, :high_school, :traveled_to, :spouse_first_name, :listens_to, :liked].freeze
     VIP_D_TEXT_CHANNELS = (11..23).to_a
     VIP_D_DEFAULTS = {
+        :face => 4,
         :works_at => "interested in relocation",
         :institution => "buys expensive toiletries", # currently unused
         :hometown => "haircut budget",
@@ -318,6 +319,10 @@ class SeqProductLaunch < Sequence
         vip_b = pbdata[:vip_bs].find {|b| b[:pid] == vip_pids[1]}
         vip_c = pbdata[:vip_cs].find {|c| c[:pid] == vip_pids[2]}
         vip_d = pbdata[:vip_ds].find {|d| d[:pid] == vip_pids[3]}
+        if !vip_d
+            puts 'WARNING: no VIP D; using defaults'
+            vip_d = VIP_D_DEFAULTS
+        end
 
         @tv_osc_messages = [
             # First part of sequence with 3 selected audience members:
@@ -347,7 +352,7 @@ class SeqProductLaunch < Sequence
             # For latter part of sequence with target person:
             {
                 :channel => '/isadora/10',
-                :args => [vip_d[:face]],
+                :args => [vip_d[:face] || VIP_D_DEFAULTS[:face]],
             },
             # target person tweets
             {
@@ -381,7 +386,6 @@ class SeqProductLaunch < Sequence
                 :args => [vip_d[:relevant_text] || ''],
             },
         ]
-        text_keys = VIP_D_TEXT_KEYS.dup
         VIP_D_TEXT_CHANNELS.each_with_index do |channel, i|
             key = VIP_D_TEXT_KEYS[i]
             text = vip_d[key] || VIP_D_DEFAULTS[key] || ''
