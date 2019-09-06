@@ -17,6 +17,7 @@ class SeqProductLaunch < Sequence
     TABLETS_PRODUCTLAUNCH_DIR = Media::TABLETS_DIR + "productlaunch/"
     TABLETS_PRODUCTLAUNCH_URL = Media::TABLETS_URL + "productlaunch/"
 
+
     def self.export(performance_id)
         `mkdir -p '#{ISADORA_PRODUCTLAUNCH_CHOSEN_DIR}'`
         `mkdir -p '#{ISADORA_PRODUCTLAUNCH_SPECIAL_DIR}'`

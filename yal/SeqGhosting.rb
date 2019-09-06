@@ -34,6 +34,22 @@ Slots correspond to zones as follows: (8 per zone)
 
     Photo = Struct.new(:path, :category, :pid, :table)
 
+
+    def self.dummy(images)
+        d_ISADORA_GHOSTING_DIR = Media::ISADORA_DIR + "s_411-Ghosting_profile_fallback/"
+        return if File.exist?(d_ISADORA_GHOSTING_DIR)
+        `mkdir -p '#{d_ISADORA_GHOSTING_DIR}'`
+
+        profile = images[:profile].shuffle
+
+        (1..48).each do |i|
+            src = profile[i % profile.length]
+            dst = "411-%03d-R01-Ghosting_profile_fallback.jpg" % i
+            GraphicsMagick.thumbnail(src, d_ISADORA_GHOSTING_DIR + dst, 180, 180, "jpg", 85)
+        end
+    end
+
+
     # export <performance #> Ghosting
     # Generates s_410-Ghosting_profile Isadora directory, ghosting tablet directory
 

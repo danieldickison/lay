@@ -62,6 +62,47 @@ class SeqOffTheRails
     TV_NAMES_DELAY = 10
 
 
+    def self.dummy(images)
+        d_ISADORA_OFFTHERAILS_PROFILE_DIR = Media::ISADORA_DIR + "s_511-OTR_profile_fallback/"
+        d_ISADORA_OFFTHERAILS_RECENT_DIR  = Media::ISADORA_DIR + "s_521-OTR_recent_fallback/"
+        d_ISADORA_OFFTHERAILS_TRAVEL_DIR  = Media::ISADORA_DIR + "s_541-OTR_travel_fallback/"
+        d_ISADORA_OFFTHERAILS_FOOD_DIR    = Media::ISADORA_DIR + "s_551-OTR_food_fallback/"
+
+        dirs = [d_ISADORA_OFFTHERAILS_PROFILE_DIR, d_ISADORA_OFFTHERAILS_RECENT_DIR, d_ISADORA_OFFTHERAILS_TRAVEL_DIR, d_ISADORA_OFFTHERAILS_FOOD_DIR]
+        return if dirs.all? {|p| File.exist?(p)}
+        dirs.each {|p| `mkdir -p '#{p}'`}
+
+        imgs = images[:profile].shuffle
+        (1..100).each do |i|
+            src = imgs[i % imgs.length]
+            dst = "511-%03d-R02-OTR_profile_fallback.jpg" % i
+            GraphicsMagick.thumbnail(src, d_ISADORA_OFFTHERAILS_PROFILE_DIR + dst, 180, 180, "jpg", 85)
+        end
+
+        imgs = images[:interested] + images[:food] + images[:friends] + images[:shared] + images[:travel]
+        imgs = imgs.shuffle
+        (1..300).each do |i|
+            src = imgs[i % imgs.length]
+            dst = "521-%03d-R03-OTR_recent_fallback.jpg" % i
+            GraphicsMagick.fit(src, d_ISADORA_OFFTHERAILS_RECENT_DIR + dst, 640, 640, "jpg", 85)
+        end
+
+        imgs = images[:travel].shuffle
+        (1..56).each do |i|
+            src = imgs[i % imgs.length]
+            dst = "541-%03d-R03-OTR_travel_fallback.jpg" % i
+            GraphicsMagick.fit(src, d_ISADORA_OFFTHERAILS_TRAVEL_DIR + dst, 640, 640, "jpg", 85)
+        end
+
+        imgs = images[:food].shuffle
+        (1..56).each do |i|
+            src = imgs[i % imgs.length]
+            dst = "551-%03d-R03-OTR_food_fallback.jpg" % i
+            GraphicsMagick.fit(src, d_ISADORA_OFFTHERAILS_FOOD_DIR + dst, 640, 640, "jpg", 85)
+        end
+    end
+
+
     def self.export(performance_id)
         pbdata = {}
         `mkdir -p '#{ISADORA_OFFTHERAILS_PROFILE_DIR}'`
