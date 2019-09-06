@@ -77,7 +77,11 @@ class Showtime
             SQL
         end
 
-
+        puts "Writing temporary opt-in and VIP files."
+        File.open(OPT_OUT_FILE, "w") {|f| f.puts}
+        File.open(VIP_FILE, "w") do |f|
+            4.times {f.puts('%03d' % 0)}
+        end
     end
 
     def self.update_patron(performance_number, employee_id, drink, opted_in)

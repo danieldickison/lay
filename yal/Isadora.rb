@@ -56,6 +56,7 @@ end
 class Yal
     def cli_isadora_push
         Isadora.push
+        Isadora.push_opt_out
     end
 
     def cli_isadora_push_opt_out

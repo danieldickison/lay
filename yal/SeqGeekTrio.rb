@@ -126,6 +126,7 @@ Slots correspond to zones as follows: (32 per zone)
         end
         pbdata[:pid_tables] = pid_tables
 
+        puts "#{photos.length} photos"
         (1..349).each do |i|
             pp = photos[i % photos.length]
             slot = "%03d" % i

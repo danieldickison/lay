@@ -1,10 +1,12 @@
 class Dummy
-
     def self.fallback(*args)
-        seqs = [SeqGhosting, SeqExecOffice, SeqExterminator, SeqGeekTrio, SeqOffTheRails]
+        seqs = [SeqGhosting, SeqGeekTrio, SeqExterminator, SeqExecOffice, SeqOffTheRails]
 
         images = collect_images
-        seqs.each {|s| s.dummy(images)}
+        seqs.each do |s|
+            puts "#{s.name}..."
+            s.dummy(images)
+        end
     end
 
     def self.collect_images
@@ -20,6 +22,10 @@ class Dummy
         images.each_pair do |k, v|
             puts "  #{v.length} #{k}"
         end
+    end
+
+    def self.db_execute(query)
+        return db.execute(query)
     end
 
     def self.import(performance_number, dummy_file = nil)
@@ -49,19 +55,7 @@ class Dummy
             DELETE FROM datastore_patron WHERE performance_1_id = #{performance_id}
         SQL
 
-        images = {}
-        [
-            [:face, "DummyFaces"], [:interested, "DummyInterestedIn"], [:profile, "DummyProfilePhotos"],
-            [:food, "FoodPhotos"], [:friends, "FriendsWith"], [:shared, "SharedByDummy"], [:travel, "TravelPhotos"]
-        ].each do |cat, dir|
-            images[cat] = `find #{import_dir + dir} -print`.lines.collect {|l| l.strip}.find_all {|f| f =~ /\.(jpg|jpeg|png)$/}
-        end
-
-        puts "Dummy images:"
-        images.each_pair do |k, v|
-            puts "  #{v.length} #{k}"
-        end
-
+        images = collect_images
 
         tweets = File.read(import_dir + "DummyTweets/dummy tweets.txt").lines.collect {|l| l.strip}
         tweets.reject! {|t| t == ""}
@@ -96,64 +90,69 @@ class Dummy
         puts "Dummy patrons:"
         puts "  #{dummies.length} total"
 
-        return
-
-        employee_id = 1
         dummy_ids = []
         dummies.each do |dummy|
             n = dummy[:name].split(" ")
             firstName = n[0]
             lastName = n[1]
-            employeeID = "RIX-%03d" % employee_id
-            employee_id += 1
-            email = "email-#{i}"
-            title = "title-#{i}"
-            phone = "phone-#{i}"
-            address1 = "address1-#{i}"
-            address2 = "address2-#{i}"
-            city = "city-#{i}"
-            zip = "zip-#{i}"
-            country = "country-#{i}"
-            institution = "institution-#{i}"
-            productionNote = "productionNote-#{i}"
-            minerNote = "minerNote-#{i}"
+            fbHometown = dummy[:hometown]
+            university_Name = dummy[:school]
+            university_subject = dummy[:studied]
+            company_Name = dummy[:works_at]
+            info_PetName = dummy[:pet]
+            info_TraveledTo = dummy[:traveled_to]
 
             db.execute(<<~SQL)
                 INSERT INTO datastore_patron (
-                    "performance_1_id", "firstName", "lastName", "employeeID", "completed", "consented",
-                    "email",
-                    "title",
-                    "phone",
-                    "address1",
-                    "address2",
-                    "city",
-                    "zip",
-                    "country",
-                    "institution",
-                    "productionNote",
-                    "minerNote",
-                    patronID, fbPostCat_5, fbPostCat_6, fbPostImage_5, fbPostImage_6, fbPostText_5, fbPostText_6, spImage_13, greeterMatch
+                    performance_1_id, firstName, lastName, fbHometown,
+                    university_Name, university_subject,
+                    company_Name, info_PetName, info_TraveledTo, completed,
+                    patronID, consented, greeterMatch
                 ) VALUES (
-                    "#{performance_id}", "#{firstName}", "#{lastName}", "#{employeeID}", 0, 0,
-                    "#{email}",
-                    "#{title}",
-                    "#{phone}",
-                    "#{address1}",
-                    "#{address2}",
-                    "#{city}",
-                    "#{zip}",
-                    "#{country}",
-                    "#{institution}",
-                    "#{productionNote}",
-                    "#{minerNote}",
-                    "", "", "", "", "", "", "", "", 0
+                    "#{performance_id}", "#{firstName}", "#{lastName}", "#{fbHometown}",
+                    "#{university_Name}", "#{university_subject}",
+                    "#{company_Name}", "#{info_PetName}", "#{info_TraveledTo}", 1,
+                    "", 0, 0
                 )
             SQL
-
             dummy_ids << db.execute("select last_insert_rowid()").first[0]
         end
 
-        
+        sp_ix = Hash.new(1)
+        spimg_columns = ["spImage_1"]
+        profile_cols = ["fbProfilePhoto", "twitterProfilePhoto"]
+        [
+            [:face, "face"], [:interested, "interest"], [:food, "food"],
+            [:friends, "friends"], [:shared, "shared"], [:travel, "travel"], [:profile, "profile"]
+        ].each do |img_key, cat|
+            images[img_key].each_with_index do |img, i|
+                ext = File.extname(img)
+                dst = "dummy-#{cat}-%04d#{ext}" % (i + 1)
+                puts "#{cat}  #{dst} = #{img}"
+                U.sh("cp", img, Media::DATABASE_DIR + "images/" + dst)
+                imgpath = "images/" + File.basename(img)
+                id = dummy_ids.sample
+                if img_key == :profile
+                    col = profile_cols.sample
+                    db.execute(<<~SQL)
+                        UPDATE datastore_patron
+                            SET #{col} = "#{imgpath}"
+                        WHERE id = #{id}
+                    SQL
+                else
+                    c = sp_ix[id]
+                    sp_ix[id] += 1
+                    spimg = "spImage_#{c}"
+                    spcat = "spCat_#{c}"
+                    db.execute(<<~SQL)
+                        UPDATE datastore_patron
+                            SET #{spimg} = "#{imgpath}",
+                            #{spcat} = "#{cat}"
+                        WHERE id = #{id}
+                    SQL
+                end
+            end
+        end
     end
 
     def self.debug_assign_random_seats(performance_id)
