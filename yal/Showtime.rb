@@ -34,20 +34,55 @@ class Showtime
         db = SQLite3::Database.new(Yal::DB_FILE)
 
         # check seating
-        unassigned = db.execute(<<~SQL).first[0]
-            SELECT COUNT(*)
+        seatings = db.execute(<<~SQL).to_a
+            SELECT id, seating
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
-            AND (seating IS NULL OR seating = "")
         SQL
-        if unassigned > 0
-            puts "HEY: There are #{unassigned} unassigned seat(s)."
-            puts "They are being assigned to table Z."
+
+        fixes = []
+        unassigned_count = 0
+        bad_count = 0
+        tables = Media::TABLE_TVS.keys
+
+        seatings.each do |row|
+            id = row[0]
+            seating = row[1]
+
+            if !seating || seating == ""
+                fixes << [[pid, "Z0"]]
+                unassigned_count += 1
+            end
+
+            table = seating[0]
+            if !tables.include?(table)
+                if tables.include?(table.upcase)
+                    fixes << [[pid, table.upcase]]
+                else
+                    fixes << [[pid, "Z1"]]
+                    bad_count += 1
+                end
+            end
+        end
+
+        if unassigned_count > 0
+            puts "HEY: There are #{unassigned_count} unassigned seat(s)."
+            puts "They are being assigned to seat Z0."
+        end
+
+        if bad_count > 0
+            puts "HEY: There are #{bad_count} incorrectly entered seat(s)."
+            puts "They are being assigned to seat Z0."
+        end
+
+        fixes.each do |row|
+            id = row[0]
+            seating = row[1]
             db.execute(<<~SQL)
                 UPDATE datastore_patron
-                SET seating = "Z0"
-                WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
-                AND (seating IS NULL OR seating = "")
+                SET
+                    seating = "#{seating}"
+                WHERE id = #{id}
             SQL
         end
 
