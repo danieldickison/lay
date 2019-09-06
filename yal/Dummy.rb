@@ -125,10 +125,10 @@ class Dummy
             [:face, "face"], [:interested, "interest"], [:food, "food"],
             [:friends, "friends"], [:shared, "shared"], [:travel, "travel"], [:profile, "profile"]
         ].each do |img_key, cat|
+            puts "assigning '#{cat}' photos"
             images[img_key].each_with_index do |img, i|
                 ext = File.extname(img)
                 dst = "dummy-#{cat}-%04d#{ext}" % (i + 1)
-                puts "#{cat}  #{dst} = #{img}"
                 U.sh("cp", img, Media::DATABASE_DIR + "images/" + dst)
                 imgpath = "images/" + File.basename(img)
                 id = dummy_ids.sample
