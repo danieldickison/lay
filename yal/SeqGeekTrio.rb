@@ -49,6 +49,23 @@ Slots correspond to zones as follows: (32 per zone)
 193-224: C01 (projector)
 =end
 
+
+    def self.dummy(images)
+        d_ISADORA_GEEKTRIO_DIR = Media::ISADORA_DIR + "s_421-GeekTrio_fallback/"
+        return if File.exist?(d_ISADORA_GEEKTRIO_DIR)
+        `mkdir -p '#{d_ISADORA_GEEKTRIO_DIR}'`
+
+
+        imgs = images[:interested] + images[:food] + images[:friends] + images[:shared] + images[:travel]
+        imgs = imgs.shuffle
+        (1..349).each do |i|
+            src = imgs[i % imgs.length]
+            dst = "421-%03d-R03-GeekTrio_fallback.jpg" % i
+            GraphicsMagick.fit(src, d_ISADORA_GEEKTRIO_DIR + dst, 640, 640, "jpg", 85)
+        end
+    end
+
+
     Photo = Struct.new(:path, :category, :pid, :table)
 
     # export <performance #> GeekTrio
@@ -109,50 +126,30 @@ Slots correspond to zones as follows: (32 per zone)
         end
         pbdata[:pid_tables] = pid_tables
 
-        # @@@ exclude personal/political, if possible
-
-        # select photos for this sequence
-        # photos = photos.find_all {|p| p.category == "friend" || p.category == "friends"}
-
-        # group photos by TV zone
-        tv_photos = photos.group_by do |p|
-            tvs = Media::TABLE_TVS[p.table] + Media::TABLE_TVS[p.table] + ["C01"]
-            tvs[rand(tvs.length)]  # result
-        end
-
-        slot_base = 1
-        Media::TVS.each do |tv|
-            # 8 random photos for each tv
-            ph = tv_photos[tv].shuffle
-            (0..31).each do |i|
-                pp = ph[i]
-                break if !pp
-
-                slot = "%03d" % (slot_base + i)
-                dst = "s_420-#{slot}-R03-GeekTrio.jpg"
-                db_photo = DATABASE_DIR + pp.path ## BS probably should be Media::DATABASE_IMAGES_DIR
-                # puts "#{tv}-#{slot} '#{db_photo}', '#{dst}'"
-                if File.exist?(db_photo)
-                    GraphicsMagick.fit(db_photo, ISADORA_GEEKTRIO_DIR + dst, 640, 640, "jpg", 85)
-                else
-                    while true
-                        r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
-                        break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
-                    end
-                    color = "rgb(#{r}%,#{g}%,#{b}%)"
-                    annotate = "#{pp.path}, pid #{pp.pid}, table #{pp.table}"
-                    if rand(2) == 1
-                        width  = 640
-                        height = rand(640) + 320
-                    else
-                        height = 640
-                        width  = rand(640) + 320
-                    end
-                    GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(ISADORA_GEEKTRIO_DIR + dst, "jpg"))
+        (1..349).each do |i|
+            pp = photos[i % photos.length]
+            slot = "%03d" % i
+            dst = "s_420-#{slot}-R03-GeekTrio.jpg"
+            db_photo = DATABASE_DIR + pp.path
+            if File.exist?(db_photo)
+                GraphicsMagick.fit(db_photo, ISADORA_GEEKTRIO_DIR + dst, 640, 640, "jpg", 85)
+            else
+                while true
+                    r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
+                    break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
                 end
-                fn_pids[dst] = pp.pid
+                color = "rgb(#{r}%,#{g}%,#{b}%)"
+                annotate = "#{pp.path}, pid #{pp.pid}, table #{pp.table}"
+                if rand(2) == 1
+                    width  = 640
+                    height = rand(640) + 320
+                else
+                    height = 640
+                    width  = rand(640) + 320
+                end
+                GraphicsMagick.convert("-size", "#{width}x#{height}", "xc:#{color}", "-gravity", "center", GraphicsMagick.anno_args(annotate, width), GraphicsMagick.format_args(ISADORA_GEEKTRIO_DIR + dst, "jpg"))
             end
-            slot_base += 32
+            fn_pids[dst] = pp.pid
         end
 
         # Format photos for tablet
@@ -177,8 +174,6 @@ Slots correspond to zones as follows: (32 per zone)
             pid_photos[pp.pid] << TABLETS_GEEKTRIO_URL + dst
         end
         pbdata[:pid_photos] = pid_photos
-
-        # any more pbdata ?
 
         PlaybackData.write(TABLETS_GEEKTRIO_DIR, pbdata)
         PlaybackData.merge_filename_pids(fn_pids)

@@ -36,7 +36,7 @@ Slots correspond to zones as follows: (8 per zone)
 
 
     def self.dummy(images)
-        d_ISADORA_GHOSTING_DIR = Media::ISADORA_DIR + "s_420-Ghosting_profile_fallback/"
+        d_ISADORA_GHOSTING_DIR = Media::ISADORA_DIR + "s_411-Ghosting_profile_fallback/"
         return if File.exist?(d_ISADORA_GHOSTING_DIR)
         `mkdir -p '#{d_ISADORA_GHOSTING_DIR}'`
 

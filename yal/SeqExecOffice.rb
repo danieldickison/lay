@@ -30,8 +30,7 @@ class SeqExecOffice < Sequence
         `mkdir -p '#{d_ISADORA_EXEC_OFFICE_DIR}'`
 
         face = images[:face].shuffle
-
-        (1..40).each do |i|
+        (1..100).each do |i|
             src = face[i % face.length]
             dst = "471-%03d-R04-ExecutiveOffice_profile_fallback.jpg" % i
             GraphicsMagick.thumbnail(src, d_ISADORA_EXEC_OFFICE_DIR + dst, 600, 600, "jpg", 85)

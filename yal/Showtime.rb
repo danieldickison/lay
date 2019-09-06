@@ -189,7 +189,7 @@ class Showtime
 
         File.open(VIP_FILE, "w") do |f|
             ['P-A', 'P-B', 'P-C', 'P-D'].each do |which|
-                f.puts('%03d' % (vips[which] || raise("no consented vip #{which}")))
+                f.puts('%03d' % vips[which])
             end
         end
     end

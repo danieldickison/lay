@@ -1,7 +1,7 @@
 class Dummy
 
     def self.dummy(*args)
-        seqs = [SeqGhosting, SeqExecOffice]
+        seqs = [SeqGhosting, SeqExecOffice, SeqExterminator, SeqGeekTrio, SeqOffTheRails]
 
         images = collect_images
         seqs.each {|s| s.dummy(images)}
