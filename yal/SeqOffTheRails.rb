@@ -59,6 +59,7 @@ class SeqOffTheRails
         4.times.collect {|i| 173 + 4*i},
     ].flatten.freeze
     TV_JITTER = 1.0
+    TV_NAMES_DELAY = 10
 
 
     def self.export(performance_id)
@@ -468,20 +469,27 @@ class SeqOffTheRails
             sleep(@start_time + @prepare_delay - Time.now)
             @is.send('/isadora/1', '1100')
 
-            @tv_names.each do |tv, names|
-                addrs = TV_NAME_ADDRESS[tv.to_s]
-                puts "tv #{tv} names #{names.collect {|n| n[:name]}.inspect}"
-                @is.send(addrs[0], names.collect {|n| n[:name]}.join(','))
-                @is.send(addrs[1], names.collect {|n| n[:isa_profile_num]}.join(','))
-            end
-
             tv_trigger_times = TV_FEED_TIMES.collect {|time| @start_time + time}
             rails = @tv_items.collect {|tv, items| TVRunner.new(tv, TV_POST_ADDRESS[tv.to_s], @is, items, tv_trigger_times)}
+
+            tv_names_time = @start_time + TV_NAMES_DELAY
+            sent_tv_names = false
             tablet_time = @start_time + TABLET_DELAY
             triggered_tablets = false
+
             end_time = @start_time + @prepare_delay + @duration
             while @run && Time.now < end_time
                 rails.each(&:run)
+
+                if !sent_tv_names && Time.now > tv_names_time
+                    sent_tv_names = true
+                    @tv_names.each do |tv, names|
+                        addrs = TV_NAME_ADDRESS[tv.to_s]
+                        puts "tv #{tv} names #{names.collect {|n| n[:name]}.inspect}"
+                        @is.send(addrs[0], names.collect {|n| n[:name]}.join(','))
+                        @is.send(addrs[1], names.collect {|n| n[:isa_profile_num]}.join(','))
+                    end
+                end
 
                 if !triggered_tablets && Time.now > tablet_time
                     triggered_tablets = true
