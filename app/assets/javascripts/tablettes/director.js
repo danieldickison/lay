@@ -111,12 +111,13 @@ function fetchStats() {
             tr.appendChild(td(tablet.build || ''));
             tr.appendChild(td(formatPing(tablet.ping), isLagging ? 'red' : null));
             tr.appendChild(td(formatPing(tablet.osc_ping), isOSCLagging ? 'red' : null));
-            tr.appendChild(td(tablet.battery !== null ? tablet.battery + '%' : '', tablet.battery < 10 ? 'red' : null));
+            tr.appendChild(td(tablet.battery !== null ? tablet.battery + '%' : '', tablet.battery < 10 ? 'red' : tablet.battery < 20 ? 'orange' : null));
             tr.appendChild(td(tablet.clock && tablet.clock.median !== undefined ? tablet.clock.median + ' ms' : ''));
             tr.appendChild(td(tablet.clock && tablet.clock.stdev !== undefined ? tablet.clock.stdev + ' ms' : ''));
 
             let cacheIncomplete = tablet.cache && tablet.cache.some(f => !f.end);
-            let cacheTD = td(tablet.cache ? tablet.cache.length : '', cacheIncomplete ? 'orange' : null);
+            let cacheComplete = tablet.cache && tablet.cache.filter(f => f.end).length;
+            let cacheTD = td(tablet.cache ? cacheComplete + '/' + tablet.cache.length : '', cacheIncomplete ? 'orange' : null);
             cacheTD.classList.add('cache');
             tr.appendChild(cacheTD);
             buildCacheHover(cacheTD, tablet.cache)
