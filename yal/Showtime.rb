@@ -50,16 +50,16 @@ class Showtime
             seating = row[1]
 
             if !seating || seating == ""
-                fixes << [[pid, "Z0"]]
+                fixes << [id, "Z0"]
                 unassigned_count += 1
             end
 
             table = seating[0]
             if !tables.include?(table)
                 if tables.include?(table.upcase)
-                    fixes << [[pid, table.upcase]]
+                    fixes << [id, table.upcase]
                 else
-                    fixes << [[pid, "Z1"]]
+                    fixes << [id, "Z1"]
                     bad_count += 1
                 end
             end
