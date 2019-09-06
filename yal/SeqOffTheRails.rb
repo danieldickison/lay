@@ -453,7 +453,8 @@ class SeqOffTheRails
 
         employee_posts = pbdata[:employee_posts]
         opt_outs.each do |pid|
-            puts "deleted posts for opted out #{pid.inspect}" if employee_posts.delete(pid)
+            deleted = employee_posts.delete(pid)
+            puts "deleted #{deleted&.length.inspect} posts for opted out pid #{pid}"
         end
 
         @tablet_items = {}
