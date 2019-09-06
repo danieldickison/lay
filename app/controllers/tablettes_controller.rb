@@ -103,9 +103,12 @@ class TablettesController < ApplicationController
         self.class.debug = params[:debug] == '1' if params[:debug]
         #self.class.show_time = params[:show_time] == '1' if params[:show_time]
         now = Time.now.utc
+        tablets = self.class.tablets
+        tablet_ids = (ALL_TABLETS + tablets.keys).uniq.sort
         render json: {
             show_time: self.class.show_time,
-            tablets: self.class.tablets.collect do |id, t|
+            tablets: tablet_ids.collect do |id|
+                t = tablets[id] || {}
                 {
                     id:         id,
                     group:      t[:group],
@@ -114,7 +117,7 @@ class TablettesController < ApplicationController
                     build:      t[:build],
                     ping:       t[:ping] && ((now - t[:ping]) * 1000).round,
                     osc_ping:   t[:osc_ping] && ((now - t[:osc_ping]) * 1000).round,
-                    playing:    t[:playing]&.split('/').last.gsub('%20', ' '),
+                    playing:    t[:playing]&.split('/')&.last&.gsub('%20', ' '),
                     clock:      t[:clock]&.split(' ')&.collect {|c| c.split('=')}&.to_h,
                     cache:      t[:cache]&.split("\n")&.collect do |c|
                         cs = c.split(';')

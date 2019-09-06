@@ -61,7 +61,10 @@ window.clearNowPlaying = function (np) {
     }
 };
 
-let TABLET_NUMBER = layNativeInterface.getTabletNumber();
+var TABLET_NUMBER = layNativeInterface.getTabletNumber();
+window.debugSetTabletNumber = function (number) {
+    TABLET_NUMBER = number;
+};
 let BUILD_NAME = layNativeInterface.getBuildName();
 
 let EMPLOYEE_ID_PREFIXES = {
