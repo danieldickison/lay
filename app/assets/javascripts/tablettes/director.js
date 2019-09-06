@@ -105,9 +105,9 @@ function fetchStats() {
                 unresponsiveTablets.push(tablet.id);
             }
             let tr = document.createElement('tr');
-            tr.appendChild(td(tablet.id));
+            tr.appendChild(td(tablet.id + (tablet.dupe ?  ' DUPE' : ''), tablet.dupe ? 'red' : null));
             tr.appendChild(td(tablet.group));
-            tr.appendChild(td(tablet.ip));
+            tr.appendChild(td(tablet.ip, !tablet.ip ? 'red' : null));
             tr.appendChild(td(tablet.build));
             tr.appendChild(td(tablet.ping + ' ms', isLagging ? 'red' : null));
             tr.appendChild(td(tablet.osc_ping + ' ms', isOSCLagging ? 'red' : null));

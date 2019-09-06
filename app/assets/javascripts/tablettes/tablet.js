@@ -7,7 +7,7 @@
 // Help local debugging in chrome
 if (!window.layNativeInterface) {
     window.layNativeInterface = {
-        getTabletNumber: function () { return 99; },
+        getTabletNumber: function () { return 26; },
         getBuildName: function () { return 'fake'; },
         getCacheInfo: function () { return ''; },
         getBatteryPercent: function () { return -1; },
@@ -61,7 +61,10 @@ window.clearNowPlaying = function (np) {
     }
 };
 
-let TABLET_NUMBER = layNativeInterface.getTabletNumber();
+var TABLET_NUMBER = layNativeInterface.getTabletNumber();
+window.debugSetTabletNumber = function (number) {
+    TABLET_NUMBER = number;
+};
 let BUILD_NAME = layNativeInterface.getBuildName();
 
 let EMPLOYEE_ID_PREFIXES = {
@@ -163,6 +166,8 @@ document.addEventListener("DOMContentLoaded", event => {
 
     let version = document.getElementById('version');
     version.innerText = BUILD_NAME;
+
+    document.getElementById('dupe-tablet-warning__number').innerText = TABLET_NUMBER;
 
     setInterval(sendPing, PING_INTERVAL);
     //setInterval(cueTick, 100);
@@ -373,6 +378,7 @@ function sendPing() {
 
         document.getElementById('tablet-id').innerText = "Tablet #" + json.tablet_number + " Group #" + json.tablet_group + " — " + json.tablet_ip;
         document.getElementById('tablettes-debug').classList.toggle('visible', json.debug);
+        document.getElementById('dupe-tablet-warning').classList.toggle('visible', json.dupe);
         
         let preShow = document.getElementById('tablettes-pre-show');
         if (json.show_time) {
@@ -550,52 +556,6 @@ function GeekTrio(start_time, interval, duration, images) {
     };
 }
 
-function Exterminator(start_time, params) {
-    log("Exterminator starting in " + (start_time - serverNow()) + " ms");
-
-    let div = document.createElement('div');
-    div.classList.add('exterminator-layer');
-    document.body.appendChild(div);
-
-    params.srcs.forEach((src, i) => {
-        let img = document.createElement('div');
-        img.classList.add('img');
-        img.style.backgroundImage = 'url(' + src + ')';
-        img.style.transitionDelay = (i * params.scroll_interval) + 'ms';
-        if (i < 3) {
-            img.style.transitionDuration = params.scroll_duration + 'ms';
-        } else {
-            img.style.transitionDuration = Math.round(params.scroll_duration / 2) + 'ms';
-            img.classList.add('img--last');
-        }
-        div.appendChild(img);
-    });
-
-    let conclusionOuter = document.createElement('div');
-    conclusionOuter.classList.add('conclusion');
-    conclusionOuter.style.transitionDelay = params.conclusion_offset + 'ms';
-    div.appendChild(conclusionOuter);
-    let conclusionInner = document.createElement('div');
-    conclusionInner.innerText = params.conclusion;
-    conclusionOuter.appendChild(conclusionInner);
-
-    let timeout = setTimeout(() => {
-        div.classList.add('exterminator-layer--active');
-    }, start_time - serverNow());
-
-    setTimeout(() => {
-        div.classList.add('exterminator-layer--fade-out');
-        div.addEventListener('transitionend', () => this.stop());
-    }, start_time + params.conclusion_offset + params.conclusion_duration - serverNow());
-
-    this.stop = function () {
-        if (div.parentNode === document.body) {
-            document.body.removeChild(div);
-        }
-        clearTimeout(timeout);
-    };
-}
-
 // "low motion" variation of exterminator: just show one image with conclusion text.
 // params: in_time, conclusion_time, [out_time OR fade_out_time], src, conclusion
 function ExterminatorLite(params) {
@@ -605,10 +565,14 @@ function ExterminatorLite(params) {
     div.classList.add('exterminator-lite');
     document.body.appendChild(div);
 
-    let img = document.createElement('div');
-    img.classList.add('img');
-    img.style.backgroundImage = 'url(' + params.src + ')';
-    div.appendChild(img);
+    // The initial "Grouping…" bit doesn't have an image
+    var img;
+    if (params.src) {
+        img = document.createElement('div');
+        img.classList.add('img');
+        img.style.backgroundImage = 'url(' + params.src + ')';
+        div.appendChild(img);
+    }
 
     let titleOuter = document.createElement('div');
     titleOuter.classList.add('category-title');
@@ -617,27 +581,30 @@ function ExterminatorLite(params) {
     titleInner.innerText = params.title;
     titleOuter.appendChild(titleInner);
 
-    let assessmentOuter = document.createElement('div');
-    assessmentOuter.classList.add('assessment');
-    div.appendChild(assessmentOuter);
-    let assessmentInner = document.createElement('div');
-    assessmentInner.innerText = 'assessment:';
-    assessmentOuter.appendChild(assessmentInner);
+    // The initial "Grouping…" bit doesn't have an assessment
+    if (params.conclusion) {
+        let assessmentOuter = document.createElement('div');
+        assessmentOuter.classList.add('assessment');
+        div.appendChild(assessmentOuter);
+        let assessmentInner = document.createElement('div');
+        assessmentInner.innerText = 'assessment:';
+        assessmentOuter.appendChild(assessmentInner);
 
-    let conclusionOuter = document.createElement('div');
-    conclusionOuter.classList.add('conclusion');
-    div.appendChild(conclusionOuter);
-    let conclusionInner = document.createElement('div');
-    conclusionInner.innerText = params.conclusion;
-    conclusionOuter.appendChild(conclusionInner);
+        let conclusionOuter = document.createElement('div');
+        conclusionOuter.classList.add('conclusion');
+        div.appendChild(conclusionOuter);
+        let conclusionInner = document.createElement('div');
+        conclusionInner.innerText = params.conclusion;
+        conclusionOuter.appendChild(conclusionInner);
+
+        setTimeout(() => {
+            div.classList.add('exterminator-lite--conclusion');
+        }, params.conclusion_time - serverNow());
+    }
 
     setTimeout(() => {
         div.classList.add('exterminator-lite--in');
     }, params.in_time - serverNow());
-
-    setTimeout(() => {
-        div.classList.add('exterminator-lite--conclusion');
-    }, params.conclusion_time - serverNow());
 
     if (params.out_time) {
         setTimeout(() => {
@@ -826,8 +793,6 @@ function handleCommand(cmd, args) {
         case 'geektrio':
             triggerSequence(GeekTrio, args);
             break;
-        case 'exterminator':
-            triggerSequence(Exterminator, args);
         case 'exterminator_lite':
             triggerSequence(ExterminatorLite, args);
             break;

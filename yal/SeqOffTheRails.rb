@@ -20,6 +20,7 @@ class SeqOffTheRails
     TABLETS_OFFTHERAILS_DIR = Media::TABLETS_DIR + "offtherails/"
     TABLETS_OFFTHERAILS_URL = Media::TABLETS_URL + "offtherails/"
 
+    TEXT_MAX_LEN = 140
     TV_POST_ADDRESS = {
         # TVs:
         'TV21' => '/isadora-multi/2',
@@ -49,9 +50,16 @@ class SeqOffTheRails
         'ig' => 3,
     }.freeze
 
-    FIRST_TV_ITEM_MAX_DELAY = 5
-    TV_ITEM_INTERVAL_RANGE = 6..10
-    FEED_DELAY = 38
+    TABLET_DELAY = 36
+    TV_FEED_TIMES = [
+        4.times.collect {|i| 31 + 4*i},
+        4.times.collect {|i| 45 + 4*i},
+        4.times.collect {|i| 60 + 4*i},
+        4.times.collect {|i| 117 + 4*i},
+        4.times.collect {|i| 173 + 4*i},
+    ].flatten.freeze
+    TV_JITTER = 1.0
+    TV_NAMES_DELAY = 10
 
 
     def self.dummy(images)
@@ -115,7 +123,9 @@ class SeqOffTheRails
             SELECT pid, seating, firstName, fbProfilePhoto, twitterProfilePhoto,
             fbPostImage_1, fbPostImage_2, fbPostImage_3, fbPostImage_4, fbPostImage_5, fbPostImage_6,
             igPostImage_1, igPostImage_2, igPostImage_3, igPostImage_4, igPostImage_5, igPostImage_6,
-            tweetText_1, tweetText_2
+            tweetText_1, tweetText_2,
+            fbPostText_1, fbPostText_2, fbPostText_3, fbPostText_4, fbPostText_5, fbPostText_6,
+            igPostText_1, igPostText_2, igPostText_3, igPostText_4, igPostText_5, igPostText_6
             FROM datastore_patron
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
         SQL
@@ -150,7 +160,7 @@ class SeqOffTheRails
             isa_profile = "510-#{slot}-R02-OTR_profile.jpg"
             db_photo = Media::DATABASE_DIR + db_profile
             if File.exist?(db_photo)
-                GraphicsMagick.fit(db_photo, ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, 180, 180, "jpg")
+                GraphicsMagick.thumbnail(db_photo, ISADORA_OFFTHERAILS_PROFILE_DIR + isa_profile, 180, 180, "jpg")
             else
                 while true
                     r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
@@ -204,7 +214,8 @@ class SeqOffTheRails
                     tablet_slot += 1
                     U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
-                    posts << post_struct.new("fb", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
+                    text = row[i + 14]
+                    posts << post_struct.new("fb", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, text)
                 end
             end
 
@@ -244,7 +255,8 @@ class SeqOffTheRails
                     tablet_slot += 1
                     U.sh("cp", "-a", ISADORA_OFFTHERAILS_RECENT_DIR + isa_photo, TABLETS_OFFTHERAILS_DIR + tab_photo)
 
-                    posts << post_struct.new("ig", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, nil)
+                    text = row[i + 14]
+                    posts << post_struct.new("ig", pid, name, table, tv, isa_profile_num, TABLETS_OFFTHERAILS_URL + tab_profile, isa_photo_num, TABLETS_OFFTHERAILS_URL + tab_photo, text)
                 end
             end
 
@@ -498,25 +510,35 @@ class SeqOffTheRails
             sleep(@start_time + @prepare_delay - Time.now)
             @is.send('/isadora/1', '1100')
 
-            @tv_names.each do |tv, names|
-                addrs = TV_NAME_ADDRESS[tv.to_s]
-                puts "tv #{tv} names #{names.collect {|n| n[:name]}.inspect}"
-                @is.send(addrs[0], names.collect {|n| n[:name]}.join(','))
-                @is.send(addrs[1], names.collect {|n| n[:isa_profile_num]}.join(','))
-            end
+            tv_trigger_times = TV_FEED_TIMES.collect {|time| @start_time + time}
+            rails = @tv_items.collect {|tv, items| TVRunner.new(tv, TV_POST_ADDRESS[tv.to_s], @is, items, tv_trigger_times)}
 
-            sleep(FEED_DELAY) #quick and dirty pre-delay for tweets
-            Thread.exit if !@run
-
-            @tablet_items.each do |t, items|
-                TablettesController.queue_command(t, 'offtherails', items)
-            end
-
-            rails = @tv_items.collect {|tv, items| TVRunner.new(tv, TV_POST_ADDRESS[tv.to_s], @is, items)}
+            tv_names_time = @start_time + TV_NAMES_DELAY
+            sent_tv_names = false
+            tablet_time = @start_time + TABLET_DELAY
+            triggered_tablets = false
 
             end_time = @start_time + @prepare_delay + @duration
             while @run && Time.now < end_time
                 rails.each(&:run)
+
+                if !sent_tv_names && Time.now > tv_names_time
+                    sent_tv_names = true
+                    @tv_names.each do |tv, names|
+                        addrs = TV_NAME_ADDRESS[tv.to_s]
+                        puts "tv #{tv} names #{names.collect {|n| n[:name]}.inspect}"
+                        @is.send(addrs[0], names.collect {|n| n[:name]}.join(','))
+                        @is.send(addrs[1], names.collect {|n| n[:isa_profile_num]}.join(','))
+                    end
+                end
+
+                if !triggered_tablets && Time.now > tablet_time
+                    triggered_tablets = true
+                    @tablet_items.each do |t, items|
+                        TablettesController.queue_command(t, 'offtherails', items)
+                    end
+                end
+
                 sleep(0.1)
             end
             TablettesController.queue_command(nil, 'stop') if @run
@@ -549,14 +571,14 @@ class SeqOffTheRails
     end
 
     class TVRunner
-        def initialize(tv, osc_address, is, all_items)
+        def initialize(tv, osc_address, is, all_items, trigger_times)
             puts "tv #{tv.inspect} address #{osc_address.inspect}"
             @tv = tv
             @osc_address = osc_address
             @is = is
             @all_items = all_items
+            @trigger_times = trigger_times.dup
 
-            @first_time = true
             @state = :idle
             @item_queue = []
         end
@@ -564,12 +586,9 @@ class SeqOffTheRails
         def run
             case @state
             when :idle
-                if @first_time
-                    @time = Time.now + rand * FIRST_TV_ITEM_MAX_DELAY
-                    @first_time = false
-                else
-                    @time = Time.now + TV_ITEM_INTERVAL_RANGE.min + rand * (TV_ITEM_INTERVAL_RANGE.max - TV_ITEM_INTERVAL_RANGE.min)
-                end
+                @time = @trigger_times.shift
+                return if !@time
+                @time += TV_JITTER * rand
                 if @item_queue.empty?
                     @item_queue = @all_items.dup.shuffle
                 end
@@ -587,12 +606,16 @@ class SeqOffTheRails
                 else
                     3
                 end
+                text = @item[:text] || ''
+                if text.length > TEXT_MAX_LEN
+                    text = text[0...(TEXT_MAX_LEN - 3)] + '...'
+                end
                 @is.send(@osc_address,
                     # The % 300 is a temporary hack to avoid sending references to images isadora hasn't loaded (max 300 per category)
                     @item[:isa_profile_num] ? (@item[:isa_profile_num] % 300) : -1,  # profile pic
                     @item[:isa_photo_num] ? (@item[:isa_photo_num] % 300) : -1,    # photo
                     type,
-                    @item[:text] || '' # text
+                    text
                 )
                 @state = :idle
             end

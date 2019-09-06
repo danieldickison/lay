@@ -103,17 +103,21 @@ class TablettesController < ApplicationController
         self.class.debug = params[:debug] == '1' if params[:debug]
         #self.class.show_time = params[:show_time] == '1' if params[:show_time]
         now = Time.now.utc
+        tablets = self.class.tablets
+        tablet_ids = (ALL_TABLETS + tablets.keys).uniq.sort
         render json: {
             show_time: self.class.show_time,
-            tablets: self.class.tablets.collect do |id, t|
+            tablets: tablet_ids.collect do |id|
+                t = tablets[id] || {}
                 {
                     id:         id,
                     group:      t[:group],
                     ip:         t[:ip],
+                    dupe:       t[:dupe],
                     build:      t[:build],
                     ping:       t[:ping] && ((now - t[:ping]) * 1000).round,
                     osc_ping:   t[:osc_ping] && ((now - t[:osc_ping]) * 1000).round,
-                    playing:    t[:playing]&.split('/').last.gsub('%20', ' '),
+                    playing:    t[:playing]&.split('/')&.last&.gsub('%20', ' '),
                     clock:      t[:clock]&.split(' ')&.collect {|c| c.split('=')}&.to_h,
                     cache:      t[:cache]&.split("\n")&.collect do |c|
                         cs = c.split(';')
@@ -137,15 +141,18 @@ class TablettesController < ApplicationController
 
     def self.update_tablet(ip, params)
         id = params[:tablet_number].to_i
+        dupe = false
         @tablets_mutex.synchronize do
             existing = @tablets[id]
             if existing && existing[:ip] != ip
                 puts "dupe tablet id #{id}: #{existing[:ip]} and #{ip}"
+                dupe = true
             end
             @tablets[id] = {
                 id:         id,
                 group:      tablet_group(id),
                 ip:         ip,
+                dupe:       dupe,
                 ping:       Time.now.utc,
                 osc_ping:   Time.at(params[:osc_ping].to_f / 1000),
                 build:      params[:build],
@@ -155,6 +162,7 @@ class TablettesController < ApplicationController
                 battery:    params[:battery_percent],
             }
         end
+        return dupe
     end
 
     def ping_stats
@@ -214,7 +222,7 @@ class TablettesController < ApplicationController
 
     def ping
         ip = request.headers['X-Forwarded-For'].split(',').first
-        self.class.update_tablet(ip, params)
+        dupe = self.class.update_tablet(ip, params)
         #tablet = ip.split('.')[3].to_i % TABLET_BASE_IP_NUM
         tablet = params[:tablet_number].to_i
         group = tablet_group(tablet)
@@ -237,6 +245,7 @@ class TablettesController < ApplicationController
             :show_time => self.class.show_time,
             :volume => self.class.volume,
             :assets => assets,
+            :dupe => dupe,
         }
     end
 

@@ -303,6 +303,7 @@ class SeqProductLaunch < Sequence
         :tweet3 => "Kim Hyesoon's book, translated by Don Mee Choi, will destroy you.",
         :tweet4 => "Mike sent me a joke avatar and I may use it for everything",
     }.freeze
+    TV_OSC_DELAY = 10
 
     attr_accessor(:start_time)
 
@@ -459,11 +460,6 @@ class SeqProductLaunch < Sequence
             sleep(@start_time + @prepare_delay - Time.now)
             @is.send('/isadora/1', '1200')
 
-            # Fire off all the data bits to isadora:
-            @tv_osc_messages.each do |msg|
-                @is.send(msg[:channel], *msg[:args])
-            end
-
             img_start_time = @start_time + @prepare_delay
             @tablet_images.each do |i|
                 i[:in_time] = ((img_start_time + i.delete(:in_offset)).to_f * 1000).round
@@ -472,8 +468,16 @@ class SeqProductLaunch < Sequence
             target_x_time = ((img_start_time + @target_x_offset).to_f * 1000).round
             TablettesController.queue_command(nil, 'productlaunch', @tablet_images, target_x_time)
 
+            tv_osc_sent = false
             while @run
-         #       run
+                if !tv_osc_sent && Time.now > @start_time + TV_OSC_DELAY
+                    tv_osc_sent = true
+                    # Fire off all the data bits to isadora:
+                    @tv_osc_messages.each do |msg|
+                        @is.send(msg[:channel], *msg[:args])
+                    end
+                end
+
                 sleep(0.1)
             end
             @run = false
