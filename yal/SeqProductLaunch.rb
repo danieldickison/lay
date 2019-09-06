@@ -284,7 +284,7 @@ class SeqProductLaunch < Sequence
 
 
     TABLET_DYNAMIC = "/playback/media_tablet_dynamic"
-    VIP_D_TEXT_KEYS = [:first_name, :works_at, :hometown, :birthday, :university, :high_school, :traveled_to, :spouse_first_name, :listens_to, :liked].freeze
+    VIP_D_TEXT_KEYS = [:first_name, :works_at, :institution, :university, :hometown, :high_school, :traveled_to, :spouse_first_name, :liked, :birthday, :listens_to].freeze
     VIP_D_TEXT_CHANNELS = (11..23).to_a
     VIP_D_DEFAULTS = {
         :face => 4,
@@ -315,14 +315,10 @@ class SeqProductLaunch < Sequence
 
         pbdata = PlaybackData.read(TABLETS_PRODUCTLAUNCH_DIR)
         vip_pids = Showtime.vips
-        vip_a = pbdata[:vip_as].find {|a| a[:pid] == vip_pids[0]}
-        vip_b = pbdata[:vip_bs].find {|b| b[:pid] == vip_pids[1]}
-        vip_c = pbdata[:vip_cs].find {|c| c[:pid] == vip_pids[2]}
-        vip_d = pbdata[:vip_ds].find {|d| d[:pid] == vip_pids[3]}
-        if !vip_d
-            puts 'WARNING: no VIP D; using defaults'
-            vip_d = VIP_D_DEFAULTS
-        end
+        vip_a = pbdata[:vip_as].find {|a| a[:pid] == vip_pids[0]} || VIP_D_DEFAULTS
+        vip_b = pbdata[:vip_bs].find {|b| b[:pid] == vip_pids[1]} || VIP_D_DEFAULTS
+        vip_c = pbdata[:vip_cs].find {|c| c[:pid] == vip_pids[2]} || VIP_D_DEFAULTS
+        vip_d = pbdata[:vip_ds].find {|d| d[:pid] == vip_pids[3]} || VIP_D_DEFAULTS
 
         @tv_osc_messages = [
             # First part of sequence with 3 selected audience members:
