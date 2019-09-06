@@ -1,4 +1,7 @@
 class Dummy
+    PERFORMANCE_NUMBER = -100
+    STARTING_PID = 10001
+
     def self.fallback(*args)
         seqs = [SeqGhosting, SeqGeekTrio, SeqExterminator, SeqExecOffice, SeqOffTheRails]
 
@@ -155,7 +158,30 @@ class Dummy
         end
     end
 
-    def self.debug_assign_random_seats(performance_id)
+    def self.prepare_export
+        db = SQLite3::Database.new(Yal::DB_FILE)
+        dummy_performance_id = db.execute(<<~SQL).first[0]
+            SELECT id FROM datastore_performance WHERE performance_number = "#{Dummy::PERFORMANCE_NUMBER}"
+        SQL
+
+        ids = db.execute(<<~SQL).to_a
+            SELECT id
+            FROM datastore_patron
+            WHERE performance_1_id = #{dummy_performance_id}
+        SQL
+
+        Showtime.assign_pids(dummy_performance_id, Dummy::STARTING_PID)
+        assign_random_seats(dummy_performance_id)
+
+        db.execute(<<~SQL)
+            UPDATE datastore_patron
+            SET consented = 1
+            WHERE performance_1_id = #{dummy_performance_id}
+        SQL
+    end
+
+
+    def self.assign_random_seats(performance_id)
         db = SQLite3::Database.new(Yal::DB_FILE)
         ids = db.execute(<<~SQL).to_a
             SELECT id
@@ -230,13 +256,5 @@ class Yal
 
     def cli_dummy_import(*args)
         Dummy.import(*args)
-    end
-
-    def cli_assign_random_seats(*args)
-        Dummy.debug_assign_random_seats(dummy_get_performance_id(args[0]))
-    end
-
-    def cli_assign_vips_and_consent(*args)
-        Dummy.debug_assign_vips_and_consent(dummy_get_performance_id(args[0]))
     end
 end

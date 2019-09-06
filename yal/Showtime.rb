@@ -51,19 +51,25 @@ class Showtime
             SQL
         end
 
-        # assign pids before doing any exports
-        starting_pid = db.execute(<<~SQL).first[0] || 0
-            SELECT MAX(pid)
-            FROM datastore_patron
-            WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
-        SQL
-        starting_pid += 1
+        assign_pids(performance_id, 1)
 
+        Dummy.prepare_export
+
+        puts "Writing temporary opt-in and VIP files."
+        File.open(OPT_OUT_FILE, "w") {|f| f.puts}
+        File.open(VIP_FILE, "w") do |f|
+            4.times {f.puts('%03d' % 0)}
+        end
+    end
+
+    def self.assign_pids(performance_id, starting_pid)
+        db = SQLite3::Database.new(Yal::DB_FILE)
+
+        # assign pids before doing any exports
         ids = db.execute(<<~SQL).to_a
             SELECT id
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
-            AND pid IS NULL
         SQL
 
         ids.each_with_index do |row, i|
@@ -75,12 +81,6 @@ class Showtime
                     pid = "#{pid}"
                 WHERE id = #{id}
             SQL
-        end
-
-        puts "Writing temporary opt-in and VIP files."
-        File.open(OPT_OUT_FILE, "w") {|f| f.puts}
-        File.open(VIP_FILE, "w") do |f|
-            4.times {f.puts('%03d' % 0)}
         end
     end
 
