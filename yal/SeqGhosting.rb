@@ -66,6 +66,8 @@ Slots correspond to zones as follows: (8 per zone)
         SQL
         is_fake = (performance_number < 0)
 
+        dummy_performance_number = -100
+
 
         # General query for selecting all the photos in a performance
         # row elements:
