@@ -188,9 +188,11 @@ class Showtime
 
     def self.list_performances
         db = SQLite3::Database.new(RUNTIME_DB_FILE)
-        return db.execute(<<~SQL).collect {|r| {:number => r[0], :date => r[1]}}
+        res = db.execute(<<~SQL).collect {|r| {:number => r[0], :date => r[1]}}
             SELECT performance_number, date FROM datastore_performance ORDER BY performance_number
         SQL
+pp res
+        return res
     end
 
     @current_performance_number = nil
