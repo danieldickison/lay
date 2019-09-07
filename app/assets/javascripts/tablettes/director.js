@@ -61,6 +61,21 @@ document.addEventListener("DOMContentLoaded", event => {
         });
     });
 
+    document.getElementById('performance-select').addEventListener('change', event => {
+        console.log("performance-select event target:", event.target);
+        event.target.disabled = true;
+        let body = new URLSearchParams();
+        body.append('performance_number', event.target.value);
+        fetch('/tablettes/set_current_performance.json', {method: 'POST', body: body})
+            .then(response => {
+                if (!response.ok) {
+                    alert("failed to set performance: status " + response.status);
+                }
+            })
+            .catch(() => alert("failed to set performance due to network error"))
+            .finally(() => event.target.disabled = false);
+    });
+
     setInterval(fetchStats, STATS_INTERVAL);
 });
 
@@ -90,6 +105,8 @@ function fetchStats() {
 
         document.getElementById('pre-show-radio').checked = !json.show_time;
         document.getElementById('show-time-radio').checked = json.show_time;
+
+        document.getElementById('performance-select').value = json.performance_number;
 
         let table = document.getElementById('tablet-stats');
         let oldTbody = document.getElementById('tablet-stats-body');

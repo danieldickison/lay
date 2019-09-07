@@ -22,13 +22,8 @@ class Showtime
     VIP_FILE     = Media::DATA_DIR + "LAY_vips.txt"
 
     # Can't easily require yal.rb in the rails server so quick and dirty copy-and-paste here
-    if PRODUCTION
-        RUNTIME_DB_FILE = "/Users/blackwidow/Looking at You Media/db/db.sqlite3"
-    elsif JOE_DEVELOPMENT
-        RUNTIME_DB_FILE = Media::VOLUME + "/db/db.sqlite3"
-    else
-        RUNTIME_DB_FILE = Media::VOLUME + "/db/db.sqlite3"
-    end
+    RUNTIME_DB_FILE = Media::VOLUME + "/db/db.sqlite3"
+    CURRENT_PERFORMANCE_FILE = Media::VOLUME + "/db/current_performance.txt"
 
     def self.prepare_export(performance_id)
         db = SQLite3::Database.new(Yal::DB_FILE)
@@ -174,7 +169,7 @@ class Showtime
                     performance_2_id = #{performance_id}
                 )
         SQL
-        raise "seat #{seating} not found for performance #{performance_number}" if !patron
+        raise "seat #{seating} not found for performance #{performance_number} (id #{performance_id})" if !patron
 
         pid = patron[0]
         consent = opted_in ? 1 : 0
@@ -189,6 +184,34 @@ class Showtime
                     performance_2_id = #{performance_id}
                 )
         SQL
+    end
+
+    def self.list_performances
+        db = SQLite3::Database.new(RUNTIME_DB_FILE)
+        return db.execute(<<~SQL).collect {|r| {:number => r[0], :date => r[1]}}
+            SELECT performance_number, date FROM datastore_performance ORDER BY performance_number
+        SQL
+    end
+
+    @current_performance_number = nil
+    @current_performance_mutex = Mutex.new
+    def self.current_performance_number
+        if !@current_performance_number
+            @current_performance_mutex.synchronize do
+                @current_performance_number = File.read(CURRENT_PERFORMANCE_FILE).to_i rescue -1
+            end
+        end
+        return @current_performance_number
+    end
+
+    def self.current_performance_number=(number)
+        @current_performance_mutex.synchronize do
+            @current_performance_number = nil
+            File.open(CURRENT_PERFORMANCE_FILE, 'w') do |f|
+                f.puts(number.to_s)
+            end
+        end
+        return number
     end
 
     def self.finalize_last_minute_data(performance_id)

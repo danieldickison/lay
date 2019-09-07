@@ -37,7 +37,8 @@ class TablettesController < ApplicationController
 
     @show_time = true
 
-    skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :set_show_time, :start_cue, :stop_cue, :assets, :update_patron, :stats]
+
+    skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :set_show_time, :set_current_performance, :start_cue, :stop_cue, :assets, :update_patron, :stats]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
@@ -61,6 +62,8 @@ class TablettesController < ApplicationController
         @volume = self.class.volume
         @debug = self.class.debug
         @show_time = self.class.show_time
+        @performances = Showtime.list_performances
+        @current_performance = Showtime.current_performance_number
     end
 
     def play_timecode
@@ -76,6 +79,10 @@ class TablettesController < ApplicationController
 
     def set_show_time
         self.class.show_time = params[:show_time] == '1'
+    end
+
+    def set_current_performance
+        Showtime.current_performance_number = Integer(params[:performance_number])
     end
 
     def start_cue
@@ -107,6 +114,7 @@ class TablettesController < ApplicationController
         tablet_ids = (ALL_TABLETS + tablets.keys).uniq.sort
         render json: {
             show_time: self.class.show_time,
+            performance_number: Showtime.current_performance_number,
             tablets: tablet_ids.collect do |id|
                 t = tablets[id] || {}
                 {
@@ -262,7 +270,7 @@ class TablettesController < ApplicationController
             drink = 'none' if !drink || drink == ''
             opt = params[:opt]
             puts "update_patron: #{params.inspect}"
-            performance_number = 1 # TODO: add field to director interface
+            performance_number = Showtime.current_performance_number
             #Showtime.update_patron(performance_number, login_id, drink, opt == 'Y')
 
             # temp hack to use table+seat to identify folks:

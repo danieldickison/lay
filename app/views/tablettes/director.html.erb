@@ -21,6 +21,18 @@
             <label>
                 Debug: <input id="debug-checkbox" type="checkbox" <% if @debug %>checked<% end %>>
             </label>
+            <label>
+                Performance:
+                <select id="performance-select">
+                    <% for p in @performances -%>
+                        <option value="<%= p[:number] %>"
+                            <% if p[:number] == @current_performance %>selected<% end %>
+                        >
+                            <%= p[:number] %>: <%= p[:date] %>
+                        </option>
+                    <% end -%>
+                </select>
+            </label>
         </form>
     </section>
 

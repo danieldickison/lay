@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   post 'tablettes/play_timecode'
   post 'tablettes/queue_tablet_command'
   post 'tablettes/set_show_time'
+  post 'tablettes/set_current_performance'
   post 'tablettes/start_cue'
   post 'tablettes/stop_cue'
   post 'tablettes/assets'
