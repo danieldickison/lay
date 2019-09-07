@@ -65,7 +65,7 @@ var TABLET_NUMBER = layNativeInterface.getTabletNumber();
 window.debugSetTabletNumber = function (number) {
     TABLET_NUMBER = number;
 };
-let IS_LOBBY = TABLET_NUMBER > 26;
+let IS_LOBBY = TABLET_NUMBER >= 100;
 let BUILD_NAME = layNativeInterface.getBuildName();
 
 let EMPLOYEE_ID_PREFIXES = {
@@ -170,20 +170,20 @@ document.addEventListener("DOMContentLoaded", event => {
 
     document.getElementById('dupe-tablet-warning__number').innerText = TABLET_NUMBER;
 
-    if (IS_LOBBY) {
-        setShowTime(false);
-    } else {
-        setInterval(sendPing, PING_INTERVAL);
-        //setInterval(cueTick, 100);
-        setInterval(watchdog, WATCHDOG_INTERVAL);
-        sendPing();
-    }
+    setInterval(sendPing, PING_INTERVAL);
+    //setInterval(cueTick, 100);
+    setInterval(watchdog, WATCHDOG_INTERVAL);
+    sendPing();
 
     setInterval(updateBatteryStatus, BATTERY_INTERVAL);
     updateBatteryStatus();
 
     preShowInit();
 });
+
+
+// PreShow.reset will be set to function that resets its state. Kind of a silly way to expose the reset method to the outside world, but this is quickest way without refactoring preShowInit.
+let PreShow = {};
 
 function preShowInit() {
     var params;
@@ -348,7 +348,11 @@ function preShowInit() {
         loginID.value = '';
         loginContinue.disabled = true;
         document.getElementById('consent-popup-box').scrollTop = 0;
+        layNativeInterface.hideChrome();
+        layNativeInterface.setScreenBrightness(1);
     }
+
+    PreShow.reset = reset;
 }
 
 function sendPing() {
@@ -442,6 +446,7 @@ function setShowTime(showTime, bgImage) {
             if (layNativeInterface.setScreenBrightness) {
                 layNativeInterface.setScreenBrightness(1);
             }
+            PreShow.reset();
         }
         preShow.style.display = 'block';
         if (bgImage) {
@@ -530,6 +535,7 @@ function triggerSequence(constructor, args) {
 
 function stop() {
     if (currentSequence) currentSequence.stop();
+    PreShow.reset();
 }
 
 function Ghosting(time, duration, srcs) {
