@@ -63,6 +63,10 @@ class SeqProductLaunch < Sequence
                 cat = row[i+13]
                 case cat
                 when 'face'
+                    if a[:face]
+                        puts "found multiple faces for VIP A #{pid}"
+                        next
+                    end
                     a[:face] = isa_chosen_index
                     dst = ISADORA_PRODUCTLAUNCH_CHOSEN_FMT % isa_chosen_index
                     isa_chosen_index += 1
@@ -70,6 +74,10 @@ class SeqProductLaunch < Sequence
                     a[:face_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
                 when 'love'
+                    if a[:love]
+                        puts "found multiple loves for VIP A #{pid}"
+                        next
+                    end
                     a[:love] = isa_special_index
                     dst = ISADORA_PRODUCTLAUNCH_SPECIAL_FMT % isa_special_index
                     isa_special_index += 1
@@ -77,6 +85,10 @@ class SeqProductLaunch < Sequence
                     a[:love_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
                 when 'pet'
+                    if a[:face]
+                        puts "found multiple pets for VIP A #{pid}"
+                        next
+                    end
                     a[:pet] = isa_special_index
                     dst = ISADORA_PRODUCTLAUNCH_SPECIAL_FMT % isa_special_index
                     isa_special_index += 1
@@ -128,6 +140,10 @@ class SeqProductLaunch < Sequence
                 cat = row[i+13]
                 case cat
                 when 'face'
+                    if b[:face]
+                        puts "found multiple faces for VIP B #{pid}"
+                        next
+                    end
                     b[:face] = isa_chosen_index
                     dst = ISADORA_PRODUCTLAUNCH_CHOSEN_FMT % isa_chosen_index
                     isa_chosen_index += 1
@@ -170,6 +186,10 @@ class SeqProductLaunch < Sequence
                 cat = row[i+13]
                 case cat
                 when 'face'
+                    if c[:face]
+                        puts "found multiple faces for VIP C #{pid}"
+                        next
+                    end
                     c[:face] = isa_chosen_index
                     dst = ISADORA_PRODUCTLAUNCH_CHOSEN_FMT % isa_chosen_index
                     isa_chosen_index += 1
@@ -177,6 +197,10 @@ class SeqProductLaunch < Sequence
                     c[:face_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
                 when 'child'
+                    if c[:child]
+                        puts "found multiple children for VIP C #{pid}"
+                        next
+                    end
                     c[:child] = isa_special_index
                     dst = ISADORA_PRODUCTLAUNCH_SPECIAL_FMT % isa_special_index
                     isa_special_index += 1
@@ -263,6 +287,10 @@ class SeqProductLaunch < Sequence
                 cat = row[i+13]
                 case cat
                 when 'face'
+                    if d[:face]
+                        puts "found multiple faces for VIP D #{pid}"
+                        next
+                    end
                     d[:face] = isa_threat_index
                     dst = ISADORA_PRODUCTLAUNCH_THREAT_FMT % isa_threat_index
                     isa_threat_index += 1
@@ -270,6 +298,10 @@ class SeqProductLaunch < Sequence
                     d[:face_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
                 when friends_cat
+                    if d[:friends]
+                        puts "found multiple friends for VIP D #{pid}"
+                        next
+                    end
                     d[:friends] = isa_mined_index
                     dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
                     isa_mined_index += 1
@@ -277,6 +309,10 @@ class SeqProductLaunch < Sequence
                     d[:friends_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
                 when relevant_cat
+                    if d[:relevant]
+                        puts "found multiple relevants for VIP D #{pid}"
+                        next
+                    end
                     d[:relevant] = isa_mined_index
                     dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
                     isa_mined_index += 1
