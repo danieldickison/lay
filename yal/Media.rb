@@ -1,10 +1,10 @@
 class Media
     if PRODUCTION
-        VOLUME = "/Users/blackwidow/Looking at You Media"
+        VOLUME = HOME + "/Looking at You Media"
     elsif JOE_DEVELOPMENT
-        VOLUME = ENV["HOME"] + "/lay-media"
+        VOLUME = HOME + "/lay-media"
     else
-        VOLUME = ENV["HOME"] + "/src/lay/public"
+        VOLUME = HOME + "/src/lay/public"
     end
 
 

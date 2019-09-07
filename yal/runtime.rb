@@ -1,4 +1,5 @@
 HOSTNAME = `hostname`.strip
+HOME = ENV['HOME']
 
 if HOSTNAME =~ /show-server/
     PRODUCTION = true

@@ -28,13 +28,12 @@ require('CMUServer')
 require('Showtime')
 require('Sequence')
 
-
 class Yal
     TABLET_OSC_PORT = 53000
     SERVER_OSC_PORT = 53001
 
     if PRODUCTION
-        DB_FILE = "/Users/blackwidow/Looking at You Media/db/db.sqlite3"
+        DB_FILE = HOME + "/Looking at You Media/db/db.sqlite3"
     elsif JOE_DEVELOPMENT
         DB_FILE = Media::VOLUME + "/db/db.sqlite3"
     else
