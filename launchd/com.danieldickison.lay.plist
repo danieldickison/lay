@@ -10,15 +10,15 @@
     <true/>
     <key>ProgramArguments</key>
     <array>
-        <string>/Users/blackwidow/.rbenv/shims/ruby</string>
-        <string>/Users/blackwidow/lay/bin/rails</string>
+        <string>/Users/rix/.rbenv/shims/ruby</string>
+        <string>/Users/rix/lay/bin/rails</string>
         <string>server</string>
     </array>
     <key>StandardOutPath</key>
-    <string>/Users/blackwidow/lay/log/server.log</string>
+    <string>/Users/rix/lay/log/server.log</string>
     <key>StandardErrorPath</key>
-    <string>/Users/blackwidow/lay/log/server.log</string>
+    <string>/Users/rix/lay/log/server.log</string>
     <key>WorkingDirectory</key>
-    <string>/Users/blackwidow/lay</string>
+    <string>/Users/rix/lay</string>
   </dict>
 </plist>
