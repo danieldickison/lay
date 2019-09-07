@@ -1,6 +1,6 @@
 class CastData
     VIP = Struct.new(:letter, :face_src, :info)
-    INFO_FIELDS = SeqProductLaunch::VIP_D_TEXT_KEYS + [:tweet1, :tweet2, :tweet3, :tweet4, :pet_name, :company_name, :child_name, :loved_name]
+    INFO_FIELDS = [:table] + SeqProductLaunch::VIP_D_TEXT_KEYS + [:tweet1, :tweet2, :tweet3, :tweet4, :pet_name, :company_name, :child_name, :loved_name]
 
     attr_reader(:vips)
 
