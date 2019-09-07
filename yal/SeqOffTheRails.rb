@@ -53,10 +53,11 @@ class SeqOffTheRails
     TABLET_DELAY = 36
     TV_FEED_TIMES = [
         2.times.collect {|i| 31 + 4*i},     # number of times adjusted per Shefali
-        4.times.collect {|i| 45 + 4*i},
+        3.times.collect {|i| 45 + 4*i},     # - " -
         4.times.collect {|i| 75 + 4*i},
         4.times.collect {|i| 120 + 4*i},
-        4.times.collect {|i| 170 + 4*i},
+        4.times.collect {|i| 150 + 4*i},
+        4.times.collect {|i| 175 + 4*i},
     ].flatten.freeze
     TV_JITTER = 1.0
     TV_NAMES_DELAY = 10
