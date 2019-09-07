@@ -129,9 +129,9 @@ function fetchStats() {
             tr.appendChild(td(formatPing(tablet.ping), isLagging ? 'red' : null));
             tr.appendChild(td(formatPing(tablet.osc_ping), isOSCLagging ? 'red' : null));
             tr.appendChild(td(tablet.battery !== null ? tablet.battery + '%' : '', tablet.battery < 10 ? 'red' : tablet.battery < 20 ? 'orange' : null));
-            // tr.appendChild(td(tablet.clock && tablet.clock.median !== undefined ? tablet.clock.median + ' ms' : ''));
-            // tr.appendChild(td(tablet.clock && tablet.clock.stdev !== undefined ? tablet.clock.stdev + ' ms' : '', 
-            //    table.clock && tablet.clock.stdev > 1000 ? 'orange' : null));
+            tr.appendChild(td(tablet.clock && tablet.clock.median !== undefined ? tablet.clock.median + ' ms' : ''));
+            tr.appendChild(td(tablet.clock && tablet.clock.stdev !== undefined ? tablet.clock.stdev + ' ms' : '', 
+               table.clock && tablet.clock.stdev > 1000 ? 'orange' : null));
 
             let cacheIncomplete = tablet.cache && tablet.cache.some(f => !f.end);
             let cacheComplete = tablet.cache && tablet.cache.filter(f => f.end).length;
