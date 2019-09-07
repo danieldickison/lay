@@ -139,7 +139,7 @@ class Dummy
                     col = profile_cols.sample
                     db.execute(<<~SQL)
                         UPDATE datastore_patron
-                            SET #{col} = "#{imgpath}"
+                            SET #{col} = "#{dstpath}"
                         WHERE id = #{id}
                     SQL
                 else
