@@ -93,10 +93,17 @@ a {
         background: rgba(0, 0, 0, 0.75);
     }
 
-    #team-bonding-panel > ul {
-        list-style: none;
-        > li {
-            width: 100%;
+    #team-bonding-panel {
+        opacity: 1;
+
+        #team-bonding-feedback {
+            font-style: italic;
+            font-size: 36px;
+            display: none;
+        }
+
+        > ul {
+            list-style: none;
         }
     }
 
