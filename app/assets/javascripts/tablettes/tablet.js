@@ -194,6 +194,7 @@ function preShowInit() {
     let tableLetter = document.getElementById('table-letter-input');
     let loginID = document.getElementById('login-id-input');
     let loginContinue = document.getElementById('login-continue-button')
+    let teamBondingPanel = document.getElementById('team-bonding-panel');
     let agePanel = document.getElementById('age-button-panel');
     let drinkMenu = document.getElementById('drink-menu');
     let optOutButton = document.getElementById('opt-out-button');
@@ -203,7 +204,9 @@ function preShowInit() {
 
     document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || '-XXXXX-';
     document.getElementById('pre-show-table-title').innerText = ''; //TABLE_TITLES[TABLET_NUMBER] || '';
-    if (!IS_LOBBY) {
+    if (IS_LOBBY) {
+        document.getElementById('pre-show-checkin-prompt').style.display = 'none';
+    } else {
         tableLetter.style.display = 'none';
     }
 
@@ -231,16 +234,19 @@ function preShowInit() {
     loginID.addEventListener('keydown', event => {
         //log("got keydown " + event.keyCode);
         if (event.keyCode === 9) {
-            event.preventDefault();
-            loginID.blur();
-            agePanel.style.display = 'block';
+            loginContinueClicked(event);
         }
     });
-    loginForm.addEventListener('submit', event => {
+    loginForm.addEventListener('submit', loginContinueClicked);
+    function loginContinueClicked(event) {
         event.preventDefault();
         loginID.blur();
-        agePanel.style.display = 'block';
-    });
+        if (IS_LOBBY) {
+            agePanel.style.display = 'block';
+        } else {
+            teamBondingPanel.style.display = 'block';
+        }
+    }
     document.getElementById('not-21-button').addEventListener('click', () => {
         params.set('age_21', 'N');
         drinkMenu.style.display = 'block';
