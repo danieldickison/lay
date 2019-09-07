@@ -258,7 +258,7 @@ class TablettesController < ApplicationController
             drink = 'none' if !drink || drink == ''
             opt = params[:opt]
             puts "update_patron: #{params.inspect}"
-            performance_number = 0 # TODO: add field to director interface
+            performance_number = 1 # TODO: add field to director interface
             #Showtime.update_patron(performance_number, login_id, drink, opt == 'Y')
 
             # temp hack to use table+seat to identify folks:
