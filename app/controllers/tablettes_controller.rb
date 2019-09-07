@@ -18,6 +18,8 @@ class TablettesController < ApplicationController
     }
     TABLET_GROUPS = 6
     ALL_TABLETS = (1..26).to_a.freeze
+    LOBBY_TABLET_ID_START = 100
+    ALLOWED_LOBBY_COMMANDS = ['stop', 'reload'].freeze
 
     PRESHOW_BG = ALL_TABLETS.collect {|t| '/playback/media_tablets/000-Preshow/100-021-C60-TableID_assistant_Teams_%05d.jpg' % t}.freeze
     DEFAULT_PRESHOW_BG = '/playback/media_tablets/000-Preshow/100-021-C60-TableID_assistant_Teams_99999.jpg'
@@ -239,6 +241,7 @@ class TablettesController < ApplicationController
         cue = self.class.cues[tablet] || {:file => nil, :time => 0, :seek => 0}
         commands = self.class.commands.delete(tablet) || []
         assets = self.class.assets_for_group(group)
+        show_time = tablet >= LOBBY_TABLET_ID_START ? false : self.class.show_time
         # puts "ping for IP: #{request.headers['X-Forwarded-For']} tablet: #{tablet} cue: #{cue} preload: #{preload && preload.join(', ')}"
         render json: {
             :tablet_ip => ip,
@@ -250,7 +253,7 @@ class TablettesController < ApplicationController
             :next_cue_time => (cue[:time] * 1000).round,
             :next_seek_time => (cue[:seek] * 1000).round,
             :debug => self.class.debug,
-            :show_time => self.class.show_time,
+            :show_time => show_time,
             :volume => self.class.volume,
             :assets => assets,
             :dupe => dupe,
@@ -327,6 +330,11 @@ class TablettesController < ApplicationController
     def self.queue_command(tablet, *cmd)
         puts "queue_command #{tablet} #{cmd.first}..."
         tablet_enum(tablet).each do |t|
+            if t >= LOBBY_TABLET_ID_START && !ALLOWED_LOBBY_COMMANDS.include?(cmd.first)
+                puts "skipping command #{cmd.first} for lobby tablet #{t}"
+                next
+            end
+
             cmds = @commands[t] ||= []
             cmds << cmd
         end
@@ -441,6 +449,7 @@ class TablettesController < ApplicationController
         fade_duration = (1000 * fade_duration).to_i
         volume = (100 * volume * volume).round # square it to make the loudness change more linear in android, then make it a 0-100 range.
         @tablets.each_value do |tablet|
+            next if tablet[:id] >= LOBBY_TABLET_ID_START
             begin
                 c = OSC::Client.new(tablet[:ip], 53000)
                 path = video_path.sub('?', tablet[:group].to_s)
