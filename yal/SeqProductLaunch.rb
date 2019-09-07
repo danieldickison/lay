@@ -45,7 +45,7 @@ class SeqProductLaunch < Sequence
             SELECT
                 spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
-                firstName, info_PetName, pid
+                firstName, info_PetName, seating, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
             AND vipstatus = "P-A"
@@ -55,8 +55,9 @@ class SeqProductLaunch < Sequence
             pid = row[-1]
             a = {
                 :pid => pid,
-                :first_name => row[-3],
-                :pet_name => row[-2],
+                :table => row[-2][0],
+                :pet_name => row[-3],
+                :first_name => row[-4],
             }
             (0..12).each do |i|
                 img = row[i]
@@ -113,7 +114,7 @@ class SeqProductLaunch < Sequence
             SELECT
                 spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
-                firstName, company_Name, company_LogoImage, pid
+                firstName, company_Name, company_LogoImage, seating, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
             AND vipStatus = "P-B"
@@ -123,10 +124,11 @@ class SeqProductLaunch < Sequence
             pid = row[-1]
             b = {
                 :pid => pid,
-                :first_name => row[-4],
-                :company_name => row[-3],
+                :table => row[-2][0],
+                :company_name => row[-4],
+                :first_name => row[-5],
             }
-            img = row[-2]
+            img = row[-3]
             if img && img != ""
                 b[:company] = isa_special_index
                 dst = ISADORA_PRODUCTLAUNCH_SPECIAL_FMT % isa_special_index
@@ -168,7 +170,7 @@ class SeqProductLaunch < Sequence
             SELECT
                 spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
-                firstName, info_ChildName, pid
+                firstName, info_ChildName, seating, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
             AND vipStatus = "P-C"
@@ -178,8 +180,9 @@ class SeqProductLaunch < Sequence
             pid = row[-1]
             c = {
                 :pid => pid,
-                :first_name => row[-3],
-                :child_name => row[-2],
+                :table => row[-2][0],
+                :child_name => row[-3],
+                :first_name => row[-4],
             }
             (0..12).each do |i|
                 img = row[i]
@@ -230,7 +233,7 @@ class SeqProductLaunch < Sequence
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
                 firstName, company_Position, company_Name, fbHometown, fbBirthday, university_subject, university_Name, highSchool_Name,
                 info_TraveledTo, info_PartnerFirstName, info_Relationship, info_ListensTo, tweetText_1, tweetText_2,
-                pid
+                seating, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
             AND vipStatus = "P-D"
@@ -242,7 +245,10 @@ class SeqProductLaunch < Sequence
         
         vip_ds = rows.collect do |row|
             pid = row[-1]
-            d = {:pid => pid}
+            d = {
+                :pid => pid,
+                :table => row[-2][0]
+            }
             d[:first_name] = row[26]
             work_position = row[27] && row[27] != "" ? row[27] : 'Works'
             d[:works_at] = (row[28] && row[28] != "") ? "#{work_position} at #{row[28]}" : nil
