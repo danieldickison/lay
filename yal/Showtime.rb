@@ -174,10 +174,11 @@ class Showtime
                     performance_2_id = #{performance_id}
                 )
         SQL
-        raise "seat #{seating} not found" if !patron
+        raise "seat #{seating} not found for performance #{performance_number}" if !patron
 
         pid = patron[0]
         consent = opted_in ? 1 : 0
+        puts "setting consented=#{consent} for performance #{performance_number} (id #{performance_id}) pid #{pid} (seat #{table}#{seat})"
         db.execute(<<~SQL)
             UPDATE datastore_patron
             SET consented = #{consent}

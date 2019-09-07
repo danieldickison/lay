@@ -27,6 +27,7 @@ a {
 
 #tablettes-pre-show {
     background: black;
+    background-image: url(/playback/media_tablets/000-Preshow/100-021-C60-TableID_assistant_Teams_99999.jpg);
     background-size: cover;
     background-position: center;
     position: fixed;
@@ -74,6 +75,10 @@ a {
     #login-id-input {
         font-size: 28px;
         width: 8em;
+    }
+    #table-letter-input {
+        font-size: 28px;
+        width: 2em;
     }
 
     #pre-show-data-entry {

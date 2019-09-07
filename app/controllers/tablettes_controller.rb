@@ -252,7 +252,11 @@ class TablettesController < ApplicationController
     def update_patron
         begin
             tablet = params[:tablet].to_i
-            table = ('A'.ord + tablet - 1).chr
+            if ALL_TABLETS.include?(tablet)
+                table = ('A'.ord + tablet - 1).chr
+            else
+                table = params[:table].to_s.strip.upcase
+            end
             login_id = params[:login_id]
             drink = params[:drink]
             drink = 'none' if !drink || drink == ''
