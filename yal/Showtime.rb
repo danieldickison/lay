@@ -48,15 +48,15 @@ class Showtime
             if !seating || seating == ""
                 fixes << [id, "Z0"]
                 unassigned_count += 1
-            end
-
-            table = seating[0]
-            if !tables.include?(table)
-                if tables.include?(table.upcase)
-                    fixes << [id, table.upcase]
-                else
-                    fixes << [id, "Z1"]
-                    bad_count += 1
+            else
+                table = seating[0]
+                if !tables.include?(table)
+                    if tables.include?(table.upcase)
+                        fixes << [id, table.upcase]
+                    else
+                        fixes << [id, "Z1"]
+                        bad_count += 1
+                    end
                 end
             end
         end
