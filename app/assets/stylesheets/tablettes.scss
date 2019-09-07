@@ -27,6 +27,7 @@ a {
 
 #tablettes-pre-show {
     background: black;
+    background-image: url(/playback/media_tablets/000-Preshow/100-021-C60-TableID_assistant_Teams_99999.jpg);
     background-size: cover;
     background-position: center;
     position: fixed;
@@ -61,19 +62,25 @@ a {
         opacity: 0.5;
     }
 
-    #intro-button-container {
+    #pre-show-checkin-prompt {
         position: absolute;
         left: 0;
-        bottom: 100px;
+        bottom: 0;
         width: 100%;
+        line-height: 120px;
         text-align: center;
-        font-size: 28px;
+        font-size: 40px;
         font-style: italic;
+        background: black; /* cover up the prompt in the bg image */
     }
 
     #login-id-input {
         font-size: 28px;
         width: 8em;
+    }
+    #table-letter-input {
+        font-size: 28px;
+        width: 2em;
     }
 
     #pre-show-data-entry {
@@ -84,6 +91,13 @@ a {
         left: 0;
         padding-top: 20px;
         background: rgba(0, 0, 0, 0.75);
+    }
+
+    #team-bonding-panel > ul {
+        list-style: none;
+        > li {
+            width: 100%;
+        }
     }
 
     #drink-menu {

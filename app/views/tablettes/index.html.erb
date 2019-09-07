@@ -13,13 +13,16 @@
 <div id="tablettes-pre-show">
     <h1 id="pre-show-table-title">Table Title</h1>
 
+    <div id="pre-show-checkin-prompt">Check in so Raj knows you're here!</div>
+
     <div id="pre-show-data-entry" style="display: none;">
         <form id="login-form">
             <label>
-                Enter the last 2 or 3 digits of your Employee ID to begin:
+                Please enter your three digit employee number
                 <br>
+                <input id="table-letter-input" type="text" maxlength="1" autocomplete="off" autocorrect="off" spellcheck="false">
                 <span id="employee-id-prefix"></span>
-                <input id="login-id-input" type="number" placeholder="###">
+                <input id="login-id-input" type="number" placeholder="###" autocomplete="off" autocorrect="off" spellcheck="false">
             </label>
             <button id="login-continue-button" disabled>Continue</button>
         </form>
@@ -38,6 +41,17 @@
             <li><button>Seltzer</button>
             <li><button>No Drink</button>
         </ul>
+
+        <div id="team-bonding-panel" style="display: none;">
+            <p>Raj says: yo dawg!</p>
+            <p>Please indicate your selection for today's <br> Rix Team Bonding Experience:</p>
+            <ul>
+                <li><button>Matterhorn Group Ride in the spinning studio</button>
+                <li><button>Autumn Lager Tasting at the taco truck on the sixth floor</button>
+                <li><button>Drum Circle & Old Time String Band Jam in the roof garden</button>
+                <li><button>Not today thanks</button>
+            </ul>
+        </div>
     </div>
 
     <div id="consent-popup" style="display: none;">

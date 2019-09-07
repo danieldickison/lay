@@ -21,6 +21,9 @@
         border: solid 1px green;
         margin: 20px 0;
         padding: 10px;
+        > * {
+            display: inline-block;
+        }
     }
 
     .director-form textarea {

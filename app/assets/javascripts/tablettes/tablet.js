@@ -65,6 +65,7 @@ var TABLET_NUMBER = layNativeInterface.getTabletNumber();
 window.debugSetTabletNumber = function (number) {
     TABLET_NUMBER = number;
 };
+let IS_LOBBY = TABLET_NUMBER > 26;
 let BUILD_NAME = layNativeInterface.getBuildName();
 
 let EMPLOYEE_ID_PREFIXES = {
@@ -169,12 +170,16 @@ document.addEventListener("DOMContentLoaded", event => {
 
     document.getElementById('dupe-tablet-warning__number').innerText = TABLET_NUMBER;
 
-    setInterval(sendPing, PING_INTERVAL);
-    //setInterval(cueTick, 100);
-    setInterval(updateBatteryStatus, BATTERY_INTERVAL);
-    setInterval(watchdog, WATCHDOG_INTERVAL);
+    if (IS_LOBBY) {
+        setShowTime(false);
+    } else {
+        setInterval(sendPing, PING_INTERVAL);
+        //setInterval(cueTick, 100);
+        setInterval(watchdog, WATCHDOG_INTERVAL);
+        sendPing();
+    }
 
-    sendPing();
+    setInterval(updateBatteryStatus, BATTERY_INTERVAL);
     updateBatteryStatus();
 
     preShowInit();
@@ -186,8 +191,10 @@ function preShowInit() {
     let preShow = document.getElementById('tablettes-pre-show');
     let dataEntry = document.getElementById('pre-show-data-entry');
     let loginForm = document.getElementById('login-form');
+    let tableLetter = document.getElementById('table-letter-input');
     let loginID = document.getElementById('login-id-input');
     let loginContinue = document.getElementById('login-continue-button')
+    let teamBondingPanel = document.getElementById('team-bonding-panel');
     let agePanel = document.getElementById('age-button-panel');
     let drinkMenu = document.getElementById('drink-menu');
     let optOutButton = document.getElementById('opt-out-button');
@@ -195,15 +202,30 @@ function preShowInit() {
     let popup = document.getElementById('consent-popup');
     let thankYou = document.getElementById('pre-show-thank-you');
 
-    document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || 'X-XXXXX-';
+    document.getElementById('employee-id-prefix').innerText = EMPLOYEE_ID_PREFIXES[TABLET_NUMBER] || '-XXXXX-';
     document.getElementById('pre-show-table-title').innerText = ''; //TABLE_TITLES[TABLET_NUMBER] || '';
+    if (IS_LOBBY) {
+        document.getElementById('pre-show-checkin-prompt').style.display = 'none';
+    } else {
+        tableLetter.style.display = 'none';
+    }
 
     preShow.addEventListener('click', event => {
         if (dataEntry.style.display === 'block') return;
 
         params = new URLSearchParams();
         dataEntry.style.display = 'block';
-        loginID.focus();
+        if (IS_LOBBY) {
+            tableLetter.focus();
+        } else {
+            loginID.focus();
+        }
+    });
+    tableLetter.addEventListener('input', event => {
+        if (tableLetter.value.length === 1) {
+            tableLetter.value = tableLetter.value.toUpperCase();
+            loginID.focus();
+        }
     });
     loginID.addEventListener('input', () => {
         let valid = loginID.value.trim().length >= 1;
@@ -212,16 +234,19 @@ function preShowInit() {
     loginID.addEventListener('keydown', event => {
         //log("got keydown " + event.keyCode);
         if (event.keyCode === 9) {
-            event.preventDefault();
-            loginID.blur();
-            agePanel.style.display = 'block';
+            loginContinueClicked(event);
         }
     });
-    loginForm.addEventListener('submit', event => {
+    loginForm.addEventListener('submit', loginContinueClicked);
+    function loginContinueClicked(event) {
         event.preventDefault();
         loginID.blur();
-        agePanel.style.display = 'block';
-    });
+        if (IS_LOBBY) {
+            agePanel.style.display = 'block';
+        } else {
+            teamBondingPanel.style.display = 'block';
+        }
+    }
     document.getElementById('not-21-button').addEventListener('click', () => {
         params.set('age_21', 'N');
         drinkMenu.style.display = 'block';
@@ -260,6 +285,7 @@ function preShowInit() {
         optOutButton.disabled = true;
 
         params.set('tablet', TABLET_NUMBER);
+        params.set('table', tableLetter.value);
         params.set('login_id', loginID.value);
         fetch('/tablettes/update_patron.json', {method: 'POST', body: params})
         .then(response => {
@@ -305,6 +331,7 @@ function preShowInit() {
         dataEntry.style.display = 'none';
         agePanel.style.display = 'none';
         drinkMenu.style.display = 'none';
+        tableLetter.value = '';
         loginID.value = '';
         loginContinue.disabled = true;
         document.getElementById('consent-popup-box').scrollTop = 0;
@@ -380,21 +407,7 @@ function sendPing() {
         document.getElementById('tablettes-debug').classList.toggle('visible', json.debug);
         document.getElementById('dupe-tablet-warning').classList.toggle('visible', json.dupe);
         
-        let preShow = document.getElementById('tablettes-pre-show');
-        if (json.show_time) {
-            if (preShow.style.display !== 'none') {
-                layNativeInterface.hideChrome();
-            }
-            preShow.style.display = 'none';
-        } else {
-            if (preShow.style.display !== 'block') {
-                if (layNativeInterface.setScreenBrightness) {
-                    layNativeInterface.setScreenBrightness(1);
-                }
-            }
-            preShow.style.display = 'block';
-            preShow.style.backgroundImage = 'url(' + json.preshow_bg + ')';
-        }
+        setShowTime(json.show_time, json.preshow_bg);
 
         pingStartTime = null;
     })
@@ -402,6 +415,26 @@ function sendPing() {
         log("ping failed", error);
         pingStartTime = null;
     });
+}
+
+function setShowTime(showTime, bgImage) {
+    let preShow = document.getElementById('tablettes-pre-show');
+    if (showTime) {
+        if (preShow.style.display !== 'none') {
+            layNativeInterface.hideChrome();
+        }
+        preShow.style.display = 'none';
+    } else {
+        if (preShow.style.display !== 'block') {
+            if (layNativeInterface.setScreenBrightness) {
+                layNativeInterface.setScreenBrightness(1);
+            }
+        }
+        preShow.style.display = 'block';
+        if (bgImage) {
+            preShow.style.backgroundImage = 'url(' + bgImage + ')';
+        }
+    }
 }
 
 function watchdog() {

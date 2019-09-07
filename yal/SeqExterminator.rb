@@ -119,6 +119,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
                 if File.exist?(db_photo)
                     GraphicsMagick.fixed_height(db_photo, dir + dst, 1137, 640, "jpg", 85)
                 else
+                    puts "WARNING: making fake image for #{cat} #{img.inspect} because #{db_photo} not found"
                     while true
                         r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
                         break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25

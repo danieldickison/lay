@@ -2,7 +2,7 @@ class TablettesController < ApplicationController
 
     TABLET_BASE_IP_NUM = 200
 
-    @debug = true
+    @debug = false
     TABLET_TO_TABLE = {
         1 => 'A',
         2 => 'B',
@@ -29,7 +29,7 @@ class TablettesController < ApplicationController
     @tablets = {}
     @tablets_mutex = Mutex.new
     @@dumping_stats = false
-    @volume = 90 # percent
+    @volume = 100 # percent
 
     @last_osc_ping = Time.now
     @last_osc_ping_mutex = Mutex.new
@@ -37,7 +37,8 @@ class TablettesController < ApplicationController
 
     @show_time = true
 
-    skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :set_show_time, :start_cue, :stop_cue, :assets, :update_patron, :stats]
+
+    skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :set_show_time, :set_current_performance, :start_cue, :stop_cue, :assets, :update_patron, :stats]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
@@ -61,6 +62,8 @@ class TablettesController < ApplicationController
         @volume = self.class.volume
         @debug = self.class.debug
         @show_time = self.class.show_time
+        @performances = Showtime.list_performances
+        @current_performance = Showtime.current_performance_number
     end
 
     def play_timecode
@@ -76,6 +79,10 @@ class TablettesController < ApplicationController
 
     def set_show_time
         self.class.show_time = params[:show_time] == '1'
+    end
+
+    def set_current_performance
+        Showtime.current_performance_number = Integer(params[:performance_number])
     end
 
     def start_cue
@@ -107,6 +114,7 @@ class TablettesController < ApplicationController
         tablet_ids = (ALL_TABLETS + tablets.keys).uniq.sort
         render json: {
             show_time: self.class.show_time,
+            performance_number: Showtime.current_performance_number,
             tablets: tablet_ids.collect do |id|
                 t = tablets[id] || {}
                 {
@@ -252,13 +260,17 @@ class TablettesController < ApplicationController
     def update_patron
         begin
             tablet = params[:tablet].to_i
-            table = ('A'.ord + tablet - 1).chr
+            if ALL_TABLETS.include?(tablet)
+                table = ('A'.ord + tablet - 1).chr
+            else
+                table = params[:table].to_s.strip.upcase
+            end
             login_id = params[:login_id]
             drink = params[:drink]
             drink = 'none' if !drink || drink == ''
             opt = params[:opt]
             puts "update_patron: #{params.inspect}"
-            performance_number = 0 # TODO: add field to director interface
+            performance_number = Showtime.current_performance_number
             #Showtime.update_patron(performance_number, login_id, drink, opt == 'Y')
 
             # temp hack to use table+seat to identify folks:

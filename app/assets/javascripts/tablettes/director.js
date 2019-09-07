@@ -61,6 +61,21 @@ document.addEventListener("DOMContentLoaded", event => {
         });
     });
 
+    document.getElementById('performance-select').addEventListener('change', event => {
+        console.log("performance-select event target:", event.target);
+        event.target.disabled = true;
+        let body = new URLSearchParams();
+        body.append('performance_number', event.target.value);
+        fetch('/tablettes/set_current_performance.json', {method: 'POST', body: body})
+            .then(response => {
+                if (!response.ok) {
+                    alert("failed to set performance: status " + response.status);
+                }
+            })
+            .catch(() => alert("failed to set performance due to network error"))
+            .finally(() => event.target.disabled = false);
+    });
+
     setInterval(fetchStats, STATS_INTERVAL);
 });
 
@@ -91,6 +106,8 @@ function fetchStats() {
         document.getElementById('pre-show-radio').checked = !json.show_time;
         document.getElementById('show-time-radio').checked = json.show_time;
 
+        document.getElementById('performance-select').value = json.performance_number;
+
         let table = document.getElementById('tablet-stats');
         let oldTbody = document.getElementById('tablet-stats-body');
         if (oldTbody) table.removeChild(oldTbody);
@@ -112,9 +129,9 @@ function fetchStats() {
             tr.appendChild(td(formatPing(tablet.ping), isLagging ? 'red' : null));
             tr.appendChild(td(formatPing(tablet.osc_ping), isOSCLagging ? 'red' : null));
             tr.appendChild(td(tablet.battery !== null ? tablet.battery + '%' : '', tablet.battery < 10 ? 'red' : tablet.battery < 20 ? 'orange' : null));
-            // tr.appendChild(td(tablet.clock && tablet.clock.median !== undefined ? tablet.clock.median + ' ms' : ''));
-            // tr.appendChild(td(tablet.clock && tablet.clock.stdev !== undefined ? tablet.clock.stdev + ' ms' : '', 
-            //    table.clock && tablet.clock.stdev > 1000 ? 'orange' : null));
+            tr.appendChild(td(tablet.clock && tablet.clock.median !== undefined ? tablet.clock.median + ' ms' : ''));
+            tr.appendChild(td(tablet.clock && tablet.clock.stdev !== undefined ? tablet.clock.stdev + ' ms' : '', 
+               table.clock && tablet.clock.stdev > 1000 ? 'orange' : null));
 
             let cacheIncomplete = tablet.cache && tablet.cache.some(f => !f.end);
             let cacheComplete = tablet.cache && tablet.cache.filter(f => f.end).length;
