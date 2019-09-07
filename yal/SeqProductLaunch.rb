@@ -242,6 +242,22 @@ class SeqProductLaunch < Sequence
             d[:tweet3] = nil
             d[:tweet4] = nil
             d[:relevant_text] = ""
+
+            available_categories = (13..25).collect {|i| row[i]}.reject {|cat| !cat || cat == ''}
+            available_categories.delete('face')
+            friends_cat = available_categories.delete('friends')
+            relevant_cat = available_categories.delete('relevant')
+            available_categories.shuffle!
+            #puts "available other image categories for #{pid}: #{available_categories.join(', ')}"
+            if !friends_cat
+                friends_cat = available_categories.pop
+                puts "no friends for VIP D pid #{pid}; using random category #{friends_cat} instead"
+            end
+            if !relevant_cat
+                relevant_cat = available_categories.pop
+                puts "no relevant for VIP D pid #{pid}; using random category #{relevant_cat} instead"
+            end
+
             (0..12).each do |i|
                 img = row[i]
                 cat = row[i+13]
@@ -253,14 +269,14 @@ class SeqProductLaunch < Sequence
                     img_thumbnail(img, dst, 600, 600, "pid #{pid}", ISADORA_PRODUCTLAUNCH_THREAT_DIR, TABLETS_PRODUCTLAUNCH_DIR)
                     d[:face_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
-                when 'friends'
+                when friends_cat
                     d[:friends] = isa_mined_index
                     dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
                     isa_mined_index += 1
                     img_thumbnail(img, dst, 640, 640, "pid #{pid}", ISADORA_PRODUCTLAUNCH_MINED_DIR, TABLETS_PRODUCTLAUNCH_DIR)
                     d[:friends_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
-                when 'relevant'
+                when relevant_cat
                     d[:relevant] = isa_mined_index
                     dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
                     isa_mined_index += 1
