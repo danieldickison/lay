@@ -195,6 +195,7 @@ function preShowInit() {
     let loginID = document.getElementById('login-id-input');
     let loginContinue = document.getElementById('login-continue-button')
     let teamBondingPanel = document.getElementById('team-bonding-panel');
+    let teamBondingFeedback = document.getElementById('team-bonding-feedback');
     let agePanel = document.getElementById('age-button-panel');
     let drinkMenu = document.getElementById('drink-menu');
     let optOutButton = document.getElementById('opt-out-button');
@@ -261,6 +262,16 @@ function preShowInit() {
         button.addEventListener('click', () => {
             params.set('drink', button.innerText);
             showConsentPopup();
+        });
+    });
+    teamBondingPanel.querySelectorAll('button').forEach(button => {
+        button.addEventListener('click', () => {
+            layNativeInterface.hideChrome();
+            teamBondingFeedback.style.display = 'block';
+            setTimeout(() => {
+                preShow.style.opacity = 0;
+            }, 3000);
+            setTimeout(reset, 4000);
         });
     });
     
@@ -331,6 +342,8 @@ function preShowInit() {
         dataEntry.style.display = 'none';
         agePanel.style.display = 'none';
         drinkMenu.style.display = 'none';
+        teamBondingPanel.style.display = 'none';
+        teamBondingFeedback.style.display = 'none';
         tableLetter.value = '';
         loginID.value = '';
         loginContinue.disabled = true;
