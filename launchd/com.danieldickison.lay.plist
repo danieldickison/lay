@@ -10,6 +10,7 @@
     <true/>
     <key>ProgramArguments</key>
     <array>
+        <string>/Users/blackwidow/.rbenv/shims/ruby</string>
         <string>/Users/blackwidow/lay/bin/rails</string>
         <string>server</string>
     </array>
