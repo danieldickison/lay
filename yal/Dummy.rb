@@ -133,7 +133,7 @@ class Dummy
                 ext = File.extname(img)
                 dst = "dummy-#{cat}-%04d#{ext}" % (i + 1)
                 U.sh("cp", img, Media::DATABASE_DIR + "images/" + dst)
-                imgpath = "images/" + File.basename(img)
+                dstpath = "images/" + dst
                 id = dummy_ids.sample
                 if img_key == :profile
                     col = profile_cols.sample
@@ -149,7 +149,7 @@ class Dummy
                     spcat = "spCat_#{c}"
                     db.execute(<<~SQL)
                         UPDATE datastore_patron
-                            SET #{spimg} = "#{imgpath}",
+                            SET #{spimg} = "#{dstpath}",
                             #{spcat} = "#{cat}"
                         WHERE id = #{id}
                     SQL
