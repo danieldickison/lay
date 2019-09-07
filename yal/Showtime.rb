@@ -1,4 +1,5 @@
 require('Media')
+require('Date')
 
 =begin
 High level actions that happen before, during and after the show.
@@ -188,7 +189,7 @@ class Showtime
 
     def self.list_performances
         db = SQLite3::Database.new(RUNTIME_DB_FILE)
-        res = db.execute(<<~SQL).collect {|r| {:number => r[0], :date => r[1]}}
+        res = db.execute(<<~SQL).collect {|r| {:number => r[0], :date => DateTime.parse(r[1]).to_time.localtime.strftime("%a %m/%d/%y %I:%M%P")}}
             SELECT performance_number, date FROM datastore_performance ORDER BY performance_number
         SQL
 pp res
