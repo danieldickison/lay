@@ -14,7 +14,7 @@ class CastData
                 data = pbdata[which].find_all {|vip| vip[:pid] == vip_pids[i]}
             end
             data.collect do |d|
-                VIP.new(('A'.ord + i).chr, d[:face_url], make_vip_info(d))
+                VIP.new(('A'.ord + i).chr, d[:face_url] + "?#{rand}", make_vip_info(d))
             end
         end.flatten
     end
