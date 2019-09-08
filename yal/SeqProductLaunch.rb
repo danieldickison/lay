@@ -347,7 +347,7 @@ class SeqProductLaunch < Sequence
     VIP_D_DEFAULTS = {
         :face => 4,
         :works_at => "interested in relocation",
-        :institution => "buys expensive toiletries", # currently unused
+        :institution => "buys expensive toiletries",
         :hometown => "haircut budget",
         :birthday => "premillenial",
         :university => "gentrifier",
