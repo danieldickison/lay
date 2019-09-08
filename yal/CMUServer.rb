@@ -54,7 +54,7 @@ class CMUServer
         consents.each do |consent, rows|
             ids = rows.collect {|r| r[0]}
             ids = ids.join(",")
-            sql << "UPDATE datastore_patron SET consented = #{consent} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND pid IN (#{ids})"
+            sql << "UPDATE datastore_patron SET consented = #{consent} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND id IN (#{ids})"
         end
 
         matches = db.execute(<<~SQL).group_by {|r| r[1]}
@@ -63,7 +63,7 @@ class CMUServer
         matches.each do |match, rows|
             ids = rows.collect {|r| r[0]}
             ids = ids.join(",")
-            sql << "UPDATE datastore_patron SET greeterMatch = #{match} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND pid IN (#{ids})"
+            sql << "UPDATE datastore_patron SET greeterMatch = #{match} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND id IN (#{ids})"
         end
 
         File.open(Media::DATABASE_DIR + CMU_UPDATE_FILE, "w") do |f|
