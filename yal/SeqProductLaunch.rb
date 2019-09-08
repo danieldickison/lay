@@ -244,6 +244,12 @@ class SeqProductLaunch < Sequence
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
                 firstName, company_Position, company_Name, fbHometown, fbBirthday, university_subject, university_Name, highSchool_Name,
                 info_TraveledTo, info_PartnerFirstName, info_Relationship, info_ListensTo, tweetText_1, tweetText_2, tweetText_3, tweetText_4, likes,
+                fbPostImage_1, fbPostImage_2, fbPostImage_3, fbPostImage_4, fbPostImage_5, fbPostImage_6,
+                igPostImage_1, igPostImage_2, igPostImage_3, igPostImage_4, igPostImage_5, igPostImage_6,
+                fbPostText_1, fbPostText_2, fbPostText_3, fbPostText_4, fbPostText_5, fbPostText_6,
+                igPostText_1, igPostText_2, igPostText_3, igPostText_4, igPostText_5, igPostText_6,
+                fbPostCat_1, fbPostCat_2, fbPostCat_3, fbPostCat_4, fbPostCat_5, fbPostCat_6,
+                igPostCat_1, igPostCat_2, igPostCat_3, igPostCat_4, igPostCat_5, igPostCat_6,
                 seating, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
@@ -282,7 +288,29 @@ class SeqProductLaunch < Sequence
             d[:tweet2] = row[39] != '' ? row[39] : nil
             d[:tweet3] = row[40] != '' ? row[40] : nil
             d[:tweet4] = row[41] != '' ? row[41] : nil
-            d[:relevant_text] = nil
+
+            d_posts = row[43...55].zip(row[55...67], row[67...79])
+            interesting_post = d_posts.find do |img, text, cat|
+                img && img != '' && text && text != '' && cat == 'interesting'
+            end
+            if !interesting_post
+                puts "no 'interesting' post found for VIP D #{pid}; picking any other image+text post"
+                interesting_post = d_posts.find do |img, text, cat|
+                    img && img != '' && text && text != ''
+                end
+            end
+            if interesting_post
+                d[:relevant_text] = interesting_post[1]
+                d[:relevant] = isa_mined_index
+                img = interesting_post[0]
+                dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
+                isa_mined_index += 1
+                img_thumbnail(img, dst, 640, 640, "pid #{pid}", ISADORA_PRODUCTLAUNCH_MINED_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                d[:relevant_url] = TABLETS_PRODUCTLAUNCH_URL + dst
+                fn_pids[dst] = pid
+            else
+                puts "WARNING: no ig/fb post found for VIP D #{pid}"
+            end
 
             available_categories = (13..25).collect {|i| row[i]}.reject {|cat| !cat || cat == ''}
             available_categories.delete('face')
@@ -294,11 +322,6 @@ class SeqProductLaunch < Sequence
                 friends_cat = available_categories.pop
                 puts "no friends for VIP D pid #{pid}; using random category #{friends_cat} instead"
             end
-            if !relevant_cat
-                relevant_cat = available_categories.pop
-                puts "no relevant for VIP D pid #{pid}; using random category #{relevant_cat} instead"
-            end
-
             (0..12).each do |i|
                 img = row[i]
                 cat = row[i+13]
@@ -324,17 +347,6 @@ class SeqProductLaunch < Sequence
                     isa_mined_index += 1
                     img_thumbnail(img, dst, 640, 640, "pid #{pid}", ISADORA_PRODUCTLAUNCH_MINED_DIR, TABLETS_PRODUCTLAUNCH_DIR)
                     d[:friends_url] = TABLETS_PRODUCTLAUNCH_URL + dst
-                    fn_pids[dst] = pid
-                when relevant_cat
-                    if d[:relevant]
-                        puts "found multiple relevants for VIP D #{pid}"
-                        next
-                    end
-                    d[:relevant] = isa_mined_index
-                    dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
-                    isa_mined_index += 1
-                    img_thumbnail(img, dst, 640, 640, "pid #{pid}", ISADORA_PRODUCTLAUNCH_MINED_DIR, TABLETS_PRODUCTLAUNCH_DIR)
-                    d[:relevant_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
                 end
             end
