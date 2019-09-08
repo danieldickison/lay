@@ -3,7 +3,7 @@ class Yal
         CMUServer.new.pull
     end
      def cli_cmu_push(*args)
-        CMUServer.new.push
+        CMUServer.new.push(*args)
     end
 end
 
@@ -32,11 +32,18 @@ class CMUServer
     def push(performance_number = nil)
         performance_number ||= Showtime.current_performance_number
         perf_id = Showtime.performance_id(performance_number)
-        out_pids = File.read(Showtime::OPT_OUT_FILE).lines.collect {|l| l.to_i}
+
+        db = SQLite3::Database.new(Yal::DB_FILE)
         sql = []
-        sql << "UPDATE datastore_patron SET consented = 1 WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id})"
-        out_pids = out_pids.join(",")
-        sql << "UPDATE datastore_patron SET consented = 0 WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND pid IN (#{out_pids})"
+
+        consents = db.execute(<<~SQL).group_by {|r| r[1]}
+            SELECT pid,consented FROM datastore_patron WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id})
+        SQL
+        consents.each do |consent, rows|
+            pids = rows.collect {|r| r[0]}
+            pids = pids.join(",")
+            sql << "UPDATE datastore_patron SET consented = #{consent} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND pid IN (#{pids})"
+        end
 pp sql
     end
 
