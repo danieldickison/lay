@@ -305,7 +305,7 @@ class SeqProductLaunch < Sequence
                 img = interesting_post[0]
                 dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
                 isa_mined_index += 1
-                img_thumbnail(img, dst, 640, 640, "pid #{pid}", ISADORA_PRODUCTLAUNCH_MINED_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                img_fit(img, dst, 640, 640, "pid #{pid}", ISADORA_PRODUCTLAUNCH_MINED_DIR, TABLETS_PRODUCTLAUNCH_DIR)
                 d[:relevant_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                 fn_pids[dst] = pid
             else
@@ -345,7 +345,7 @@ class SeqProductLaunch < Sequence
                     d[:friends] = isa_mined_index
                     dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
                     isa_mined_index += 1
-                    img_thumbnail(img, dst, 640, 640, "pid #{pid}", ISADORA_PRODUCTLAUNCH_MINED_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                    img_fit(img, dst, 640, 640, "pid #{pid}", ISADORA_PRODUCTLAUNCH_MINED_DIR, TABLETS_PRODUCTLAUNCH_DIR)
                     d[:friends_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
                 end
