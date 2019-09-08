@@ -283,10 +283,10 @@ class SeqProductLaunch < Sequence
             d[:spouse_first_name] = (row[35] && row[35] != "") ? "#{partner_prefix}: #{row[35]}" : nil
             d[:listens_to] = row[37]
             d[:liked] = row[42] && row[42] != '' ? "Liked #{row[42]}" : nil
-            d[:tweet1] = row[38] != '' ? row[38] : nil
-            d[:tweet2] = row[39] != '' ? row[39] : nil
-            d[:tweet3] = row[40] != '' ? row[40] : nil
-            d[:tweet4] = row[41] != '' ? row[41] : nil
+            d[:tweet1] = row[38] && row[38] != '' ? truncate_text(row[38], 100) : nil
+            d[:tweet2] = row[39] && row[39] != '' ? truncate_text(row[39], 100) : nil
+            d[:tweet3] = row[40] && row[40] != '' ? truncate_text(row[40], 100) : nil
+            d[:tweet4] = row[41] && row[41] != '' ? truncate_text(row[41], 100) : nil
 
             available_categories = (13..25).collect {|i| row[i]}.reject {|cat| !cat || cat == ''}
             available_categories.delete('face')
@@ -318,7 +318,7 @@ class SeqProductLaunch < Sequence
                         puts "WARNING: found multiple 'relevant' for VIP D #{pid}! Not sure relevantText corresponds to which"
                         next
                     end
-                    d[:relevant_text] = row[-3] || '' # OR should we prefer a random fb/ig if we don't have text?
+                    d[:relevant_text] = truncate_text(row[-3] || '', 30) # OR should we prefer a random fb/ig if we don't have text?
                     d[:relevant] = isa_mined_index
                     dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
                     isa_mined_index += 1
@@ -351,7 +351,7 @@ class SeqProductLaunch < Sequence
                 end
                 if alt_relevant_post
                     puts "no relevant image for VIP D #{pid}; using fb/ig post with image #{alt_relevant_post[0]} instead"
-                    d[:relevant_text] = alt_relevant_post[1]
+                    d[:relevant_text] = truncate_text(alt_relevant_post[1], 30)
                     d[:relevant] = isa_mined_index
                     img = alt_relevant_post[0]
                     dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index

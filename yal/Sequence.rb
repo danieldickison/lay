@@ -47,6 +47,14 @@ class Sequence
         end
     end
 
+    def self.truncate_text(str, len)
+        if str.length > len
+            return str[0...(len - 3)] + '…'
+        else
+            return str
+        end
+    end
+
     def self.export(*_)
     end
 
