@@ -36,6 +36,15 @@ class CMUServer
         db = SQLite3::Database.new(Yal::DB_FILE)
         sql = []
 
+        pids = db.execute(<<~SQL).to_a
+            SELECT id,pid FROM datastore_patron WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id})
+        SQL
+        pids.each do |row|
+            id = row[0]
+            pid = row[1]
+            sql << "UPDATE datastore_patron SET pid = #{pid} WHERE id = #{id}"
+        end
+
         consents = db.execute(<<~SQL).group_by {|r| r[1]}
             SELECT id,consented FROM datastore_patron WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id})
         SQL
