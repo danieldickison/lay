@@ -232,7 +232,7 @@ class SeqProductLaunch < Sequence
                 spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
                 spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
                 firstName, company_Position, company_Name, fbHometown, fbBirthday, university_subject, university_Name, highSchool_Name,
-                info_TraveledTo, info_PartnerFirstName, info_Relationship, info_ListensTo, tweetText_1, tweetText_2,
+                info_TraveledTo, info_PartnerFirstName, info_Relationship, info_ListensTo, tweetText_1, tweetText_2, tweetText_3, tweetText_4, likes,
                 seating, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
@@ -267,11 +267,11 @@ class SeqProductLaunch < Sequence
             d[:spouse_first_name] = (row[35] && row[35] != "") ? "#{partner_prefix}: #{row[35]}" : nil
             d[:listens_to] = row[37]
             d[:liked] = nil
-            d[:tweet1] = row[38]
-            d[:tweet2] = row[39]
-            d[:tweet3] = nil
-            d[:tweet4] = nil
-            d[:relevant_text] = ""
+            d[:tweet1] = row[38] != '' ? row[38] : nil
+            d[:tweet2] = row[39] != '' ? row[39] : nil
+            d[:tweet3] = row[40] != '' ? row[40] : nil
+            d[:tweet4] = row[41] != '' ? row[41] : nil
+            d[:relevant_text] = row[42] && row[42] != '' ? "Liked #{row[42]}" : nil
 
             available_categories = (13..25).collect {|i| row[i]}.reject {|cat| !cat || cat == ''}
             available_categories.delete('face')
