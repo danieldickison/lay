@@ -100,7 +100,7 @@ class SeqProductLaunch < Sequence
             end
             if !a[:face]
                 puts "WARNING: missing face photo for #{a.inspect}"
-                a[:face] = 100
+                a[:face] = 10
             end
             a  # result
         end
@@ -156,7 +156,7 @@ class SeqProductLaunch < Sequence
             end
             if !b[:face]
                 puts "WARNING: missing face photo for #{b.inspect}"
-                b[:face] = 100
+                b[:face] = 10
             end
             b  # result
         end
@@ -225,7 +225,7 @@ class SeqProductLaunch < Sequence
             end
             if !c[:face]
                 puts "WARNING: missing face photo for #{c.inspect}"
-                c[:face] = 100
+                c[:face] = 10
             end
             c  # result
         end
@@ -395,22 +395,22 @@ class SeqProductLaunch < Sequence
                 :channel => '/isadora-multi/2',
                 :args => [
                     vip_a[:face],
-                    vip_a[:love],
-                    vip_a[:pet],
+                    vip_a[:love] || 13,
+                    vip_a[:pet] || 13,
                 ]
             },
             {
                 :channel => '/isadora-multi/3',
                 :args => [
                     vip_b[:face],
-                    vip_b[:company],
+                    vip_b[:company] || 13,
                 ]
             },
             {
                 :channel => '/isadora-multi/4',
                 :args => [
                     vip_c[:face],
-                    vip_c[:child],
+                    vip_c[:child] || 13,
                 ]
             },
 
@@ -440,11 +440,11 @@ class SeqProductLaunch < Sequence
             # target person images
             {
                 :channel => '/isadora/50',
-                :args => [vip_d[:friends] || -1],
+                :args => [vip_d[:friends] || 7],
             },
             {
                 :channel => '/isadora/60',
-                :args => [vip_d[:relevant] || -1],
+                :args => [vip_d[:relevant] || 7],
             },
             {
                 :channel => '/isadora/61',
