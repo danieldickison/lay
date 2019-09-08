@@ -277,12 +277,12 @@ class SeqProductLaunch < Sequence
             end
             d[:spouse_first_name] = (row[35] && row[35] != "") ? "#{partner_prefix}: #{row[35]}" : nil
             d[:listens_to] = row[37]
-            d[:liked] = nil
+            d[:liked] = row[42] && row[42] != '' ? "Liked #{row[42]}" : nil
             d[:tweet1] = row[38] != '' ? row[38] : nil
             d[:tweet2] = row[39] != '' ? row[39] : nil
             d[:tweet3] = row[40] != '' ? row[40] : nil
             d[:tweet4] = row[41] != '' ? row[41] : nil
-            d[:relevant_text] = row[42] && row[42] != '' ? "Liked #{row[42]}" : nil
+            d[:relevant_text] = nil
 
             available_categories = (13..25).collect {|i| row[i]}.reject {|cat| !cat || cat == ''}
             available_categories.delete('face')
