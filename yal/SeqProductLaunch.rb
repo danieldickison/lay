@@ -86,7 +86,7 @@ class SeqProductLaunch < Sequence
                     a[:love_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
                 when 'pet'
-                    if a[:face]
+                    if a[:pet]
                         puts "found multiple pets for VIP A #{pid}"
                         next
                     end
