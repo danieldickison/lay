@@ -12,6 +12,7 @@ class CMUServer
     CMU_USER = "joeh"
     CMU_ADDR = "projectosn.heinz.cmu.edu"
     CMU_DATABASE_DIR = "/home/rgross/lookingAtYou/"
+    CMU_UPDATE_FILE = "cmu-update.txt"
 
     def pull
         # add call to stop datamining server
@@ -35,6 +36,8 @@ class CMUServer
 
         db = SQLite3::Database.new(Yal::DB_FILE)
         sql = []
+
+        sql << "-- performance number #{performance_number}"
 
         pids = db.execute(<<~SQL).to_a
             SELECT id,pid FROM datastore_patron WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id})
@@ -62,7 +65,10 @@ class CMUServer
             ids = ids.join(",")
             sql << "UPDATE datastore_patron SET greeterMatch = #{match} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND pid IN (#{ids})"
         end
-pp sql
+
+        File.open(Media::DATABASE_DIR + CMU_UPDATE_FILE, "w") do |f|
+            sql.each {|l| f.puts(l + ";")}
+        end
     end
 
 
