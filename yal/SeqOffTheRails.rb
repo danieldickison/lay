@@ -329,12 +329,18 @@ class SeqOffTheRails
             Media::TVS.each do |tv|
                 # 8 random photos for each tv
                 ph = tv_rows[tv]
-                next if !ph
+                while !ph
+                    ph = tv_rows[Media::TVS.sample]
+                    puts "picking another tv row because #{tv} has no images"
+                end
                 ph = ph.shuffle
+                if ph.length < 8
+                    x = 8 - ph.length
+                    puts "pulling #{x} more image(s) from other tvs because #{tv} doesn't have enough"
+                    ph = ph + rows.sample(x)
+                end
                 (0..7).each do |i|
                     pp = ph[i]
-                    break if !pp
-
                     # pull out extra columns
                     pid = pp[-2].to_i
                     table = pp[-1][0]
