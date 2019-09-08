@@ -320,6 +320,8 @@ class SeqOffTheRails
 
             rows.reject! {|r| !r[0] || r[0] == ""}  # some cats have no image
 
+            puts "#{rows.length} #{category} images"
+
             tv_rows = rows.group_by do |r|
                 tvs = Media::TABLE_TVS[r[-1][0]] + Media::TABLE_TVS[r[-1][0]] + ["C01"]
                 tvs[rand(tvs.length)]  # result
