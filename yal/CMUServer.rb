@@ -3,7 +3,7 @@ class Yal
         CMUServer.new.pull
     end
      def cli_cmu_push(*args)
-        CMUServer.new.push
+        CMUServer.new.push(*args)
     end
 end
 
@@ -40,9 +40,6 @@ class CMUServer
 pp sql
     end
 
-
-         Yal::DB_FILE
-    end
 
     def push_files
         U.sh("/usr/bin/rsync", "-a", Yal::DB_FILE, "#{CMU_USER}@#{CMU_ADDR}:#{CMU_DATABASE_DIR}db.sqlite3")
