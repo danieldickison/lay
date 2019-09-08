@@ -37,21 +37,21 @@ class CMUServer
         sql = []
 
         consents = db.execute(<<~SQL).group_by {|r| r[1]}
-            SELECT pid,consented FROM datastore_patron WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id})
+            SELECT id,consented FROM datastore_patron WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id})
         SQL
         consents.each do |consent, rows|
-            pids = rows.collect {|r| r[0]}
-            pids = pids.join(",")
-            sql << "UPDATE datastore_patron SET consented = #{consent} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND pid IN (#{pids})"
+            ids = rows.collect {|r| r[0]}
+            ids = ids.join(",")
+            sql << "UPDATE datastore_patron SET consented = #{consent} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND pid IN (#{ids})"
         end
 
         matches = db.execute(<<~SQL).group_by {|r| r[1]}
-            SELECT pid,greeterMatch FROM datastore_patron WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id})
+            SELECT id,greeterMatch FROM datastore_patron WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id})
         SQL
         matches.each do |match, rows|
-            pids = rows.collect {|r| r[0]}
-            pids = pids.join(",")
-            sql << "UPDATE datastore_patron SET greeterMatch = #{match} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND pid IN (#{pids})"
+            ids = rows.collect {|r| r[0]}
+            ids = ids.join(",")
+            sql << "UPDATE datastore_patron SET greeterMatch = #{match} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND pid IN (#{ids})"
         end
 pp sql
     end
