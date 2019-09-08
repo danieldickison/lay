@@ -192,7 +192,6 @@ class Showtime
         res = db.execute(<<~SQL).collect {|r| {:number => r[0], :date => DateTime.parse(r[1]).to_time.localtime.strftime("%a %m/%d/%y %I:%M%P")}}
             SELECT performance_number, date FROM datastore_performance ORDER BY performance_number
         SQL
-pp res
         return res
     end
 
@@ -266,6 +265,14 @@ pp res
 
     def self.vips
         return File.read(VIP_FILE).lines.collect {|l| l.to_i}
+    end
+
+
+    def performance_id(performance_number)
+        db = SQLite3::Database.new(DB_FILE)
+        return db.execute(<<~SQL).first[0]
+            SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
+        SQL
     end
 end
 
