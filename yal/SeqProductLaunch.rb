@@ -65,7 +65,7 @@ class SeqProductLaunch < Sequence
                 case cat
                 when 'face'
                     if a[:face]
-                        puts "found multiple faces for VIP A #{pid}"
+                        #puts "found multiple faces for VIP A #{pid}"
                         next
                     end
                     a[:face] = isa_chosen_index
@@ -76,7 +76,7 @@ class SeqProductLaunch < Sequence
                     fn_pids[dst] = pid
                 when 'love'
                     if a[:love]
-                        puts "found multiple loves for VIP A #{pid}"
+                        #puts "found multiple loves for VIP A #{pid}"
                         next
                     end
                     a[:love] = isa_special_index
@@ -87,7 +87,7 @@ class SeqProductLaunch < Sequence
                     fn_pids[dst] = pid
                 when 'pet'
                     if a[:pet]
-                        puts "found multiple pets for VIP A #{pid}"
+                        #puts "found multiple pets for VIP A #{pid}"
                         next
                     end
                     a[:pet] = isa_special_index
@@ -143,7 +143,7 @@ class SeqProductLaunch < Sequence
                 case cat
                 when 'face'
                     if b[:face]
-                        puts "found multiple faces for VIP B #{pid}"
+                        #puts "found multiple faces for VIP B #{pid}"
                         next
                     end
                     b[:face] = isa_chosen_index
@@ -201,7 +201,7 @@ class SeqProductLaunch < Sequence
                 case cat
                 when 'face'
                     if c[:face]
-                        puts "found multiple faces for VIP C #{pid}"
+                        #puts "found multiple faces for VIP C #{pid}"
                         next
                     end
                     c[:face] = isa_chosen_index
@@ -212,7 +212,7 @@ class SeqProductLaunch < Sequence
                     fn_pids[dst] = pid
                 when child_cat
                     if c[:child]
-                        puts "found multiple children for VIP C #{pid}"
+                        #puts "found multiple children for VIP C #{pid}"
                         next
                     end
                     c[:child] = isa_special_index
@@ -248,8 +248,7 @@ class SeqProductLaunch < Sequence
                 igPostImage_1, igPostImage_2, igPostImage_3, igPostImage_4, igPostImage_5, igPostImage_6,
                 fbPostText_1, fbPostText_2, fbPostText_3, fbPostText_4, fbPostText_5, fbPostText_6,
                 igPostText_1, igPostText_2, igPostText_3, igPostText_4, igPostText_5, igPostText_6,
-                fbPostCat_1, fbPostCat_2, fbPostCat_3, fbPostCat_4, fbPostCat_5, fbPostCat_6,
-                igPostCat_1, igPostCat_2, igPostCat_3, igPostCat_4, igPostCat_5, igPostCat_6,
+                relevantText,
                 seating, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
@@ -289,36 +288,13 @@ class SeqProductLaunch < Sequence
             d[:tweet3] = row[40] != '' ? row[40] : nil
             d[:tweet4] = row[41] != '' ? row[41] : nil
 
-            d_posts = row[43...55].zip(row[55...67], row[67...79])
-            interesting_post = d_posts.find do |img, text, cat|
-                img && img != '' && text && text != '' && cat == 'interesting'
-            end
-            if !interesting_post
-                puts "no 'interesting' post found for VIP D #{pid}; picking any other image+text post"
-                interesting_post = d_posts.find do |img, text, cat|
-                    img && img != '' && text && text != ''
-                end
-            end
-            if interesting_post
-                d[:relevant_text] = interesting_post[1]
-                d[:relevant] = isa_mined_index
-                img = interesting_post[0]
-                dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
-                isa_mined_index += 1
-                img_fit(img, dst, 640, 640, "pid #{pid}", ISADORA_PRODUCTLAUNCH_MINED_DIR, TABLETS_PRODUCTLAUNCH_DIR)
-                d[:relevant_url] = TABLETS_PRODUCTLAUNCH_URL + dst
-                fn_pids[dst] = pid
-            else
-                puts "WARNING: no ig/fb post found for VIP D #{pid}"
-            end
-
             available_categories = (13..25).collect {|i| row[i]}.reject {|cat| !cat || cat == ''}
             available_categories.delete('face')
+            available_categories.delete('relevant')
             friends_cat = available_categories.delete('friends')
-            relevant_cat = available_categories.delete('relevant')
-            available_categories.shuffle!
             #puts "available other image categories for #{pid}: #{available_categories.join(', ')}"
             if !friends_cat
+                available_categories.shuffle!
                 friends_cat = available_categories.pop
                 puts "no friends for VIP D pid #{pid}; using random category #{friends_cat} instead"
             end
@@ -328,7 +304,7 @@ class SeqProductLaunch < Sequence
                 case cat
                 when 'face'
                     if d[:face]
-                        puts "found multiple faces for VIP D #{pid}"
+                        #puts "found multiple faces for VIP D #{pid}"
                         next
                     end
                     d[:face] = isa_threat_index
@@ -337,9 +313,21 @@ class SeqProductLaunch < Sequence
                     img_thumbnail(img, dst, 600, 600, "pid #{pid}", ISADORA_PRODUCTLAUNCH_THREAT_DIR, TABLETS_PRODUCTLAUNCH_DIR)
                     d[:face_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
+                when 'relevant'
+                    if d[:relevant]
+                        puts "WARNING: found multiple 'relevant' for VIP D #{pid}! Not sure relevantText corresponds to which"
+                        next
+                    end
+                    d[:relevant_text] = row[-3] || '' # OR should we prefer a random fb/ig if we don't have text?
+                    d[:relevant] = isa_mined_index
+                    dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
+                    isa_mined_index += 1
+                    img_fit(img, dst, 640, 640, "pid #{pid}", ISADORA_PRODUCTLAUNCH_MINED_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                    d[:relevant_url] = TABLETS_PRODUCTLAUNCH_URL + dst
+                    fn_pids[dst] = pid
                 when friends_cat
                     if d[:friends]
-                        puts "found multiple friends for VIP D #{pid}"
+                        #puts "found multiple friends for VIP D #{pid}"
                         next
                     end
                     d[:friends] = isa_mined_index
@@ -354,6 +342,28 @@ class SeqProductLaunch < Sequence
                 puts "WARNING: missing face photo for #{d.inspect}"
                 d[:face] = 4
             end
+
+            # Fall back to using random fb/ig post if there was no "relevant" image
+            if !d[:relevant]
+                d_posts = row[43...55].zip(row[55...67])
+                alt_relevant_post = d_posts.find do |img, text|
+                    img && img != '' && text && text != ''
+                end
+                if alt_relevant_post
+                    puts "no relevant image for VIP D #{pid}; using fb/ig post with image #{alt_relevant_post[0]} instead"
+                    d[:relevant_text] = alt_relevant_post[1]
+                    d[:relevant] = isa_mined_index
+                    img = alt_relevant_post[0]
+                    dst = ISADORA_PRODUCTLAUNCH_MINED_FMT % isa_mined_index
+                    isa_mined_index += 1
+                    img_fit(img, dst, 640, 640, "pid #{pid}", ISADORA_PRODUCTLAUNCH_MINED_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                    d[:relevant_url] = TABLETS_PRODUCTLAUNCH_URL + dst
+                    fn_pids[dst] = pid
+                else
+                    puts "WARNING: no relevant photo and no ig/fb post found for VIP D #{pid}"
+                end
+            end
+
             d  # result
         end
         pbdata[:vip_ds] = vip_ds
