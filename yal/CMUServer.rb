@@ -66,9 +66,13 @@ class CMUServer
             sql << "UPDATE datastore_patron SET greeterMatch = #{match} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND id IN (#{ids})"
         end
 
+        cmu_file = Media::DATABASE_DIR + CMU_UPDATE_FILE
         File.open(Media::DATABASE_DIR + CMU_UPDATE_FILE, "w") do |f|
             sql.each {|l| f.puts(l + ";")}
         end
+
+        U.sh("/usr/bin/rsync", "-a", cmu_file, "#{CMU_USER}@#{CMU_ADDR}:#{CMU_UPDATE_FILE}")
+        U.sh("/usr/bin/ssh", "#{CMU_USER}@#{CMU_ADDR}", "cat #{CMU_UPDATE_FILE}|sqlite3 #{CMU_DATABASE_DIR}db.sqlite3")
     end
 
 
