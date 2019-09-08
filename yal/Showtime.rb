@@ -269,7 +269,7 @@ class Showtime
 
 
     def self.performance_id(performance_number)
-        db = SQLite3::Database.new(DB_FILE)
+        db = SQLite3::Database.new(Yal::DB_FILE)
         return db.execute(<<~SQL).first[0]
             SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
         SQL
