@@ -44,6 +44,15 @@ class CMUServer
             pids = pids.join(",")
             sql << "UPDATE datastore_patron SET consented = #{consent} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND pid IN (#{pids})"
         end
+
+        matches = db.execute(<<~SQL).group_by {|r| r[1]}
+            SELECT pid,greeterMatch FROM datastore_patron WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id})
+        SQL
+        matches.each do |match, rows|
+            pids = rows.collect {|r| r[0]}
+            pids = pids.join(",")
+            sql << "UPDATE datastore_patron SET greeterMatch = #{match} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND pid IN (#{pids})"
+        end
 pp sql
     end
 
