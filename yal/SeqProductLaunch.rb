@@ -184,6 +184,17 @@ class SeqProductLaunch < Sequence
                 :child_name => row[-3],
                 :first_name => row[-4],
             }
+
+            available_categories = (13..25).collect {|i| row[i]}.reject {|cat| !cat || cat == ''}
+            child_cat = available_categories.delete('child')
+            if !child_cat 
+                puts "using loved one photo for VIP C #{pid} because they have no child photo"
+                child_cat = available_categories.delete('love') # fall back to loved one pic of there's no child
+                if !child_cat
+                    puts "WARNING: no child or loved one photo for VIP C #{pid}"
+                end
+            end
+
             (0..12).each do |i|
                 img = row[i]
                 cat = row[i+13]
@@ -199,7 +210,7 @@ class SeqProductLaunch < Sequence
                     img_thumbnail(img, dst, 600, 600, "pid #{pid}", ISADORA_PRODUCTLAUNCH_CHOSEN_DIR, TABLETS_PRODUCTLAUNCH_DIR)
                     c[:face_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                     fn_pids[dst] = pid
-                when 'child'
+                when child_cat
                     if c[:child]
                         puts "found multiple children for VIP C #{pid}"
                         next
