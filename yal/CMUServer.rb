@@ -20,14 +20,14 @@ class CMUServer
         if !success
             puts "problem getting db.sqlite3:"
             puts out
-            exit 1
+            raise
         end
         success, out = U.sh("/usr/bin/rsync", "-a", "--delete", "#{CMU_USER}@#{CMU_ADDR}:#{CMU_DATABASE_DIR}media/images", "#{Media::DATABASE_DIR}")
         if !success
             puts "problem getting images:"
             puts out
-            exit 1
-        end 
+            raise
+        end
     end
 
     def push(performance_number = nil)

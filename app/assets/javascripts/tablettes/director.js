@@ -32,6 +32,36 @@ document.addEventListener("DOMContentLoaded", event => {
     });
 
 
+    document.getElementById('button-b').addEventListener('click', event => {
+        event.preventDefault();
+        fetch('/tablettes/button_b.json', {method: 'POST'})
+        .then(response => {
+            return response.json();
+        })
+        .then(json => {
+            alert(json.msg);
+        })
+        .catch(err => {
+            alert(err);
+        });
+    });
+
+
+    document.getElementById('button-c').addEventListener('click', event => {
+        event.preventDefault();
+        fetch('/tablettes/button_c.json', {method: 'POST'})
+        .then(response => {
+            return response.json();
+        })
+        .then(json => {
+            alert(json.msg);
+        })
+        .catch(err => {
+            alert(err);
+        });
+    });
+
+
     document.getElementById('toggle-deets-link').addEventListener('click', event => {
         event.preventDefault();
         document.getElementById('director-deets').classList.toggle('director-deets--show');

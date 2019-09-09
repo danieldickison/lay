@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
 require('pathname')
-e = Pathname.new(__FILE__).parent.parent.realpath.to_s + "/yal.rb"
-args = ARGV.join(' ')
-exec("bundle exec #{e} #{args}\n")
+Dir.chdir(Pathname.new(__FILE__).parent.parent.realpath.to_s)
+env = {"HOME" => ENV["HOME"], "PATH" => ENV["PATH"]}
+exec(env, "bundle", "exec", "yal.rb", *ARGV, {:unsetenv_others => true})

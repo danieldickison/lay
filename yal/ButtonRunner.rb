@@ -1,18 +1,17 @@
+require('ushell')
+
 class ButtonRunner
 
     attr_reader(:which, :output)
 
     def initialize(which)
-        @which = which
+        @which = which.to_s
+        raise if !["a", "b", "c"].include?(@which)
         @output = ''
     end
 
     def run
-        # TODO: async?
-        IO.pipe do |r, w|
-            success = system('./bin/yal', :unsetenv_others => true, :chdir => __dir__, :out => w, :err => w)
-            puts "finished with success: #{success.inspect}"
-            @output = (success ? 'success: ' : 'error: ') + r.read
-        end
+        puts "Running button #{@which}"
+        success, @output = U.sh("#{YAL_DIR}/bin/yal", "button_#{@which}")
     end
 end

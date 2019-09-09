@@ -1,25 +1,25 @@
 <div id="p-director">
     <h1>Playback Server</h1>
     <form>
+        <label>
+            Performance:
+            <select id="performance-select">
+                <% for p in @performances -%>
+                    <option value="<%= p[:number] %>"
+                        <% if p[:number] == @current_performance %>selected<% end %>
+                    >
+                        <%= p[:number] %>: <%= p[:date] %>
+                    </option>
+                <% end -%>
+            </select>
+        </label>
+        <span style="margin-left: 2em">Yo Alex: </span>
         <button id="button-a">Button A</button>
         <button id="button-b">Button B</button>
         <button id="button-c">Button C</button>
     </form>
     <section style="clear: both">
         <form id="director-controls-form" class="director-form">
-            <label>
-                Performance:
-                <select id="performance-select">
-                    <% for p in @performances -%>
-                        <option value="<%= p[:number] %>"
-                            <% if p[:number] == @current_performance %>selected<% end %>
-                        >
-                            <%= p[:number] %>: <%= p[:date] %>
-                        </option>
-                    <% end -%>
-                </select>
-            </label>
-            <br>
             <label class="pre-show-radio-label">
                 <input type="radio" name="director-pre-show-radio" id="pre-show-radio" value="0" <% if !@show_time %>checked<% end %>>
                 Pre-show

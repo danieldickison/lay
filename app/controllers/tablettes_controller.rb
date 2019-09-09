@@ -71,7 +71,7 @@ class TablettesController < ApplicationController
     end
 
     def button_a
-        runner = ButtonRunner.new(:a)
+        runner = ButtonRunner.new("a")
         runner.run
         render json: {
             :msg => runner.output
@@ -84,9 +84,29 @@ class TablettesController < ApplicationController
     end
 
     def button_b
+        runner = ButtonRunner.new("b")
+        runner.run
+        render json: {
+            :msg => runner.output
+        }
+    rescue
+        puts "failed to run button b: #{$!}"
+        render json: {
+            :error => $!.to_s
+        }
     end
 
     def button_c
+        runner = ButtonRunner.new("c")
+        runner.run
+        render json: {
+            :msg => runner.output
+        }
+    rescue
+        puts "failed to run button c: #{$!}"
+        render json: {
+            :error => $!.to_s
+        }
     end
 
 

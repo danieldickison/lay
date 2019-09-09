@@ -340,22 +340,34 @@ class Yal
 
 
     def cli_button_a
+        ok = true
         performance = Showtime.current_performance
-        pp performance
-        return
-        Showtime[:cast_show_time] = false
 
         if Time.now.month != performance[:date].month || Time.now.day != performance[:date].day
             puts "Double check that the performance is set to today's performance."
+            ok = false
+        end
+
+        puts "Setting cast tablets to SHOW ALL VIP CANDIDATES"
+        Showtime[:cast_show_time] = false
+
+        if ok
+            puts "A OK"
         end
     end
 
     def cli_button_b
+        ok = true
         performance = Showtime.current_performance
-        pp performance
-        return
 
+        print "Getting show's data from CMU... "
         CMUServer.new.pull
+        puts "success"
+
+        if ok
+            puts "B OK"
+        end
+        return
 
         Showtime.prepare_export(performance[:id])
         args.each do |seq|
