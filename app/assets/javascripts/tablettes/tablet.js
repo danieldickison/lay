@@ -535,13 +535,11 @@ function stop() {
     if (currentSequence) currentSequence.stop();
 
     let preShow = document.getElementById('tablettes-pre-show');
+    let debug = document.getElementById('tablettes-debug');
     if (preShow.classList.contains('visible')) {
         PreShow.reset();
-    }
-
-    let debugEnabled = document.getElementById('tablettes-debug').classList.contains('visible');
-    if (debugEnabled) {
-        layNativeInterface.setScreenBrightness(0.3);
+    } else if (debug.classList.contains('visible')) {
+        layNativeInterface.setScreenBrightness(0.2);
     }
 }
 
