@@ -383,7 +383,7 @@ class SeqProductLaunch < Sequence
             face_img = patron[3...16].zip(patron[16...29]).find {|img, cat| cat == 'face'}&.first
             dst = "raj-#{seat}.jpg"
             face_url = TABLETS_PRODUCTLAUNCH_URL + dst
-            img_thumbnail(face_img, dst, 600, 600, "pid #{pid}", TABLETS_PRODUCTLAUNCH_DIR)
+            img_thumbnail(face_img, dst, 600, 600, "pid #{row[1]}", TABLETS_PRODUCTLAUNCH_DIR)
             {:table => row[0][0], :name => patron[2], :face_url => face_url}
         end
         pbdata[:raj_patrons] = raj_patrons
