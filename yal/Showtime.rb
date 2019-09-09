@@ -131,6 +131,8 @@ class Showtime
 
         # create preshow test version
         File.open(OPT_OUT_FILE, "w") {|f| f.puts}  # no opt outs
+
+        PlaybackData.reset_filename_pids
     end
 
     def self.write_vips_file(vips = nil)
@@ -268,7 +270,7 @@ class Showtime
 
         # opt outs
         rows = db.execute(<<~SQL).collect {|r| r[0]}
-            SELECT pid, consented
+            SELECT pid, consented, greeterMatch
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
         SQL
@@ -278,7 +280,10 @@ class Showtime
         end
 
         max_pid = rows.max_by {|r| r[0]}[0]
-        ids = rows.find_all {|r| r[1] == 0}.collect {|r| r[0]}
+        ids = rows.find_all {|r| r[1] == 0 || r[2] == 0}.collect {|r| r[0]}
+        if ids.length > rows.length / 2
+            puts "WARNING: only #{rows.length - ids.length} patrons available for show data (because of opt-out or greeter mismatch)"
+        end
         ids += ((max_pid + 1) .. MAX_PATRONS).to_a  # pad opt-outs for the non-existent patrons
         File.open(OPT_OUT_FILE, "w") do |f|
             o = ids.collect {|i| "%03d" % i}.join("\n")
@@ -334,46 +339,40 @@ class Yal
     end
 
 
-
     def cli_button_a
         performance = Showtime.current_performance
+        pp performance
+        return
         Showtime[:cast_show_time] = false
-        msgs = []
 
         if Time.now.month != performance[:date].month || Time.now.day != performance[:date].day
-            msgs << "Double check that the performance is set to today's performance."
+            puts "Double check that the performance is set to today's performance."
         end
-
-        puts msgs.join("\n")
-        return nil
     end
 
     def cli_button_b
         performance = Showtime.current_performance
-        msgs = []
-        # cmu_pull
+        pp performance
+        return
 
-        Showtime.prepare_export(performance_id)
+        CMUServer.new.pull
+
+        Showtime.prepare_export(performance[:id])
         args.each do |seq|
             puts "#{seq}..."
             seqclass = Object.const_get("Seq#{seq}".to_sym)
-            seqclass.export(performance_id)
+            seqclass.export(performance[:id])
         end
-
-
-        # perf summary report
-        puts msgs.join("\n")
-        return nil
-        return ""
+        Isadora.push
     end
 
     def cli_button_c
         performance = Showtime.current_performance
-        msgs = []
-        # finalize data, isadora_push, cmu_push
+        pp performance
+        return
 
-        puts msgs.join("\n")
-        return nil
-        return ""
+        Showtime.finalize_show_data(performance[:id])
+        Isadora.push_opt_out
+        CMUServer.push(performance[:id])
     end
 end
