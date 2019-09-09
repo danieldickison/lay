@@ -170,7 +170,10 @@ class Showtime
                     performance_2_id = #{performance_id}
                 )
         SQL
-        raise "seat #{seating} not found for performance #{performance_number} (id #{performance_id})" if !patron
+        if !patron
+            puts "seat #{seating} not found for performance #{performance_number} (id #{performance_id}); ignoring"
+            return
+        end
 
         pid = patron[0]
         consent = opted_in ? 1 : 0
