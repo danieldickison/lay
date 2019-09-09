@@ -356,11 +356,11 @@ class Yal
     def cli_button_b
         performance = Showtime.current_performance
 
-        print "Getting show's data from CMU... "
+        puts "Getting show's data from CMU... "
         CMUServer.new.pull
         puts "success."
 
-        print "Generating media... "
+        puts "Generating media... "
         Showtime.prepare_export(performance[:id])
         Yal.seqs.each do |seq|
             puts "#{seq}..."
@@ -369,7 +369,7 @@ class Yal
         end
         puts "success."
 
-        print "Pushing to Isadora... "
+        puts "Pushing to Isadora... "
         Isadora.push
         puts "success."
 
@@ -379,15 +379,15 @@ class Yal
     def cli_button_c
         performance = Showtime.current_performance
 
-        print "Finalizing show data... "
+        puts "Finalizing show data... "
         Showtime.finalize_show_data(performance[:id])
         puts "success."
 
-        print "Pushing opt-out data to Isadora... "
+        puts "Pushing opt-out data to Isadora... "
         Isadora.push_opt_out
         puts "success."
 
-        print "Pushing changes back to CMU... "
+        puts "Pushing changes back to CMU... "
         CMUServer.push(performance[:id])
         puts "success."
 
