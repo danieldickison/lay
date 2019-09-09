@@ -111,13 +111,17 @@ module Lay
 
         cue = message.to_a[0].to_i
         puts "received cue #{cue}"
+        
+        if cue != 50
+            TablettesController.show_time = true
+        end
+
         @current_seq = case cue % 10000
         when 50
             #SeqSimpleVideo.new(50, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
             TablettesController.show_time = false
             nil
         when 55
-            TablettesController.show_time = true
             # TODO
             # YalRunner.sh("export", performance_number, "OptOut")
             SeqSimpleVideo.new(55, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
