@@ -42,7 +42,9 @@ module PlaybackData
     FILENAME_PIDS_FILE = Media::DATA_DIR + "LAY_filename_pids.txt"
 
     def self.reset_filename_pids
-        File.delete(FILENAME_PIDS_FILE)
+        if File.exist?(FILENAME_PIDS_FILE)
+            File.delete(FILENAME_PIDS_FILE)
+        end
     end
 
     def self.merge_filename_pids(fn_pids)
