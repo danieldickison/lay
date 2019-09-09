@@ -20,10 +20,11 @@
         <% end -%>
         <% for patron in @raj_patrons %>
             <li>
-                <h2 class="vip-letter">Raj Table <%= patron[:table] %> - Paul</h2>
+                <h2 class="vip-letter">Raj - Paul</h2>
                 <img src="<%= patron[:face_url] %>">
                 <ul>
-                    <li><strong>Name:</strong> <span class="info-value"><%= patron[:name] %></span></li>
+                    <li><strong>table:</strong> <span class="info-value"><%= patron[:table] %></span></li>
+                    <li><strong>first_name:</strong> <span class="info-value"><%= patron[:name] %></span></li>
                 </ul>
             </li>
         <% end -%>
