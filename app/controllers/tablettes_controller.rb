@@ -65,7 +65,7 @@ class TablettesController < ApplicationController
         @debug = self.class.debug
         @show_time = self.class.show_time
         @performances = Showtime.list_performances
-        @current_performance = Showtime.current_performance_number
+        @current_performance = Showtime[:performance_number]
     end
 
     def play_timecode
@@ -84,7 +84,7 @@ class TablettesController < ApplicationController
     end
 
     def set_current_performance
-        Showtime.current_performance_number = Integer(params[:performance_number])
+        Showtime[:performance_number] = Integer(params[:performance_number])
     end
 
     def start_cue
@@ -116,7 +116,7 @@ class TablettesController < ApplicationController
         tablet_ids = (ALL_TABLETS + tablets.keys).uniq.sort
         render json: {
             show_time: self.class.show_time,
-            performance_number: Showtime.current_performance_number,
+            performance_number: Showtime[:performance_number],
             tablets: tablet_ids.collect do |id|
                 t = tablets[id] || {}
                 {
@@ -273,7 +273,7 @@ class TablettesController < ApplicationController
             drink = 'none' if !drink || drink == ''
             opt = params[:opt]
             puts "update_patron: #{params.inspect}"
-            performance_number = Showtime.current_performance_number
+            performance_number = Showtime[:performance_number]
             #Showtime.update_patron(performance_number, login_id, drink, opt == 'Y')
 
             # temp hack to use table+seat to identify folks:

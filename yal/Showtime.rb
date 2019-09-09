@@ -8,7 +8,7 @@ High level actions that happen before, during and after the show.
 . cmu_pull
 . export <performance number>
 . isadora_push
-. finalize_last_minute_data <performance number>
+. finalize_show_data <performance number>
 . isadora_push_opt_out
 
 debugging:
@@ -18,13 +18,55 @@ debugging:
 
 =end
 
+class Yal
+    def cli_showtime(*args)
+        if args.length == 1
+            puts Showtime[args[0].to_sym]
+        end
+        if args.length == 2
+            puts Showtime[args[0].to_sym] = args[1]
+        end
+    end
+end
+
 
 class Showtime
     MAX_PATRONS  = 100
     OPT_OUT_FILE = Media::DATA_DIR + "LAY_opt_outs.txt"
     VIP_FILE     = Media::DATA_DIR + "LAY_vips.txt"
 
-    CURRENT_PERFORMANCE_FILE = Media::VOLUME + "/db/current_performance.txt"
+    SHOWTIME_FILE = Media::DATA_DIR + "showtime.json"
+
+    @@persistent = nil
+    @@persistent_mutex = Mutex.new
+
+    def self.[](key)
+        if !@@persistent
+            @@persistent_mutex.synchronize do
+                if !@@persistent
+                    `mkdir -p '#{Media::DATA_DIR}'`
+                    if File.exist?(SHOWTIME_FILE)
+                        @@persistent = JSON.parse(File.read(SHOWTIME_FILE))
+                        PlaybackData.fixup_keys(@@persistent)
+                    else
+                        @@persistent = {:performance_number => 1}
+                    end
+                end
+            end
+        end
+        return @@persistent[key]
+    end
+
+    def self.[]=(key, value)
+        if !@@persistent
+            Showtime[key]
+        end
+        @@persistent_mutex.synchronize do        
+            @@persistent[key] = value
+            File.open(SHOWTIME_FILE, "w") {|f| f.write(JSON.pretty_generate(@@persistent))}
+        end
+        return value
+    end
 
     def self.prepare_export(performance_id)
         db = SQLite3::Database.new(Database::DB_FILE)
@@ -82,14 +124,19 @@ class Showtime
             SQL
         end
 
+        # pids
         assign_pids(performance_id, 1)
 
         Dummy.prepare_export
 
-        puts "Writing temporary opt-in and VIP files."
-        File.open(OPT_OUT_FILE, "w") {|f| f.puts}
+        # create preshow test version
+        File.open(OPT_OUT_FILE, "w") {|f| f.puts}  # no opt outs
+    end
+
+    def self.write_vips_file(vips = nil)
+        vips ||= [0,0,0,0]
         File.open(VIP_FILE, "w") do |f|
-            4.times {f.puts('%03d' % 0)}
+            4.times {|i| f.puts('%03d' % vips[i])}
         end
     end
 
@@ -198,28 +245,19 @@ class Showtime
         return res
     end
 
-    @current_performance_number = nil
-    @current_performance_mutex = Mutex.new
-    def self.current_performance_number
-        if !@current_performance_number
-            @current_performance_mutex.synchronize do
-                @current_performance_number = File.read(CURRENT_PERFORMANCE_FILE).to_i rescue -1
-            end
-        end
-        return @current_performance_number
+
+    # :number => performance_number, :date => date, :id => performance_id
+    def self.current_performance
+        db = SQLite3::Database.new(Database::DB_FILE)
+        performance_number = Showtime[:performance_number]
+        res = db.execute(<<~SQL).first
+            SELECT date, id FROM datastore_performance WHERE performance_number = #{performance_number}
+        SQL
+        return {:number => performance_number, :date => DateTime.parse(res[0]).to_time.localtime, :id => res[1]}
     end
 
-    def self.current_performance_number=(number)
-        @current_performance_mutex.synchronize do
-            @current_performance_number = nil
-            File.open(CURRENT_PERFORMANCE_FILE, 'w') do |f|
-                f.puts(number.to_s)
-            end
-        end
-        return number
-    end
 
-    def self.finalize_last_minute_data(performance_id)
+    def self.finalize_show_data(performance_id)
         `mkdir -p '#{Media::DATA_DIR}'`
         db = SQLite3::Database.new(Database::DB_FILE)
 
@@ -229,17 +267,19 @@ class Showtime
         is_fake = (performance_number < 0)
 
         # opt outs
-        ids = db.execute(<<~SQL).collect {|r| r[0]}
-            SELECT pid
+        rows = db.execute(<<~SQL).collect {|r| r[0]}
+            SELECT pid, consented
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
-            AND consented = 0
         SQL
 
         if is_fake && ids.length == 100
             ids = ids.shuffle[0..24]
         end
 
+        max_pid = rows.max_by {|r| r[0]}[0]
+        ids = rows.find_all {|r| r[1] == 0}.collect {|r| r[0]}
+        ids += ((max_pid + 1) .. MAX_PATRONS).to_a  # pad opt-outs for the non-existent patrons
         File.open(OPT_OUT_FILE, "w") do |f|
             o = ids.collect {|i| "%03d" % i}.join("\n")
             f.puts(o)
@@ -290,25 +330,49 @@ class Yal
     end
 
     def cli_finalize_last_minute_data(*args)
-        Showtime.finalize_last_minute_data(get_performance_id(args[0]))
+        Showtime.finalize_show_data(get_performance_id(args[0]))
     end
 
 
 
-    def button_a
-        # validate show date? / perf number
-        return ""
+    def cli_button_a
+        performance = Showtime.current_performance
+        msgs = []
+
+        if Time.now.month != performance[:date].month || Time.now.day != performance[:date].day
+            msgs << "Double check that the performance is set to today's performance."
+        end
+
+        puts msgs.join("\n")
+        return nil
     end
 
-    def button_b
+    def cli_button_b
+        performance = Showtime.current_performance
+        msgs = []
         # cmu_pull
-        # export perf number, no UI, verbosity
+
+        Showtime.prepare_export(performance_id)
+        args.each do |seq|
+            puts "#{seq}..."
+            seqclass = Object.const_get("Seq#{seq}".to_sym)
+            seqclass.export(performance_id)
+        end
+
+
         # perf summary report
+        puts msgs.join("\n")
+        return nil
         return ""
     end
 
-    def button_c
+    def cli_button_c
+        performance = Showtime.current_performance
+        msgs = []
         # finalize data, isadora_push, cmu_push
+
+        puts msgs.join("\n")
+        return nil
         return ""
     end
 end

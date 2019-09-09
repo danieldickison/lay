@@ -371,6 +371,10 @@ class SeqProductLaunch < Sequence
 
         PlaybackData.write(TABLETS_PRODUCTLAUNCH_DIR, pbdata)
         PlaybackData.merge_filename_pids(fn_pids)
+
+        # for preshow, pick the first four vips
+        vips = [:vip_as, :vip_bs, :vip_cs, :vip_ds].collect {|v| pbdata[v][0][:pid]}
+        Showtime.write_vips_file(vips)
     end
 
 
