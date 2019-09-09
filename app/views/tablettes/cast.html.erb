@@ -2,7 +2,14 @@
     <ol id="vips">
         <% for vip in @vips -%>
             <li>
-                <h2 class="vip-letter"><%= vip.letter %></h2>
+                <h2 class="vip-letter"><%= vip.letter %> - 
+                    <%= case vip.letter
+                    when 'A' then 'Mikki'
+                    when 'B' then 'Eric'
+                    when 'C' then 'Adrienne'
+                    when 'D' then 'Blythe'
+                    end %>
+                </h2>
                 <img src="<%= vip.face_src %>">
                 <ul>
                     <% for kv in vip.info %>
@@ -13,7 +20,7 @@
         <% end -%>
         <% for patron in @raj_patrons %>
             <li>
-                <h2 class="vip-letter">Raj Table <%= patron[:table] %></h2>
+                <h2 class="vip-letter">Raj Table <%= patron[:table] %> - Paul</h2>
                 <img src="<%= patron[:face_url] %>">
                 <ul>
                     <li><strong>Name:</strong> <span class="info-value"><%= patron[:name] %></span></li>
