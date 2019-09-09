@@ -381,9 +381,13 @@ class SeqProductLaunch < Sequence
             puts patron.inspect
             next if !patron
             face_img = patron[3...16].zip(patron[16...29]).find {|img, cat| cat == 'face'}&.first
-            dst = "raj-#{seat}.jpg"
-            face_url = TABLETS_PRODUCTLAUNCH_URL + dst
-            img_thumbnail(face_img, dst, 600, 600, "pid #{patron[1]}", TABLETS_PRODUCTLAUNCH_DIR)
+            if face_img
+                dst = "raj-#{seat}.jpg"
+                face_url = TABLETS_PRODUCTLAUNCH_URL + dst
+                img_thumbnail(face_img, dst, 600, 600, "pid #{patron[1]}", TABLETS_PRODUCTLAUNCH_DIR)
+            else
+                face_url = nil
+            end
             {:table => patron[0][0], :name => patron[2], :face_url => face_url}
         end
         pbdata[:raj_patrons] = raj_patrons
