@@ -257,6 +257,10 @@ class SeqOffTheRails
         tablet_posts = photos + tweets
         # we can only have up to 300 photos for tvs
         tv_photos = photos.sample(300)
+        while tv_photos.length < 300
+            puts "Only got #{tv_photos.length} TV photos; recycling to fill up all isadora slots"
+            tv_photos.concat(photos.sample(300 - tv_photos.length))
+        end
         tv_posts = tv_photos + tweets
         tv_posts.shuffle!
 
