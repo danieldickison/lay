@@ -280,7 +280,7 @@ class Showtime
         end
 
         max_pid = rows.max_by {|r| r[0]}[0]
-        ids = rows.find_all {|r| r[1] == 0 || r[2] == 0}.collect {|r| r[0]}
+        ids = rows.find_all {|r| r[1] == 0}.collect {|r| r[0]}  #  || r[2] == 0
         if ids.length > rows.length / 2
             puts "WARNING: only #{rows.length - ids.length} patrons available for show data (because of opt-out or greeter mismatch)"
         end
