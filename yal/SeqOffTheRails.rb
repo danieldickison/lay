@@ -618,9 +618,8 @@ class SeqOffTheRails
                     text = text[0...(TEXT_MAX_LEN - 3)] + '...'
                 end
                 @is.send(@osc_address,
-                    # The % 300 is a temporary hack to avoid sending references to images isadora hasn't loaded (max 300 per category)
-                    @item[:isa_profile_num] ? (@item[:isa_profile_num] % 300) : -1,  # profile pic
-                    @item[:isa_photo_num] ? (@item[:isa_photo_num] % 300) : -1,    # photo
+                    @item[:isa_profile_num] ? @item[:isa_profile_num] : -1,  # profile pic
+                    @item[:isa_photo_num] ? @item[:isa_photo_num] : -1,    # photo
                     type,
                     text
                 )
