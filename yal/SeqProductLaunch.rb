@@ -17,8 +17,7 @@ class SeqProductLaunch < Sequence
     TABLETS_PRODUCTLAUNCH_DIR = Media::TABLETS_DIR + "productlaunch/"
     TABLETS_PRODUCTLAUNCH_URL = Media::TABLETS_URL + "productlaunch/"
 
-    # TODO: which ones?
-    RAJ_TABLES = ['A', 'B', 'C'].freeze
+    RAJ_SEATS = ['K3', 'O1', 'P4'].freeze
 
 
     def self.export(performance_id)
@@ -371,14 +370,21 @@ class SeqProductLaunch < Sequence
 
         rows = db.execute(<<~SQL).to_a
             SELECT
-                seating, pid, firstName
+                seating, pid, firstName,
+                spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
+                spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
         SQL
-        raj_patrons = RAJ_TABLES.collect do |table|
-            patrons = rows.find_all {|row| row[0][0] == table}
-            #puts patrons.inspect
-            {:table => table, :names => patrons.collect {|row| row[2]}}
+        raj_patrons = RAJ_SEATS.collect do |seat|
+            patron = rows.find {|row| row[0].upcase == seat}
+            puts patron.inspect
+            next if !patron
+            face_img = patron[3...16].zip(patron[16...29]).find {|img, cat| cat == 'face'}&.first
+            dst = "raj-#{seat}.jpg"
+            face_url = TABLETS_PRODUCTLAUNCH_URL + dst
+            img_thumbnail(face_img, dst, 600, 600, "pid #{pid}", TABLETS_PRODUCTLAUNCH_DIR)
+            {:table => row[0][0], :name => patron[2], :face_url => face_url}
         end
         pbdata[:raj_patrons] = raj_patrons
 
