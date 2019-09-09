@@ -541,7 +541,7 @@ function stop() {
 
     let debugEnabled = document.getElementById('tablettes-debug').classList.contains('visible');
     if (debugEnabled) {
-        //layNativeInterface.setScreenBrightness(0.3);
+        layNativeInterface.setScreenBrightness(0.3);
     }
 }
 
