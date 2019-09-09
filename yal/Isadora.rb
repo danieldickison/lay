@@ -42,7 +42,12 @@ class Isadora
         IPS.each_with_index do |addr, i|
             user    = USERS[i]
             dst_dir = DST_DIRS[i]
-            U.sh("/usr/bin/rsync", "-a", playback_data, playback_media_dynamic, "#{user}@#{addr}:'#{dst_dir}/'")
+            success, out = U.sh("/usr/bin/rsync", "-a", playback_data, playback_media_dynamic, "#{user}@#{addr}:'#{dst_dir}/'")
+            if !success
+                puts "Trouble pushing to Isadora:"
+                puts out
+                raise
+            end
         end
     end
 
