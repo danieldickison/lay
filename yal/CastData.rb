@@ -3,6 +3,7 @@ class CastData
     INFO_FIELDS = [:table] + SeqProductLaunch::VIP_D_TEXT_KEYS + [:tweet1, :tweet2, :tweet3, :tweet4, :pet_name, :company_name, :child_name, :loved_name]
 
     attr_reader(:vips)
+    attr_reader(:raj_patrons)
 
     def initialize(include_all_candidates)
         pbdata = PlaybackData.read(SeqProductLaunch::TABLETS_PRODUCTLAUNCH_DIR)
@@ -17,6 +18,7 @@ class CastData
                 VIP.new(('A'.ord + i).chr, d[:face_url] + "?#{rand}", make_vip_info(d))
             end
         end.flatten
+        @raj_patrons = pbdata[:raj_patrons] || []
     end
 
     def make_vip_info(data)

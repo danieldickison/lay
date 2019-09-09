@@ -337,6 +337,7 @@ class Yal
 
     def cli_button_a
         performance = Showtime.current_performance
+        Showtime[:cast_show_time] = false
         msgs = []
 
         if Time.now.month != performance[:date].month || Time.now.day != performance[:date].day

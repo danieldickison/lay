@@ -17,6 +17,9 @@ class SeqProductLaunch < Sequence
     TABLETS_PRODUCTLAUNCH_DIR = Media::TABLETS_DIR + "productlaunch/"
     TABLETS_PRODUCTLAUNCH_URL = Media::TABLETS_URL + "productlaunch/"
 
+    # TODO: which ones?
+    RAJ_TABLES = ['A', 'B', 'C'].freeze
+
 
     def self.export(performance_id)
         `mkdir -p '#{ISADORA_PRODUCTLAUNCH_CHOSEN_DIR}'`
@@ -367,6 +370,21 @@ class SeqProductLaunch < Sequence
             d  # result
         end
         pbdata[:vip_ds] = vip_ds
+
+        # Names for Raj to mention; 3 folks seated at specific tables
+
+        rows = db.execute(<<~SQL).to_a
+            SELECT
+                seating, pid, firstName
+            FROM datastore_patron
+            WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
+        SQL
+        raj_patrons = RAJ_TABLES.collect do |table|
+            patrons = rows.find_all {|row| row[0][0] == table}
+            #puts patrons.inspect
+            {:table => table, :names => patrons.collect {|row| row[2]}}
+        end
+        pbdata[:raj_patrons] = raj_patrons
 
 
         PlaybackData.write(TABLETS_PRODUCTLAUNCH_DIR, pbdata)
