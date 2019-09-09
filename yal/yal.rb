@@ -32,15 +32,19 @@ class Yal
     TABLET_OSC_PORT = 53000
     SERVER_OSC_PORT = 53001
 
+    def self.seqs
+        return @@seqs
+    end
+
     def start(args)
-        @seqs = []
+        @@seqs = []
         Dir.glob("#{YAL_DIR}/Seq*.rb").each do |seq_file|
             require(seq_file)
             name = File.basename(seq_file, ".rb")[3..-1]
             next if name == "uence"  # heh
-            @seqs << name
+            @@seqs << name
         end
-        @seqs.sort!
+        @@seqs.sort!
         @seq = nil
 
         run_osc
@@ -181,7 +185,7 @@ class Yal
             @seq.debug
         else
             if args.empty?
-                puts @seqs.join(" ")
+                puts @@seqs.join(" ")
             else
                 seqclass = Object.const_get("Seq#{args[0]}".to_sym)
                 if @seq
@@ -232,10 +236,10 @@ class Yal
         SQL
 
         if args.empty?
-            puts @seqs.join(" ")
+            puts @@seqs.join(" ")
             print "Export all sequences (y/n)? "
             return if STDIN.readline.strip.downcase[0,1] != "y"
-            args = @seqs
+            args = @@seqs
         end
 
         Showtime.prepare_export(performance_id)

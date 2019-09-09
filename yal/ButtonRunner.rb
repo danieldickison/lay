@@ -12,6 +12,6 @@ class ButtonRunner
 
     def run
         puts "Running button #{@which}"
-        success, @output = U.sh("#{YAL_DIR}/bin/yal", "button_#{@which}")
+        success, @output = U.sh("#{YAL_DIR}/bin/yal", "button_#{@which}") {|l| puts l}
     end
 end

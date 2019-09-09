@@ -340,7 +340,6 @@ class Yal
 
 
     def cli_button_a
-        ok = true
         performance = Showtime.current_performance
 
         if Time.now.month != performance[:date].month || Time.now.day != performance[:date].day
@@ -351,16 +350,10 @@ class Yal
         puts "Setting cast tablets to SHOW ALL VIP CANDIDATES"
         Showtime[:cast_show_time] = false
 
-    rescue RuntimeError
-        ok = false
-    ensure
-        if ok
-            puts "A OK"
-        end
+        puts "A OK"
     end
 
     def cli_button_b
-        ok = true
         performance = Showtime.current_performance
 
         print "Getting show's data from CMU... "
@@ -369,7 +362,7 @@ class Yal
 
         print "Generating media... "
         Showtime.prepare_export(performance[:id])
-        args.each do |seq|
+        Yal.seqs.each do |seq|
             puts "#{seq}..."
             seqclass = Object.const_get("Seq#{seq}".to_sym)
             seqclass.export(performance[:id])
@@ -380,16 +373,10 @@ class Yal
         Isadora.push
         puts "success."
 
-    rescue RuntimeError
-        ok = false
-    ensure
-        if ok
-            puts "B OK"
-        end
+        puts "B OK"
     end
 
     def cli_button_c
-        ok = true
         performance = Showtime.current_performance
 
         print "Finalizing show data... "
@@ -404,11 +391,6 @@ class Yal
         CMUServer.push(performance[:id])
         puts "success."
 
-    rescue RuntimeError
-        ok = false
-    ensure
-        if ok
-            puts "C OK"
-        end
+        puts "C OK"
     end
 end
