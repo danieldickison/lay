@@ -18,7 +18,7 @@ class CastData
                 VIP.new(('A'.ord + i).chr, d[:face_url] + "?#{rand}", make_vip_info(d))
             end
         end.flatten
-        @raj_patrons = pbdata[:raj_patrons]
+        @raj_patrons = pbdata[:raj_patrons] || []
     end
 
     def make_vip_info(data)
