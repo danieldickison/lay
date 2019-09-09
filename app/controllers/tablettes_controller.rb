@@ -40,7 +40,7 @@ class TablettesController < ApplicationController
     @show_time = true
 
 
-    skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :set_show_time, :set_current_performance, :start_cue, :stop_cue, :assets, :update_patron, :stats]
+    skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :set_show_time, :set_current_performance, :start_cue, :stop_cue, :assets, :update_patron, :stats, :button_a, :button_b, :button_c]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
@@ -71,7 +71,16 @@ class TablettesController < ApplicationController
     end
 
     def button_a
-        return "HELLO"
+        runner = ButtonRunner.new(:a)
+        runner.run
+        render json: {
+            :msg => runner.output
+        }
+    rescue
+        puts "failed to run button a: #{$!}"
+        render json: {
+            :error => $!.to_s
+        }
     end
 
     def button_b

@@ -14,6 +14,9 @@ Rails.application.routes.draw do
   post 'tablettes/set_current_performance'
   post 'tablettes/start_cue'
   post 'tablettes/stop_cue'
+  post 'tablettes/button_a'
+  post 'tablettes/button_b'
+  post 'tablettes/button_c'
   post 'tablettes/assets'
   post 'tablettes/update_patron'
 

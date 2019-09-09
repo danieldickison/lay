@@ -21,7 +21,13 @@ document.addEventListener("DOMContentLoaded", event => {
         event.preventDefault();
         fetch('/tablettes/button_a.json', {method: 'POST'})
         .then(response => {
-            buttonMsg = response.json()[:msg]
+            return response.json();
+        })
+        .then(json => {
+            alert(json.msg);
+        })
+        .catch(err => {
+            alert(err);
         });
     });
 
