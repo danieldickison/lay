@@ -20,6 +20,7 @@ a {
 #tablettes-debug {
     display: none;
     z-index: 1;
+    position: absolute;
 }
 
 #tablettes-debug.visible {
