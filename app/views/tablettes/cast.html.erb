@@ -11,5 +11,13 @@
                 </ul>
             </li>
         <% end -%>
+        <li>
+            <h2 class="vip-letter">Raj Tables</h2>
+            <ul>
+                <% for table in @raj_patrons %>
+                    <li><strong>Table <%= table[:table] %>:</strong> <span class="info-value"><%= table[:names].join(', ') %></span></li>
+                <% end -%>
+            </ul>
+        </li>
     </ol>
 </div>

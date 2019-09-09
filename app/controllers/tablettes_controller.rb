@@ -58,6 +58,7 @@ class TablettesController < ApplicationController
         puts "cast page cast_show_time: #{Showtime[:cast_show_time].inspect}"
         data = CastData.new(!Showtime[:cast_show_time])
         @vips = data.vips
+        @raj_patrons = data.raj_patrons
     end
 
     def director
