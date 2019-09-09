@@ -68,6 +68,17 @@ class TablettesController < ApplicationController
         @current_performance = Showtime[:performance_number]
     end
 
+    def button_a
+        return "HELLO"
+    end
+
+    def button_b
+    end
+
+    def button_c
+    end
+
+
     def play_timecode
         self.class.send_osc_cue('/tablet-util/tc.mp4', Time.now.utc + 1, 2)
     end

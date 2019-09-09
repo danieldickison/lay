@@ -1,26 +1,13 @@
 <div id="p-director">
-    <h1>Playback Server</h1>
-
-    <section>
+    <h1>Playback Server
+        <span style="margin-left: 2em"></span>
+        <form>
+        <button id="button-a">Button A</button>
+        <button id="button-b">Button B</button>
+        <button id="button-c">Button C</button>
+    </h1>
+    <section style="clear: both">
         <form id="director-controls-form" class="director-form">
-            <label class="pre-show-radio-label">
-                <input type="radio" name="director-pre-show-radio" id="pre-show-radio" value="0" <% if !@show_time %>checked<% end %>>
-                Pre-show
-            </label>
-            <label class="pre-show-radio-label">
-                <input type="radio" name="director-pre-show-radio" id="show-time-radio" value="1" <% if @show_time %>checked<% end %>>
-                Show time
-            </label>
-            <label class="volume-input-label">
-                Tablet Volume: <input id="volume-input" type="range" min="0" max="100" value=<%= @volume %>>
-            </label>
-            <br>
-            <button id="play-timecode-button">Play Timecode</button>
-            <button id="stop-tablets-button">Stop Tablets</button>
-            <button id="reload-tablets-button">Reload Tablets</button>
-            <label>
-                Debug: <input id="debug-checkbox" type="checkbox" <% if @debug %>checked<% end %>>
-            </label>
             <label>
                 Performance:
                 <select id="performance-select">
@@ -33,6 +20,24 @@
                     <% end -%>
                 </select>
             </label>
+            <br>
+            <label class="pre-show-radio-label">
+                <input type="radio" name="director-pre-show-radio" id="pre-show-radio" value="0" <% if !@show_time %>checked<% end %>>
+                Pre-show
+            </label>
+            <label class="pre-show-radio-label">
+                <input type="radio" name="director-pre-show-radio" id="show-time-radio" value="1" <% if @show_time %>checked<% end %>>
+                Show time
+            </label>
+            <label class="pre-show-radio-label">
+                Debug: <input id="debug-checkbox" type="checkbox" <% if @debug %>checked<% end %>>
+            </label>
+            <label class="volume-input-label">
+                Tablet Volume: <input id="volume-input" type="range" min="0" max="100" value=<%= @volume %>>
+            </label>
+            <button id="play-timecode-button">Play Timecode</button>
+            <button id="stop-tablets-button">Stop Tablets</button>
+            <button id="reload-tablets-button">Reload Tablets</button>
         </form>
     </section>
 

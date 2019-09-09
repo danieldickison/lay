@@ -5,6 +5,9 @@
     h1 {
       margin-block-start: 0.2em;
       margin-block-end: 0.2em;
+      button {
+        font-size: 0.5em;
+      }
     }
 
     .pre-show-radio-label {
@@ -28,6 +31,9 @@
         padding: 10px;
         > * {
             display: inline-block;
+        }
+        > datalist {
+            display: none;
         }
     }
 

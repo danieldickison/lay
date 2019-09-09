@@ -9,11 +9,22 @@ let PING_ALERT = 10000;
 
 var messagesDiv;
 var unresponsiveTablets = [];
-var serverError = null;
+var serverError = undefined;
+var buttonMsg = undefined;
+
 
 document.addEventListener("DOMContentLoaded", event => {
     messagesDiv = document.getElementById('director-messages');
     if (!messagesDiv) return;
+
+    document.getElementById('button-a').addEventListener('click', event => {
+        event.preventDefault();
+        fetch('/tablettes/button_a.json', {method: 'POST'})
+        .then(response => {
+            buttonMsg = response.json()[:msg]
+        });
+    });
+
 
     document.getElementById('toggle-deets-link').addEventListener('click', event => {
         event.preventDefault();
@@ -203,16 +214,24 @@ function fetchStats() {
         td.appendChild(ul);
     }
 
+
+    var prevButtonMsg = undefined;
     var prevServerError = undefined;
     var prevUnresponsiveTablets = [];
     function updateMessages() {
         unresponsiveTablets.sort();
-        if (prevServerError === serverError && prevUnresponsiveTablets.every((t, i) => unresponsiveTablets[i] === t)) {
+        if (prevButtonMsg === buttonMsg && prevServerError === serverError && prevUnresponsiveTablets.every((t, i) => unresponsiveTablets[i] === t)) {
             return; // no change, leave the dom alone
         }
 
         messagesDiv.innerHTML = '';
 
+        if (buttonMsg) {
+            let p = document.createElement('p');
+            p.classList.add('warning');
+            p.innerText = buttonMsg;
+            messagesDiv.appendChild(p);
+        }
         if (!serverError) { // && unresponsiveTablets.length === 0) {
             messagesDiv.innerText = 'All good';
         } else {
