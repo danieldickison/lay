@@ -379,7 +379,7 @@ class SeqProductLaunch < Sequence
         raj_patrons = RAJ_SEATS.collect do |seat|
             patron = rows.find {|row| row[0].upcase == seat}
             puts patron.inspect
-            next {:table => patron[0][0]} if !patron
+            next {:table => seat[0]} if !patron
             face_img = patron[3...16].zip(patron[16...29]).find {|img, cat| cat == 'face'}&.first
             if face_img
                 dst = "raj-#{seat}.jpg"
