@@ -436,19 +436,17 @@ function sendPing() {
 
 function setShowTime(showTime, bgImage) {
     let preShow = document.getElementById('tablettes-pre-show');
+    let preShowVisible = preShow.classList.contains('visible');
     if (showTime) {
-        if (preShow.style.display !== 'none') {
+        if (preShowVisible) {
             layNativeInterface.hideChrome();
         }
-        preShow.style.display = 'none';
+        preShow.classList.remove('visible');
     } else {
-        if (preShow.style.display !== 'block') {
-            if (layNativeInterface.setScreenBrightness) {
-                layNativeInterface.setScreenBrightness(1);
-            }
+        if (!preShowVisible) {
             PreShow.reset();
         }
-        preShow.style.display = 'block';
+        preShow.classList.add('visible');
         if (bgImage) {
             preShow.style.backgroundImage = 'url(' + bgImage + ')';
         }
@@ -535,7 +533,16 @@ function triggerSequence(constructor, args) {
 
 function stop() {
     if (currentSequence) currentSequence.stop();
-    PreShow.reset();
+
+    let preShow = document.getElementById('tablettes-pre-show');
+    if (preShow.classList.contains('visible')) {
+        PreShow.reset();
+    }
+
+    let debugEnabled = document.getElementById('tablettes-debug').classList.contains('visible');
+    if (debugEnabled) {
+        layNativeInterface.setScreenBrightness(0.3);
+    }
 }
 
 function Ghosting(time, duration, srcs) {
