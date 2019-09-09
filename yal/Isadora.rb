@@ -2,8 +2,8 @@ require('Media')
 
 class Isadora
     IPS = ["172.16.1.221", "172.16.1.222", "172.16.1.223"]
-
     PORT = 1234
+    LOG_FILE = File.expand_path('../log/isadora-osc.log', __dir__)
 
     attr_accessor(:clients, :disable)
 
@@ -22,11 +22,14 @@ class Isadora
         osc_msg = OSC::Message.new(msg, *args)
         if !@disable
             @clients.each {|c| c.send(osc_msg)}
+            log(msg, args)
         end
     rescue
         puts "error sending isadora: #{$!}"
         puts $!.backtrace
+        log(msg, args, "ERROR: #{$!}")
     end
+
 
 
     USERS = ["hereuser", "hereuser", "hereuser"]
@@ -49,6 +52,31 @@ class Isadora
             dst_dir = DST_DIRS[i]
             U.sh("/usr/bin/rsync", "-a", "#{Media::DATA_DIR}LAY_opt_outs.txt", "#{user}@#{addr}:'#{dst_dir}/data/'")
         end
+    end
+
+    private
+
+    @log_file = nil
+    @log_mutex = Mutex.new
+
+    def self.log(msg, args, error=nil)
+        @log_mutex.synchronize do
+            if !@log_file
+                @log_file = File.open(LOG_FILE, 'a')
+
+                Thread.new do
+                    while true
+                        @log_file.flush
+                        sleep 2
+                    end
+                end
+            end
+            @log_file.puts("#{Time.now.utc}: #{msg} #{args.collect(&:inspect).join(', ')} #{error}")
+        end
+    end
+
+    def log(msg, args, error=nil)
+        self.class.log(msg, args, error)
     end
 end
 

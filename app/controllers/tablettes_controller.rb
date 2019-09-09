@@ -357,8 +357,10 @@ class TablettesController < ApplicationController
     end
 
     def self.show_time=(bool)
-        puts "updating show_time = #{bool.inspect}"
-        @show_time = !!bool
+        if bool != @show_time
+            puts "updating show_time = #{bool.inspect}"
+            @show_time = !!bool
+        end
     end
 
     def self.volume
