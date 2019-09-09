@@ -103,7 +103,6 @@ class SeqProductLaunch < Sequence
             end
             if !a[:face]
                 puts "WARNING: missing face photo for #{a.inspect}"
-                a[:face] = 10
             end
             a  # result
         end
@@ -159,7 +158,6 @@ class SeqProductLaunch < Sequence
             end
             if !b[:face]
                 puts "WARNING: missing face photo for #{b.inspect}"
-                b[:face] = 10
             end
             b  # result
         end
@@ -228,7 +226,6 @@ class SeqProductLaunch < Sequence
             end
             if !c[:face]
                 puts "WARNING: missing face photo for #{c.inspect}"
-                c[:face] = 10
             end
             c  # result
         end
@@ -343,7 +340,6 @@ class SeqProductLaunch < Sequence
             end
             if !d[:face]
                 puts "WARNING: missing face photo for #{d.inspect}"
-                d[:face] = 4
             end
 
             # Fall back to using random fb/ig post if there was no "relevant" image
@@ -397,10 +393,33 @@ class SeqProductLaunch < Sequence
 
 
     TABLET_DYNAMIC = "/playback/media_tablet_dynamic"
+    TABLET_MEDIA_URL = "/playback/media_tablets/113-Launch/"
     VIP_D_TEXT_KEYS = [:first_name, :works_at, :institution, :university, :hometown, :high_school, :traveled_to, :spouse_first_name, :liked, :birthday, :listens_to].freeze
     VIP_D_TEXT_CHANNELS = (11..23).to_a
+
+    VIP_A_DEFAULTS = {
+        :face => 10,
+        :love => 13,
+        :pet => 14,
+        :face_url => TABLET_MEDIA_URL + '113-701-C01-VIP_A_face_safety.jpg',
+        :love_url => TABLET_MEDIA_URL + '113-720-C01-VIP_A_Loved_safety.jpg',
+        :pet_url  => TABLET_MEDIA_URL + '113-721-C01-VIP_A_Pet_safety.jpg',
+    }.freeze
+    VIP_B_DEFAULTS = {
+        :face => 11,
+        :company => 15,
+        :face_url    => TABLET_MEDIA_URL + '113-702-C01-VIP_B_face_safety.jpg',
+        :company_url => TABLET_MEDIA_URL + '113-722-C01-VIP_B_Job_safety.jpg',
+    }.freeze
+    VIP_C_DEFAULTS = {
+        :face => 12,
+        :child => 16,
+        :face_url  => TABLET_MEDIA_URL + '113-703-C01-VIP_C_face_safety.jpg',
+        :child_url => TABLET_MEDIA_URL + '113-723-C01-VIP_C_Child_safety.jpg',
+    }.freeze
     VIP_D_DEFAULTS = {
         :face => 4,
+        :face_url => TABLET_MEDIA_URL + '113-704-C01-VIP_D_face_safety.jpg',
         :works_at => "interested in relocation",
         :institution => "buys expensive toiletries",
         :hometown => "haircut budget",
@@ -428,9 +447,9 @@ class SeqProductLaunch < Sequence
 
         pbdata = PlaybackData.read(TABLETS_PRODUCTLAUNCH_DIR)
         vip_pids = Showtime.vips
-        vip_a = pbdata[:vip_as].find {|a| a[:pid] == vip_pids[0]} || VIP_D_DEFAULTS
-        vip_b = pbdata[:vip_bs].find {|b| b[:pid] == vip_pids[1]} || VIP_D_DEFAULTS
-        vip_c = pbdata[:vip_cs].find {|c| c[:pid] == vip_pids[2]} || VIP_D_DEFAULTS
+        vip_a = pbdata[:vip_as].find {|a| a[:pid] == vip_pids[0]} || VIP_A_DEFAULTS
+        vip_b = pbdata[:vip_bs].find {|b| b[:pid] == vip_pids[1]} || VIP_B_DEFAULTS
+        vip_c = pbdata[:vip_cs].find {|c| c[:pid] == vip_pids[2]} || VIP_C_DEFAULTS
         vip_d = pbdata[:vip_ds].find {|d| d[:pid] == vip_pids[3]} || VIP_D_DEFAULTS
 
         @tv_osc_messages = [
@@ -438,23 +457,23 @@ class SeqProductLaunch < Sequence
             {
                 :channel => '/isadora-multi/2',
                 :args => [
-                    vip_a[:face],
-                    vip_a[:love] || 13,
-                    vip_a[:pet] || 13,
+                    vip_a[:face] || VIP_A_DEFAULTS[:face],
+                    vip_a[:love] || VIP_A_DEFAULTS[:love],
+                    vip_a[:pet] || VIP_A_DEFAULTS[:pet],
                 ]
             },
             {
                 :channel => '/isadora-multi/3',
                 :args => [
-                    vip_b[:face],
-                    vip_b[:company] || 13,
+                    vip_b[:face] || VIP_B_DEFAULTS[:face],
+                    vip_b[:company] || VIP_B_DEFAULTS[:company],
                 ]
             },
             {
                 :channel => '/isadora-multi/4',
                 :args => [
-                    vip_c[:face],
-                    vip_c[:child] || 13,
+                    vip_c[:face] || VIP_C_DEFAULTS[:face],
+                    vip_c[:child] || VIP_C_DEFAULTS[:child],
                 ]
             },
 
@@ -508,17 +527,17 @@ class SeqProductLaunch < Sequence
             # Person 1
             {
                 :position => :front,
-                :src => vip_a[:face_url],
+                :src => vip_a[:face_url] || VIP_A_DEFAULTS[:face_url],
                 :in_offset => 109.0, # s from start of video
             },
             {
                 :position => :back,
-                :src => vip_a[:love_url],
+                :src => vip_a[:love_url] || VIP_A_DEFAULTS[:love_url],
                 :in_offset => 111.97,
             },
             {
                 :position => :back,
-                :src => vip_a[:pet_url],
+                :src => vip_a[:pet_url] || VIP_A_DEFAULTS[:pet_url],
                 :in_offset => 125.57,
                 :out_offset => 130.03,
             },
@@ -526,12 +545,12 @@ class SeqProductLaunch < Sequence
             # Person 2
             {
                 :position => :front,
-                :src => vip_b[:face_url],
+                :src => vip_b[:face_url] || VIP_B_DEFAULTS[:face_url],
                 :in_offset => 139.0,
             },
             {
                 :position => :back,
-                :src => vip_b[:company_url],
+                :src => vip_b[:company_url] || VIP_B_DEFAULTS[:company_url],
                 :in_offset => 152.33,
                 :out_offset => 157.47,
             },
@@ -539,12 +558,12 @@ class SeqProductLaunch < Sequence
             # Person 3
             {
                 :position => :front,
-                :src => vip_c[:face_url],
+                :src => vip_c[:face_url] || VIP_C_DEFAULTS[:face_url],
                 :in_offset => 167.0, # s from start of video
             },
             {
                 :position => :back,
-                :src => vip_c[:child_url],
+                :src => vip_c[:child_url] || VIP_C_DEFAULTS[:child_url],
                 :in_offset => 178.43,
                 :out_offset => 185.93,
             },
@@ -552,7 +571,7 @@ class SeqProductLaunch < Sequence
             # Person 4
             {
                 :position => :front,
-                :src => vip_d[:face_url],
+                :src => vip_d[:face_url] || VIP_D_DEFAULTS[:face_url],
                 :in_offset => 232.0, # s from start of video
                 :out_offset => 364.8,
             },
