@@ -357,9 +357,11 @@ class Yal
         performance = Showtime.current_performance
 
         puts "Getting show's data from CMU... "
+STDOUT.flush
+sleep(10)
         CMUServer.new.pull
         puts "success."
-
+return
         puts "Generating media... "
         Showtime.prepare_export(performance[:id])
         Yal.seqs.each do |seq|
