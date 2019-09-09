@@ -112,7 +112,7 @@ class SeqOffTheRails
         `mkdir -p '#{ISADORA_OFFTHERAILS_FOOD_DIR}'`
         `mkdir -p '#{TABLETS_OFFTHERAILS_DIR}'`
 
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
 
         pbdata = {}
         fn_pids = {}  # for updating LAY_filename_pids.txt

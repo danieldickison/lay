@@ -32,14 +32,6 @@ class Yal
     TABLET_OSC_PORT = 53000
     SERVER_OSC_PORT = 53001
 
-    if PRODUCTION
-        DB_FILE = HOME + "/Looking at You Media/db/db.sqlite3"
-    elsif JOE_DEVELOPMENT
-        DB_FILE = Media::VOLUME + "/db/db.sqlite3"
-    else
-        DB_FILE = Media::VOLUME + "/db/db.sqlite3"
-    end
-
     def start(args)
         @seqs = []
         Dir.glob("#{YAL_DIR}/Seq*.rb").each do |seq_file|
@@ -93,7 +85,7 @@ class Yal
     end
 
     def run_db
-        # db = SQLite3::Database.new(DB_FILE)
+        # db = SQLite3::Database.new(Database::DB_FILE)
         Thread.new do
             while true
                 # nothing...
@@ -227,14 +219,14 @@ class Yal
 
     def cli_q(*args)
         q = @line[/^[^\s]\s+(.+)/, 1]
-        db = SQLite3::Database.new(DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
         puts db.execute(q).to_a.inspect
     end
 
     def cli_export(*args)
         performance_number = args.shift
         raise "bad performance_number" if !performance_number
-        db = SQLite3::Database.new(DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
         performance_id = db.execute(<<~SQL).first[0]
             SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
         SQL

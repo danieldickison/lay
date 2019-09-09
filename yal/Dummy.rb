@@ -36,7 +36,7 @@ class Dummy
         performance_number = performance_number.to_i
         raise "dummy performance must be negative number" if performance_number >= 0
         import_dir = ENV["HOME"] + "/Dropbox/profiles/"
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
         dummy_file ||= import_dir + "DummyPatrons/dummypatronsspreadsheet.tsv"
         if !File.exist?(dummy_file)
             raise "#{dummy_file} doesn't exist"
@@ -159,7 +159,7 @@ class Dummy
     end
 
     def self.prepare_export
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
         dummy_performance_id = db.execute(<<~SQL).first[0]
             SELECT id FROM datastore_performance WHERE performance_number = "#{Dummy::PERFORMANCE_NUMBER}"
         SQL
@@ -182,7 +182,7 @@ class Dummy
 
 
     def self.assign_random_seats(performance_id)
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
         ids = db.execute(<<~SQL).to_a
             SELECT id
             FROM datastore_patron
@@ -204,7 +204,7 @@ class Dummy
     end
 
     def self.debug_assign_vips_and_consent(performance_id)
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
         ids = db.execute(<<~SQL).to_a.collect {|row| row[0]}
             SELECT id
             FROM datastore_patron
@@ -244,7 +244,7 @@ class Yal
     def dummy_get_performance_id(performance_number)
         raise "bad performance_number" if !performance_number
         raise "only work on dummy performances" if performance_number.to_i > 0
-        db = SQLite3::Database.new(DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
         return db.execute(<<~SQL).first[0]
             SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
         SQL

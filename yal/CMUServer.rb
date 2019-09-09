@@ -16,7 +16,7 @@ class CMUServer
 
     def pull
         # add call to stop datamining server
-        success, out = U.sh("/usr/bin/rsync", "-a", "#{CMU_USER}@#{CMU_ADDR}:#{CMU_DATABASE_DIR}db.sqlite3", Yal::DB_FILE)
+        success, out = U.sh("/usr/bin/rsync", "-a", "#{CMU_USER}@#{CMU_ADDR}:#{CMU_DATABASE_DIR}db.sqlite3", Database::DB_FILE)
         if !success
             puts "problem getting db.sqlite3:"
             puts out
@@ -34,7 +34,7 @@ class CMUServer
         performance_number ||= Showtime.current_performance_number
         perf_id = Showtime.performance_id(performance_number)
 
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
         sql = []
 
         sql << "-- performance number #{performance_number}"
@@ -52,18 +52,16 @@ class CMUServer
             SELECT id,consented FROM datastore_patron WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id})
         SQL
         consents.each do |consent, rows|
-            ids = rows.collect {|r| r[0]}
-            ids = ids.join(",")
-            sql << "UPDATE datastore_patron SET consented = #{consent} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND id IN (#{ids})"
+            ids = rows.collect {|r| r[0]}.join(",")
+            sql << "UPDATE datastore_patron SET consented = #{consent} WHERE id IN (#{ids})"
         end
 
         matches = db.execute(<<~SQL).group_by {|r| r[1]}
             SELECT id,greeterMatch FROM datastore_patron WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id})
         SQL
         matches.each do |match, rows|
-            ids = rows.collect {|r| r[0]}
-            ids = ids.join(",")
-            sql << "UPDATE datastore_patron SET greeterMatch = #{match} WHERE (performance_1_id = #{perf_id} OR performance_2_id = #{perf_id}) AND id IN (#{ids})"
+            ids = rows.collect {|r| r[0]}.join(",")
+            sql << "UPDATE datastore_patron SET greeterMatch = #{match} WHERE id IN (#{ids})"
         end
 
         cmu_file = Media::DATABASE_DIR + CMU_UPDATE_FILE
@@ -77,7 +75,7 @@ class CMUServer
 
 
     def push_files
-        U.sh("/usr/bin/rsync", "-a", Yal::DB_FILE, "#{CMU_USER}@#{CMU_ADDR}:#{CMU_DATABASE_DIR}db.sqlite3")
+        U.sh("/usr/bin/rsync", "-a", Database::DB_FILE, "#{CMU_USER}@#{CMU_ADDR}:#{CMU_DATABASE_DIR}db.sqlite3")
         U.sh("/usr/bin/ssh", "#{CMU_USER}@#{CMU_ADDR}", "chgrp rgross #{CMU_DATABASE_DIR}db.sqlite3")
         # U.sh("/usr/bin/rsync", "-a", "#{Media::DATABASE_DIR}images", "#{CMU_USER}@#{CMU_ADDR}:#{CMU_DATABASE_DIR}media/")
         # add call to start datamining server

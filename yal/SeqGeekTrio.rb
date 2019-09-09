@@ -76,7 +76,7 @@ Slots correspond to zones as follows: (32 per zone)
         `mkdir -p '#{ISADORA_GEEKTRIO_DIR}'`
         `mkdir -p '#{TABLETS_GEEKTRIO_DIR}'`
 
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
 
         pbdata = {}
         fn_pids = {}  # for updating LAY_filename_pids.txt

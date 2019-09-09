@@ -41,7 +41,7 @@ class SeqExecOffice < Sequence
     def self.export(performance_id)
         `mkdir -p '#{ISADORA_EXEC_OFFICE_DIR}'`
         pbdata = {}
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
 
         # Needs to be special images face
 

@@ -65,7 +65,7 @@ https://docs.google.com/document/d/19crlRofFe-3EEK0kGh6hrQR-hGcRvZEaG5Nkdu9KEII/
         ISADORA_EXTERMINATOR_DIRS.values.each {|dir| `mkdir -p '#{dir}'`}
         `mkdir -p '#{TABLETS_EXTERMINATOR_DIR}'`
 
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
 
         dummy_performance_id = db.execute(<<~SQL).first[0]
             SELECT id FROM datastore_performance WHERE performance_number = #{Dummy::PERFORMANCE_NUMBER}

@@ -58,7 +58,7 @@ Slots correspond to zones as follows: (8 per zone)
         `mkdir -p '#{ISADORA_GHOSTING_DIR}'`
         `mkdir -p '#{TABLETS_GHOSTING_DIR}'`
         pbdata = {}
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
 
 
         performance_number = db.execute(<<~SQL).first[0]

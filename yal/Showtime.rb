@@ -1,5 +1,6 @@
-require('Media')
 require('Date')
+require('Media')
+require('Database')
 
 =begin
 High level actions that happen before, during and after the show.
@@ -19,15 +20,14 @@ debugging:
 
 
 class Showtime
+    MAX_PATRONS  = 100
     OPT_OUT_FILE = Media::DATA_DIR + "LAY_opt_outs.txt"
     VIP_FILE     = Media::DATA_DIR + "LAY_vips.txt"
 
-    # Can't easily require yal.rb in the rails server so quick and dirty copy-and-paste here
-    RUNTIME_DB_FILE = Media::VOLUME + "/db/db.sqlite3"
     CURRENT_PERFORMANCE_FILE = Media::VOLUME + "/db/current_performance.txt"
 
     def self.prepare_export(performance_id)
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
 
         # check seating
         seatings = db.execute(<<~SQL).to_a
@@ -94,7 +94,7 @@ class Showtime
     end
 
     def self.assign_pids(performance_id, starting_pid)
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
 
         # assign pids before doing any exports
         ids = db.execute(<<~SQL).to_a
@@ -119,7 +119,7 @@ class Showtime
         employee_id = Integer(employee_id) # validate, and also prevent catastrophic db injection
         employee_id_pattern = "'%#{employee_id}'"
 
-        db = SQLite3::Database.new(RUNTIME_DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
         performance_id = db.execute(<<~SQL).first[0]
             SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
         SQL
@@ -155,7 +155,7 @@ class Showtime
         seat = Integer(seat) % 10 # validate, and also prevent catastrophic db injection
         seating = "'#{table}#{seat}'"
 
-        db = SQLite3::Database.new(RUNTIME_DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
         performance_id = db.execute(<<~SQL).first[0]
             SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
         SQL
@@ -188,7 +188,7 @@ class Showtime
     end
 
     def self.list_performances
-        db = SQLite3::Database.new(RUNTIME_DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
         res = db.execute(<<~SQL).collect {|r| {:number => r[0], :date => DateTime.parse(r[1]).to_time.localtime.strftime("%a %m/%d/%y %I:%M%P")}}
             SELECT performance_number, date FROM datastore_performance ORDER BY performance_number
         SQL
@@ -218,7 +218,7 @@ class Showtime
 
     def self.finalize_last_minute_data(performance_id)
         `mkdir -p '#{Media::DATA_DIR}'`
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
 
         performance_number = db.execute(<<~SQL).first[0]
             SELECT performance_number FROM datastore_performance WHERE id = #{performance_id}
@@ -269,7 +269,7 @@ class Showtime
 
 
     def self.performance_id(performance_number)
-        db = SQLite3::Database.new(Yal::DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
         return db.execute(<<~SQL).first[0]
             SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
         SQL
@@ -280,7 +280,7 @@ end
 class Yal
     def get_performance_id(performance_number)
         raise "bad performance_number" if !performance_number
-        db = SQLite3::Database.new(DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
         return db.execute(<<~SQL).first[0]
             SELECT id FROM datastore_performance WHERE performance_number = #{performance_number}
         SQL
@@ -288,5 +288,24 @@ class Yal
 
     def cli_finalize_last_minute_data(*args)
         Showtime.finalize_last_minute_data(get_performance_id(args[0]))
+    end
+
+
+
+    def button_a
+        # validate show date? / perf number
+        return ""
+    end
+
+    def button_b
+        # cmu_pull
+        # export perf number, no UI, verbosity
+        # perf summary report
+        return ""
+    end
+
+    def button_c
+        # finalize data, isadora_push, cmu_push
+        return ""
     end
 end

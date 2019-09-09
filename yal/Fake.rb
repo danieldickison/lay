@@ -160,7 +160,7 @@ CREATE TABLE "datastore_patron" (
 
 class Yal
     def cli_fake(*args)
-        db = SQLite3::Database.new(DB_FILE)
+        db = SQLite3::Database.new(Database::DB_FILE)
 
         # create 15 performances
         c = db.execute(<<~SQL).first[0]
