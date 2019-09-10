@@ -7,6 +7,7 @@ class Sequence
         if File.exist?(db_photo_file)
             GraphicsMagick.thumbnail(db_photo_file, dst_dirs[0] + dst, width, height, "jpg", 85)
         else
+            puts "WARNING: db photo not found: #{db_photo}"
             while true
                 r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
                 break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
@@ -26,6 +27,7 @@ class Sequence
         if File.exist?(db_photo_file)
             GraphicsMagick.fit(db_photo_file, dst_dirs[0] + dst, width, height, "jpg", 85)
         else
+            puts "WARNING: db photo not found: #{db_photo}"
             while true
                 r, g, b = rand(60) + 15, rand(60) + 15, rand(60) + 15
                 break if (r - g).abs < 25 && (g - b).abs < 25 && (b - r).abs < 25
