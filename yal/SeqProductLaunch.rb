@@ -50,7 +50,7 @@ class SeqProductLaunch < Sequence
                 firstName, info_PetName, seating, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
-            AND vipstatus = "P-A"
+            AND vipstatus = "P-A" LIMIT 3
         SQL
 
         vip_as = rows.collect do |row|
@@ -118,7 +118,7 @@ class SeqProductLaunch < Sequence
                 firstName, company_Name, company_LogoImage, seating, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
-            AND vipStatus = "P-B"
+            AND vipStatus = "P-B" LIMIT 3
         SQL
 
         vip_bs = rows.collect do |row|
@@ -173,7 +173,7 @@ class SeqProductLaunch < Sequence
                 firstName, info_ChildName, seating, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
-            AND vipStatus = "P-C"
+            AND vipStatus = "P-C" LIMIT 3
         SQL
 
         vip_cs = rows.collect do |row|
@@ -251,7 +251,7 @@ class SeqProductLaunch < Sequence
                 seating, pid
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
-            AND vipStatus = "P-D"
+            AND vipStatus = "P-D" LIMIT 3
         SQL
 
         # ?? liked
