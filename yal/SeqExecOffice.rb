@@ -43,7 +43,9 @@ class SeqExecOffice < Sequence
         pbdata = {}
         db = SQLite3::Database.new(Database::DB_FILE)
 
-        # Needs to be special images face
+        dummy_performance_id = db.execute(<<~SQL).first[0]
+            SELECT id FROM datastore_performance WHERE performance_number = #{Dummy::PERFORMANCE_NUMBER}
+        SQL
 
         # Query to fetch profile photos
         rows = db.execute(<<~SQL).to_a
@@ -53,24 +55,30 @@ class SeqExecOffice < Sequence
                 pid
             FROM datastore_patron
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
+                OR performance_1_id = #{dummy_performance_id}
         SQL
 
         primary_photos = []
         extra_photos = []
+        dummy_photos = []
         rows.each do |r|
             pid = r[-1].to_i
             faces = r[0...13].zip(r[13...26])
                 .find_all {|img, cat| img && img != '' && cat == 'face'}
                 .collect {|img, _| {:path => img, :pid => pid}}
             if faces.length > 0
-                primary_photos.push(faces[0])
-                extra_photos.concat(faces[1..-1])
+                if pid < Dummy::STARTING_PID
+                    primary_photos.push(faces[0])
+                    extra_photos.concat(faces[1..-1])
+                else
+                    dummy_photos.concat(faces)
+                end
             end
         end
-        puts "got #{primary_photos.length} primary face photos and #{extra_photos.length} extras"
+        puts "got #{primary_photos.length} primary face photos, #{extra_photos.length} extras, and #{dummy_photos.length} dummies"
 
         # We want at least one from each patron before using additional face photos from earlier patrons.
-        photos = primary_photos.shuffle + extra_photos.shuffle
+        photos = primary_photos.shuffle + extra_photos.shuffle + dummy_photos.shuffle
 
         fn_pids = {}  # for updating LAY_filename_pids.txt
 
