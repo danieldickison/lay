@@ -48,22 +48,29 @@ class SeqExecOffice < Sequence
         # Query to fetch profile photos
         rows = db.execute(<<~SQL).to_a
             SELECT
-                twitterProfilePhoto, fbProfilePhoto,
+                spImage_1, spImage_2, spImage_3, spImage_4, spImage_5, spImage_6, spImage_7, spImage_8, spImage_9, spImage_10, spImage_11, spImage_12, spImage_13,
+                spCat_1, spCat_2, spCat_3, spCat_4, spCat_5, spCat_6, spCat_7, spCat_8, spCat_9, spCat_10, spCat_11, spCat_12, spCat_13,
                 pid
             FROM datastore_patron
             WHERE performance_1_id = #{performance_id} OR performance_2_id = #{performance_id}
         SQL
 
-        photos = []
+        primary_photos = []
+        extra_photos = []
         rows.each do |r|
             pid = r[-1].to_i
-            tw = r[0]
-            fb = r[1]
-            path = fb && fb != '' ? fb : tw # prefer fb over tw if both present
-            if path && path != ''
-                photos << {:path => path, :pid => pid}
+            faces = r[0...13].zip(r[13...26])
+                .find_all {|img, cat| img && img != '' && cat == 'face'}
+                .collect {|img, _| {:path => img, :pid => pid}}
+            if faces.length > 0
+                primary_photos.push(faces[0])
+                extra_photos.concat(faces[1..-1])
             end
         end
+        puts "got #{primary_photos.length} primary face photos and #{extra_photos.length} extras"
+
+        # We want at least one from each patron before using additional face photos from earlier patrons.
+        photos = primary_photos.shuffle + extra_photos.shuffle
 
         fn_pids = {}  # for updating LAY_filename_pids.txt
 
