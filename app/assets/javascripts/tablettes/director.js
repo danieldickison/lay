@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", event => {
     addButton('a');
     addButton('b');
     addButton('c');
-    addButton('d');
+    // addButton('d');
     addButton('clear');
 
     document.getElementById('toggle-deets-link').addEventListener('click', event => {
@@ -141,7 +141,7 @@ function updateButtons(buttons) {
     updateButton(buttons, 'a');
     updateButton(buttons, 'b');
     updateButton(buttons, 'c');
-    updateButton(buttons, 'd');
+    // updateButton(buttons, 'd');
     buttonMsg = buttons.msg;
 }
 
