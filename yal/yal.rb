@@ -26,6 +26,7 @@ require('Fake')
 require('Dummy')
 require('CMUServer')
 require('Showtime')
+require('Showtime-buttons')
 require('Sequence')
 
 class Yal

@@ -13,6 +13,10 @@ class ButtonRunner
     @@button = nil
     @@button_running = nil
 
+    BUTTONS = [:button_a, :button_b, :button_c, :button_d]
+    CHECK_CHAR = '✓'
+    ERROR_CHAR = '!'
+
     Showtime::DEFAULTS.merge!({
         button_a: '',
         button_b: '',
@@ -45,7 +49,22 @@ class ButtonRunner
         }
     end
 
+    def self.reset
+        BUTTONS.each {|b| Showtime[b] = nil}
+        clear
+    end
+
     def self.clear
+        # on first call, clear errors
+        # on second call, clear checks
+        errored = BUTTONS.find_all {|b| Showtime[b] == ERROR_CHAR}
+        if !errored.empty?
+            errored.each {|b| Showtime[b] = nil}
+        else
+            checked = BUTTONS.find_all {|b| Showtime[b] == CHECK_CHAR}
+            checked.each {|b| Showtime[b] = nil}
+        end
+
         @@mutex.synchronize do
             @@msgs = []
             check_buttons
@@ -81,7 +100,7 @@ class ButtonRunner
                 if r
                     check = '…'
                 else
-                    check = @@button.success ? '✓' : '!'
+                    check = @@button.success ? CHECK_CHAR : ERROR_CHAR
                 end
                 Showtime[("button_" + @@button.which).to_sym] = check
                 @@button_running = r
@@ -118,6 +137,7 @@ class ButtonRunner
                     puts l
                     if l == ">> ERROR"
                         @success = false
+                        @@mutex.synchronize {@@msgs << "ERROR"}
                     end
                     if l[0,2] == "> "
                         @@mutex.synchronize {@@msgs << l[2..-1]}

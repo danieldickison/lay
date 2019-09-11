@@ -106,6 +106,7 @@ class TablettesController < ApplicationController
 
     def button_clear
         stats = ButtonRunner.clear
+        
         render({json: {:buttons => stats}})
     rescue
         puts "failed to run clear: #{$!}"
@@ -129,6 +130,7 @@ class TablettesController < ApplicationController
 
     def set_current_performance
         Showtime[:performance_number] = Integer(params[:performance_number])
+        ButtonRunner.reset
     end
 
     def start_cue

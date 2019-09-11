@@ -110,11 +110,38 @@ function queueTabletCommand(command, oscMessage) {
     fetch('/tablettes/queue_tablet_command.json', {method: 'POST', body: body});
 }
 
+function updateButton(buttons, letter) {
+    let check = document.getElementById('button-' + letter + '-check');
+    let button = document.getElementById('button-' + letter);
+    let ch = buttons[letter];
+
+    check.innerHTML = ch;
+
+    if (ch == "!") {
+        check.classList.add('warn');
+        button.classList.add('warn');
+
+        check.classList.remove('done');
+        button.classList.remove('done');
+    } else if (ch == "✓") {
+        check.classList.add('done');
+        button.classList.add('done');
+
+        check.classList.remove('warn');
+        button.classList.remove('warn');
+    } else {
+        check.classList.remove('done');
+        button.classList.remove('done');
+        check.classList.remove('warn');
+        button.classList.remove('warn');
+    }
+}
+
 function updateButtons(buttons) {
-    document.getElementById('button-a-check').innerHTML = buttons.a;
-    document.getElementById('button-b-check').innerHTML = buttons.b;
-    document.getElementById('button-c-check').innerHTML = buttons.c;
-    document.getElementById('button-d-check').innerHTML = buttons.d;
+    updateButton(buttons, 'a');
+    updateButton(buttons, 'b');
+    updateButton(buttons, 'c');
+    updateButton(buttons, 'd');
     buttonMsg = buttons.msg;
 }
 

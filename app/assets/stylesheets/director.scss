@@ -9,9 +9,33 @@
 
     #performance .check {
         font-size: 1.5em;
+        vertical-align: -3px;
         display: inline-block;
         margin-left: 5px;
         width: 1em;
+    }
+
+    #performance .empty {
+        font-size: 1.5em;
+        vertical-align: -3px;
+        display: inline-block;
+        width: 1px;
+    }
+
+    #performance span.warn {
+        color: red;
+    }
+
+    #performance button.warn {
+        background-color: red;
+    }
+
+    #performance span.done {
+        color: #66cd00;
+    }
+
+    #performance button.done {
+        background-color: lightgreen;
     }
 
     .pre-show-radio-label {
