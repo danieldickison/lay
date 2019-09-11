@@ -294,6 +294,13 @@ class Showtime
     end
 
 
+    VIP_DISPLAY = {
+        'P-A' => 'VIP A',
+        'P-B' => 'VIP B',
+        'P-C' => 'VIP C',
+        'P-D' => 'VIP D'
+    }
+
     def self.finalize_show_data(performance_id)
         `mkdir -p '#{Media::DATA_DIR}'`
         db = SQLite3::Database.new(Database::DB_FILE)
@@ -325,6 +332,17 @@ class Showtime
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
             AND consented != 0 AND vipStatus IS NOT NULL
         SQL
+
+        any = false
+        if vips.each do |v, vv|
+            if !vv
+                puts "> We have no #{VIP_DISPLAY[v]}!"
+                any = true
+            end
+        end
+        if any
+            puts "> Consider getting more opt-ins and doing BUTTON C again"
+        end
 
         File.open(VIP_FILE, "w") do |f|
             ['P-A', 'P-B', 'P-C', 'P-D'].each do |which|
