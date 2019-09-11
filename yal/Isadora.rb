@@ -46,7 +46,7 @@ class Isadora
             if !success
                 puts "Trouble pushing to Isadora:"
                 puts out
-                raise
+                raise "Trouble pushing to Isadora: " + out.lines[0]
             end
         end
     end

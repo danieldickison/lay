@@ -17,6 +17,9 @@ class Yal
         puts ">> ERROR"        
     rescue
         puts $!.inspect
+        if $!.message != ""
+            puts "> " + $!.message
+        end
         puts ">> ERROR"        
     ensure
         puts ">> DONE"
@@ -45,7 +48,10 @@ class Yal
         puts ">> ERROR"        
     rescue
         puts $!.inspect
-        puts ">> ERROR"        
+        if $!.message != ""
+            puts "> " + $!.message
+        end
+        puts ">> ERROR"
     ensure
         puts ">> DONE"
         STDOUT.sync = false
@@ -69,6 +75,9 @@ class Yal
         puts ">> ERROR"        
     rescue
         puts $!.inspect
+        if $!.message != ""
+            puts "> " + $!.message
+        end
         puts ">> ERROR"        
     ensure
         puts ">> DONE"
@@ -89,6 +98,9 @@ class Yal
         puts ">> ERROR"        
     rescue
         puts $!.inspect
+        if $!.message != ""
+            puts "> " + $!.message
+        end
         puts ">> ERROR"
     ensure
         puts ">> DONE"
