@@ -394,20 +394,10 @@ class Yal
         STDOUT.sync = true
         performance = Showtime.current_performance
 
-<<<<<<< HEAD
-        puts "Getting show's data from CMU... "
-STDOUT.flush
-sleep(10)
-        CMUServer.new.pull
-        puts "success."
-return
-        puts "Generating media... "
-=======
         puts "> Getting show's data from CMU... "
         CMUServer.new.pull
 
         puts "> Generating media... "
->>>>>>> dffec4c0ccd5ad9a13a6ccf85a46145e8788b438
         Showtime.prepare_export(performance[:id])
         Yal.seqs.each do |seq|
             puts "> #{seq}..."
@@ -432,13 +422,13 @@ return
         STDOUT.sync = true
         performance = Showtime.current_performance
 
-        puts "Finalizing show data... "
+        puts > "Finalizing show data... "
         Showtime.finalize_show_data(performance[:id])
 
-        puts "Pushing opt-out data to Isadora... "
+        puts "> Pushing opt-out data to Isadora... "
         Isadora.push_opt_out
 
-        # puts "Pushing changes back to CMU... "
+        # puts "> Pushing changes back to CMU... "
         # CMUServer.push(performance[:id])
         # puts "success."
 
