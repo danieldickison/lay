@@ -12,6 +12,7 @@ class Yal
 
         ButtonRunner.reset
         Showtime[:cast_show_time] = false
+        puts "> Done."
 
     rescue Showtime::ButtonError
         puts ">> ERROR"        
@@ -43,6 +44,7 @@ class Yal
 
         puts "> Pushing to Isadora... "
         Isadora.push
+        puts "> Done."
 
     rescue Showtime::ButtonError
         puts ">> ERROR"        
@@ -66,6 +68,7 @@ class Yal
 
         puts "> Pushing opt-out data to Isadora... "
         Isadora.push_opt_out
+        puts "> Done."
 
         # puts "> Pushing changes back to CMU... "
         # CMUServer.push(performance[:id])
