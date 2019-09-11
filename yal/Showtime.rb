@@ -334,7 +334,7 @@ class Showtime
         SQL
 
         any = false
-        if vips.each do |v, vv|
+        vips.each do |v, vv|
             if !vv
                 puts "> We have no #{VIP_DISPLAY[v]}!"
                 any = true
