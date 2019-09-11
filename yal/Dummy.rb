@@ -175,7 +175,7 @@ class Dummy
 
         db.execute(<<~SQL)
             UPDATE datastore_patron
-            SET consented = 1
+            SET consented = 1, greeterMatch = 1
             WHERE performance_1_id = #{dummy_performance_id}
         SQL
     end

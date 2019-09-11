@@ -31,6 +31,9 @@ end
 
 
 class Showtime
+    class Error < StandardError; end
+    class ButtonError < Error; end
+
     MAX_PATRONS  = 100
     OPT_OUT_FILE = Media::DATA_DIR + "LAY_opt_outs.txt"
     VIP_FILE     = Media::DATA_DIR + "LAY_vips.txt"
@@ -39,34 +42,50 @@ class Showtime
 
     @@persistent = nil
     @@persistent_mutex = Mutex.new
+    @@persistent_mtime = nil
+
+    DEFAULTS = {
+        :performance_number => 1
+    }
 
     def self.[](key)
-        if !@@persistent
-            @@persistent_mutex.synchronize do
-                if !@@persistent
-                    `mkdir -p '#{Media::DATA_DIR}'`
-                    if File.exist?(SHOWTIME_FILE)
-                        @@persistent = JSON.parse(File.read(SHOWTIME_FILE))
-                        PlaybackData.fixup_keys(@@persistent)
-                    else
-                        @@persistent = {:performance_number => 1}
-                    end
+        @@persistent_mutex.synchronize do
+            if @@persistent_mtime != (m = File.mtime(SHOWTIME_FILE))
+                @@persistent_mtime = m
+                @@persistent = nil
+            end
+
+            if !@@persistent
+                if File.exist?(SHOWTIME_FILE)
+                    @@persistent = JSON.parse(File.read(SHOWTIME_FILE))
+                    PlaybackData.fixup_keys(@@persistent)
+                else
+                    @@persistent = {}
                 end
             end
+
+            if !@@persistent.has_key?(key)
+                @@persistent[key] = DEFAULTS[key]
+            end
+
+            return @@persistent[key]
         end
-        return @@persistent[key]
     end
 
     def self.[]=(key, value)
-        if !@@persistent
-            Showtime[key]
-        end
-        @@persistent_mutex.synchronize do        
-            @@persistent[key] = value
+        Showtime[key]  # check for reload
+        @@persistent_mutex.synchronize do
+            if value == nil
+                @@persistent.delete(key)
+            else
+                @@persistent[key] = value
+            end
             File.open(SHOWTIME_FILE, "w") {|f| f.write(JSON.pretty_generate(@@persistent))}
+            @@persistent_mtime = File.mtime(SHOWTIME_FILE)
         end
         return value
     end
+
 
     def self.prepare_export(performance_id)
         db = SQLite3::Database.new(Database::DB_FILE)
@@ -124,10 +143,21 @@ class Showtime
             SQL
         end
 
+
         # pids
         assign_pids(performance_id, 1)
 
+
+        # default greeterMatch to YES
+        db.execute(<<~SQL)
+            UPDATE datastore_patron
+            SET greeterMatch = 1
+            WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
+        SQL
+
+
         Dummy.prepare_export
+
 
         # create preshow test version
         File.open(OPT_OUT_FILE, "w") {|f| f.puts}  # no opt outs
@@ -135,12 +165,14 @@ class Showtime
         PlaybackData.reset_filename_pids
     end
 
+
     def self.write_vips_file(vips = nil)
         vips ||= [0,0,0,0]
         File.open(VIP_FILE, "w") do |f|
             4.times {|i| f.puts('%03d' % vips[i])}
         end
     end
+
 
     def self.assign_pids(performance_id, starting_pid)
         db = SQLite3::Database.new(Database::DB_FILE)
@@ -163,6 +195,7 @@ class Showtime
             SQL
         end
     end
+
 
     def self.update_patron(performance_number, employee_id, drink, opted_in)
         employee_id = Integer(employee_id) # validate, and also prevent catastrophic db injection
@@ -198,6 +231,7 @@ class Showtime
                 )
         SQL
     end
+
 
     def self.update_patron_by_seat(performance_number, table, seat, drink, opted_in)
         raise "bad table" if !/[A-Z]/.match?(table)
@@ -239,6 +273,7 @@ class Showtime
         SQL
     end
 
+
     def self.list_performances
         db = SQLite3::Database.new(Database::DB_FILE)
         res = db.execute(<<~SQL).collect {|r| {:number => r[0], :date => DateTime.parse(r[1]).to_time.localtime.strftime("%a %m/%d/%y %I:%M%P")}}
@@ -263,11 +298,6 @@ class Showtime
         `mkdir -p '#{Media::DATA_DIR}'`
         db = SQLite3::Database.new(Database::DB_FILE)
 
-        performance_number = db.execute(<<~SQL).first[0]
-            SELECT performance_number FROM datastore_performance WHERE id = #{performance_id}
-        SQL
-        is_fake = (performance_number < 0)
-
         # opt outs
         rows = db.execute(<<~SQL).collect {|r| r[0]}
             SELECT pid, consented, greeterMatch
@@ -275,14 +305,10 @@ class Showtime
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
         SQL
 
-        if is_fake && ids.length == 100
-            ids = ids.shuffle[0..24]
-        end
-
         max_pid = rows.max_by {|r| r[0]}[0]
-        ids = rows.find_all {|r| r[1] == 0}.collect {|r| r[0]}  #  || r[2] == 0
-        if ids.length > rows.length / 2
-            puts "WARNING: only #{rows.length - ids.length} patrons available for show data (because of opt-out or greeter mismatch)"
+        out_ids = rows.find_all {|r| r[1] == 0 || r[2] == 0}.collect {|r| r[0]}
+        if out_ids.length > rows.length / 2
+            puts "WARNING: only #{rows.length - out_ids.length} patrons available for show data (because of opt-out or greeter mismatch)"
         end
         ids += ((max_pid + 1) .. MAX_PATRONS).to_a  # pad opt-outs for the non-existent patrons
         File.open(OPT_OUT_FILE, "w") do |f|
@@ -339,58 +365,104 @@ class Yal
     end
 
 
+
     def cli_button_a
+        STDOUT.sync = true
         performance = Showtime.current_performance
 
         if Time.now.month != performance[:date].month || Time.now.day != performance[:date].day
-            puts "Double check that the performance is set to today's performance."
-            raise
+            puts "> Double check that the performance is set to today's performance."
         end
 
-        puts "Setting cast tablets to SHOW ALL VIP CANDIDATES"
+        Showtime[:button_a] = nil  # reset to defaults
+        Showtime[:button_b] = nil
+        Showtime[:button_c] = nil
+        Showtime[:button_d] = nil
         Showtime[:cast_show_time] = false
 
-        puts "A OK"
+    rescue Showtime::ButtonError
+        puts ">> ERROR"        
+    rescue
+        puts $!.inspect
+        puts ">> ERROR"        
+    ensure
+        puts ">> DONE"
+        STDOUT.sync = false
     end
 
     def cli_button_b
+        STDOUT.sync = true
         performance = Showtime.current_performance
 
-        puts "Getting show's data from CMU... "
+        puts "> Getting show's data from CMU... "
         CMUServer.new.pull
-        puts "success."
 
-        puts "Generating media... "
+        puts "> Generating media... "
         Showtime.prepare_export(performance[:id])
         Yal.seqs.each do |seq|
-            puts "#{seq}..."
+            puts "> #{seq}..."
             seqclass = Object.const_get("Seq#{seq}".to_sym)
             seqclass.export(performance[:id])
         end
-        puts "success."
 
-        puts "Pushing to Isadora... "
+        puts "> Pushing to Isadora... "
         Isadora.push
-        puts "success."
 
-        puts "B OK"
+    rescue Showtime::ButtonError
+        puts ">> ERROR"        
+    rescue
+        puts $!.inspect
+        puts ">> ERROR"        
+    ensure
+        puts ">> DONE"
+        STDOUT.sync = false
     end
 
     def cli_button_c
+        STDOUT.sync = true
         performance = Showtime.current_performance
 
         puts "Finalizing show data... "
         Showtime.finalize_show_data(performance[:id])
-        puts "success."
 
         puts "Pushing opt-out data to Isadora... "
         Isadora.push_opt_out
-        puts "success."
 
-        puts "Pushing changes back to CMU... "
-        CMUServer.push(performance[:id])
-        puts "success."
+        # puts "Pushing changes back to CMU... "
+        # CMUServer.push(performance[:id])
+        # puts "success."
 
-        puts "C OK"
+    rescue Showtime::ButtonError
+        puts ">> ERROR"        
+    rescue
+        puts $!.inspect
+        puts ">> ERROR"        
+    ensure
+        puts ">> DONE"
+        STDOUT.sync = false
+    end
+
+
+    def cli_button_d
+        STDOUT.sync = true
+        performance = Showtime.current_performance
+
+        puts "> Step 1"
+        puts "just to the log"
+        sleep(2)
+        puts "> Step 2"
+        sleep(2)
+        puts "> Step 3"
+        sleep(2)
+        puts "> Step 4"
+        sleep(2)
+        puts "> Step 5"
+        sleep(2)
+    rescue
+        puts $!.inspect
+        puts ">> ERROR"
+    ensure
+        puts ">> DONE"
+        STDOUT.sync = false
     end
 end

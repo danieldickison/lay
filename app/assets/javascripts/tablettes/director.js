@@ -4,63 +4,38 @@
 (() => {
 'use strict';
 
-let STATS_INTERVAL = 1000;
+let STATS_INTERVAL = 250;
 let PING_ALERT = 10000;
 
 var messagesDiv;
-var unresponsiveTablets = [];
-var serverError = undefined;
-var buttonMsg = undefined;
-
+var serverError, prevServerError = null;
+var buttonMsg, prevButtonMsg = null;
 
 document.addEventListener("DOMContentLoaded", event => {
     messagesDiv = document.getElementById('director-messages');
     if (!messagesDiv) return;
 
-    document.getElementById('button-a').addEventListener('click', event => {
-        event.preventDefault();
-        fetch('/tablettes/button_a.json', {method: 'POST'})
-        .then(response => {
-            return response.json();
-        })
-        .then(json => {
-            alert(json.msg);
-        })
-        .catch(err => {
-            alert(err);
+    function addButton(letter) {
+        document.getElementById('button-' + letter).addEventListener('click', event => {
+            event.preventDefault();
+            fetch('/tablettes/button_' + letter + '.json', {method: 'POST'})
+            .then(response => {
+                return response.json();
+            })
+            .then(json => {
+                updateButtons(json.buttons);
+            })
+            .catch(err => {
+                alert(err);
+            });
         });
-    });
+    }
 
-
-    document.getElementById('button-b').addEventListener('click', event => {
-        event.preventDefault();
-        fetch('/tablettes/button_b.json', {method: 'POST'})
-        .then(response => {
-            return response.json();
-        })
-        .then(json => {
-            alert(json.msg);
-        })
-        .catch(err => {
-            alert(err);
-        });
-    });
-
-
-    document.getElementById('button-c').addEventListener('click', event => {
-        event.preventDefault();
-        fetch('/tablettes/button_c.json', {method: 'POST'})
-        .then(response => {
-            return response.json();
-        })
-        .then(json => {
-            alert(json.msg);
-        })
-        .catch(err => {
-            alert(err);
-        });
-    });
-
+    addButton('a');
+    addButton('b');
+    addButton('c');
+    addButton('d');
+    addButton('clear');
 
     document.getElementById('toggle-deets-link').addEventListener('click', event => {
         event.preventDefault();
@@ -135,6 +110,14 @@ function queueTabletCommand(command, oscMessage) {
     fetch('/tablettes/queue_tablet_command.json', {method: 'POST', body: body});
 }
 
+function updateButtons(buttons) {
+    document.getElementById('button-a-check').innerHTML = buttons.a;
+    document.getElementById('button-b-check').innerHTML = buttons.b;
+    document.getElementById('button-c-check').innerHTML = buttons.c;
+    document.getElementById('button-d-check').innerHTML = buttons.d;
+    buttonMsg = buttons.msg;
+}
+
 function fetchStats() {
     let body = new URLSearchParams();
     body.append('volume', document.getElementById('volume-input').value);
@@ -147,8 +130,9 @@ function fetchStats() {
         if (!json) throw "response json is null";
         if (!json.tablets) throw "response json missing tablets key";
 
-        unresponsiveTablets = [];
         serverError = null;
+
+        updateButtons(json.buttons);
 
         document.getElementById('pre-show-radio').checked = !json.show_time;
         document.getElementById('show-time-radio').checked = json.show_time;
@@ -164,14 +148,10 @@ function fetchStats() {
         json.tablets.forEach(tablet => {
             let isLagging = parseInt(tablet.ping) > PING_ALERT;
             let isOSCLagging = parseInt(tablet.osc_ping) > PING_ALERT;
-            if (isLagging || isOSCLagging) {
-                console.log("tablet " + tablet.id + " is lagging http: " + tablet.ping + "ms" + " osc: " + tablet.osc_ping, tablet);
-                unresponsiveTablets.push(tablet.id);
-            }
             let tr = document.createElement('tr');
             tr.appendChild(td(tablet.id + ' ' + String.fromCharCode('A'.charCodeAt(0) + tablet.id - 1) + (tablet.dupe ?  ' DUPE' : ''), tablet.dupe ? 'red' : null));
-            tr.appendChild(td(tablet.group || ''));
-            tr.appendChild(td(tablet.ip, !tablet.ip ? 'red' : null));
+            // tr.appendChild(td(tablet.group || ''));
+            tr.appendChild(td(tablet.ip || 'missing', !tablet.ip ? 'red' : null));
             tr.appendChild(td(tablet.build || ''));
             tr.appendChild(td(formatPing(tablet.ping), isLagging ? 'red' : null));
             tr.appendChild(td(formatPing(tablet.osc_ping), isOSCLagging ? 'red' : null));
@@ -195,7 +175,7 @@ function fetchStats() {
     })
     .catch(err => {
         console.log("server error:", err);
-        serverError = err;
+        serverError = "" + err;
     })
     .finally(updateMessages);
 
@@ -251,42 +231,59 @@ function fetchStats() {
     }
 
 
-    var prevButtonMsg = undefined;
-    var prevServerError = undefined;
-    var prevUnresponsiveTablets = [];
     function updateMessages() {
-        unresponsiveTablets.sort();
-        if (prevButtonMsg === buttonMsg && prevServerError === serverError && prevUnresponsiveTablets.every((t, i) => unresponsiveTablets[i] === t)) {
-            return; // no change, leave the dom alone
-        }
+        var ps = [], i, diff, update = false;
 
-        messagesDiv.innerHTML = '';
-
-        if (buttonMsg) {
-            let p = document.createElement('p');
-            p.classList.add('warning');
-            p.innerText = buttonMsg;
-            messagesDiv.appendChild(p);
-        }
-        if (!serverError) { // && unresponsiveTablets.length === 0) {
-            messagesDiv.innerText = 'All good';
-        } else {
+        if (prevServerError !== serverError) {
             if (serverError) {
                 let p = document.createElement('p');
                 p.classList.add('warning');
                 p.innerText = "Restart playback server!";
-                messagesDiv.appendChild(p);
+                ps.push(p);
             }
-            // unresponsiveTablets.forEach(t => {
-            //     let p = document.createElement('p');
-            //     p.classList.add('warning');
-            //     p.innerText = "Replace tablet #" + t;
-            //     messagesDiv.appendChild(p);
-            // });
+            prevServerError = serverError;
+            update = true;
         }
 
-        prevUnresponsiveTablets = unresponsiveTablets;
-        prevServerError = serverError;
+
+        diff = true;
+        if (Array.isArray(prevButtonMsg) && Array.isArray(buttonMsg)) {
+            if (prevButtonMsg.length == buttonMsg.length) {
+                diff = false;
+                for (i = 0; i < buttonMsg.length; ++i) {
+                    if (buttonMsg[i] != prevButtonMsg[i]) {
+                        diff = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (diff) {
+            if (buttonMsg) {
+                for (i = 0; i < buttonMsg.length; ++i) {
+                    let p = document.createElement('p');
+                    p.classList.add('warning');
+                    p.innerText = buttonMsg[i];
+                    ps.push(p);
+                }
+            }
+            prevButtonMsg = buttonMsg;
+            update = true;
+        }
+
+
+        if (update) {
+            messagesDiv.innerHTML = '';
+            if (ps.length == 0) {
+                messagesDiv.style.display = "none";
+            } else {
+                messagesDiv.style.display = "block";           
+                for (i = 0; i < ps.length; ++i) {
+                    messagesDiv.appendChild(ps[i]);
+                }
+            }
+        }
     }
 }
 })();
