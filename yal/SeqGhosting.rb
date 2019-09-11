@@ -113,13 +113,14 @@ Slots correspond to zones as follows: (8 per zone)
 
         fn_pids = {}  # for updating LAY_filename_pids.txt
 
+        photos, dummy_photos = photos.partition {|p| p.pid < Dummy::STARTING_PID}
 
         # select photos for this sequence
         if !is_fake
             photos = photos.find_all {|p| p.category == "friend"}
+            dummy_photos = dummy_photos.find_all {|p| p.category == 'friend' || p.category == 'face'}
         end
 
-        photos, dummy_photos = photos.partition {|p| p.pid < Dummy::STARTING_PID}
         puts "we have #{photos.length} photos and #{dummy_photos.length} dummy photos"
 
         photo_names = {}
@@ -135,7 +136,7 @@ Slots correspond to zones as follows: (8 per zone)
             # 8 random photos for each tv
             ph = tv_photos[tv]
             if !ph
-                ph = dummy_photos.slice!(8)
+                ph = dummy_photos.slice!(0, 8)
                 #puts "using #{ph.length} dummy photos for tv #{tv}" # should always be 8
                 if ph.length < 8
                     puts "WARNING: not enough dummies for tv #{tv}; randomly sampling #{8 - ph.length} from all tv photos"
