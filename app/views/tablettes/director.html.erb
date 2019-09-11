@@ -1,6 +1,6 @@
 <div id="p-director">
     <h1>Playback Server</h1>
-    <form>
+    <form id="performance">
         <label>
             Performance:
             <select id="performance-select">
@@ -14,11 +14,15 @@
             </select>
         </label>
         <span style="margin-left: 2em">Yo Alex: </span>
-        <button id="button-a">Button A</button>
-        <button id="button-b">Button B</button>
-        <button id="button-c">Button C</button>
+        <button id="button-a">Button A</button><span id="button-a-check" class="check"></span>
+        <button id="button-b">Button B</button><span id="button-b-check" class="check"></span>
+        <button id="button-c">Button C</button><span id="button-c-check" class="check"></span>
+        <button id="button-d">Button D</button><span id="button-d-check" class="check"></span>
+        <button id="button-clear">Clear</button>
     </form>
-    <section style="clear: both">
+    <section id="director-messages" style="clear: both; display: none;">
+    </section>
+    <section>
         <form id="director-controls-form" class="director-form">
             <label class="pre-show-radio-label">
                 <input type="radio" name="director-pre-show-radio" id="pre-show-radio" value="0" <% if !@show_time %>checked<% end %>>
@@ -40,16 +44,12 @@
         </form>
     </section>
 
-    <section id="director-messages" style="display: none;">
-    </section>
-
     <p><a id="toggle-deets-link" href="#" style="display: none;">toggle deets</a></p>
 
     <section id="director-deets" class="director-deets--show">
         <table id="tablet-stats">
             <thead>
                 <th>tablet</th>
-                <th>group</th>
                 <th>IP</th>
                 <th>build</th>
                 <th>http ping</th>

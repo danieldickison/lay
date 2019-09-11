@@ -23,7 +23,6 @@ module U
             pid, pin, pout, perror = POSIX::Spawn.popen4(cmd)
             buf = ""
             out = ""
-            done = false
             begin
                 loop do
                     if m = /(\r|\n)+/.match(buf)
@@ -32,11 +31,11 @@ module U
                         next
                     end
                     loop do
-                        select [pout]
+                        puts "select"
+                        select([pout])
                         d = pout.read
                         if d && d != ""
                             buf += d
-                            out += d
                             break
                         end
                         if pout.eof
@@ -47,7 +46,7 @@ module U
                 end
             rescue RuntimeError
             ensure
-                [pin, pout, perror].each {|io| io.close rescue nil }
+                [pin, pout, perror].each {|io| io.close rescue nil}
                 Process::waitpid(pid)
             end
         else
@@ -62,7 +61,7 @@ module U
                 if pid > 0
                     w.close
                     out = r.read
-                    ::Process.waitpid(pid)
+                    Process.waitpid(pid)
                 else
                     out = ''
                 end

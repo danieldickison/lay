@@ -40,7 +40,9 @@ class TablettesController < ApplicationController
     @show_time = true
 
 
-    skip_before_action :verify_authenticity_token, :only => [:ping, :play_timecode, :queue_tablet_command, :set_show_time, :set_current_performance, :start_cue, :stop_cue, :assets, :update_patron, :stats, :button_a, :button_b, :button_c]
+    skip_before_action :verify_authenticity_token,
+        :only => [:ping, :play_timecode, :queue_tablet_command, :set_show_time, :set_current_performance,
+            :start_cue, :stop_cue, :assets, :update_patron, :stats, :button_a, :button_b, :button_c, :button_d, :button_clear]
 
     # We probably want this to be in a db... or maybe not. single process server sufficient?
     @cues = {} # {int => {:time => int, :file => string, :seek => int}}
@@ -71,44 +73,34 @@ class TablettesController < ApplicationController
     end
 
     def button_a
-        runner = ButtonRunner.new("a")
-        runner.run
-        render json: {
-            :msg => runner.output
-        }
+        stats = ButtonRunner.run('a')
+        render({json: {:buttons => stats}})
     rescue
-        puts "failed to run button a: #{$!}"
-        render json: {
-            :error => $!.to_s
-        }
+        puts "failed to run button A: #{$!}"
+        render({json: {:error => $!.to_s}})
     end
 
     def button_b
-        runner = ButtonRunner.new("b")
-        runner.run
-        render json: {
-            :msg => runner.output
-        }
-    rescue
-        puts "failed to run button b: #{$!}"
-        render json: {
-            :error => $!.to_s
-        }
     end
 
     def button_c
-        runner = ButtonRunner.new("c")
-        runner.run
-        render json: {
-            :msg => runner.output
-        }
-    rescue
-        puts "failed to run button c: #{$!}"
-        render json: {
-            :error => $!.to_s
-        }
     end
 
+    def button_d
+        stats = ButtonRunner.run('d')
+        render({json: {:buttons => stats}})
+    rescue
+        puts "failed to run button D: #{$!}"
+        render({json: {:error => $!.to_s}})
+    end
+
+    def button_clear
+        stats = ButtonRunner.clear
+        render({json: {:buttons => stats}})
+    rescue
+        puts "failed to run button D: #{$!}"
+        render({json: {:error => $!.to_s}})
+    end
 
     def play_timecode
         self.class.send_osc_cue('/tablet-util/tc.mp4', Time.now.utc + 1, 2)
@@ -159,6 +151,7 @@ class TablettesController < ApplicationController
         render json: {
             show_time: self.class.show_time,
             performance_number: Showtime[:performance_number],
+            buttons: ButtonRunner.stats,
             tablets: tablet_ids.collect do |id|
                 t = tablets[id] || {}
                 {
@@ -169,7 +162,7 @@ class TablettesController < ApplicationController
                     build:      t[:build],
                     ping:       t[:ping] && ((now - t[:ping]) * 1000).round,
                     osc_ping:   t[:osc_ping] && ((now - t[:osc_ping]) * 1000).round,
-                    playing:    t[:playing]&.split('/')&.last&.gsub('%20', ' '),
+                    playing:    t[:playing]&.split('/')&.last&.gsub('%20', ' ') || '',
                     clock:      t[:clock]&.split(' ')&.collect {|c| c.split('=')}&.to_h,
                     cache:      t[:cache]&.split("\n")&.collect do |c|
                         cs = c.split(';')

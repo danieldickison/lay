@@ -17,6 +17,8 @@ Rails.application.routes.draw do
   post 'tablettes/button_a'
   post 'tablettes/button_b'
   post 'tablettes/button_c'
+  post 'tablettes/button_d'
+  post 'tablettes/button_clear'
   post 'tablettes/assets'
   post 'tablettes/update_patron'
 
