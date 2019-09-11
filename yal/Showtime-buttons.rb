@@ -18,6 +18,7 @@ class Yal
         puts ">> ERROR"        
     rescue
         puts $!.inspect
+        puts $!.backtrace
         if $!.message != ""
             puts "> " + $!.message
         end
@@ -50,6 +51,7 @@ class Yal
         puts ">> ERROR"        
     rescue
         puts $!.inspect
+        puts $!.backtrace
         if $!.message != ""
             puts "> " + $!.message
         end
@@ -78,6 +80,7 @@ class Yal
         puts ">> ERROR"        
     rescue
         puts $!.inspect
+        puts $!.backtrace
         if $!.message != ""
             puts "> " + $!.message
         end
