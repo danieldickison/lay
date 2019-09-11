@@ -63,7 +63,7 @@ class Yal
         STDOUT.sync = true
         performance = Showtime.current_performance
 
-        puts > "Finalizing show data... "
+        puts "> Finalizing show data... "
         Showtime.finalize_show_data(performance[:id])
 
         puts "> Pushing opt-out data to Isadora... "
