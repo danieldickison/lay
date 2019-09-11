@@ -22,7 +22,6 @@ class ButtonRunner
         button_b: '',
         button_c: '',
         button_d: '',
-        button_msgs: []
     })
 
     def self.stats
@@ -37,7 +36,7 @@ class ButtonRunner
                     ["Button #{@@button.which.upcase} done. (#{s})"] + @@msgs.dup  # result
                 end
             else
-                nil
+                @@msgs.dup
             end
         end
 
@@ -68,7 +67,6 @@ class ButtonRunner
 
         @@mutex.synchronize do
             @@msgs = []
-            Showtime[:button_msgs] = @@msgs
             check_buttons
             if !@@button_running
                 @@button = nil
@@ -106,7 +104,6 @@ class ButtonRunner
                 end
                 Showtime[("button_" + @@button.which).to_sym] = check
                 @@button_running = r
-                Showtime[:button_msgs] = @@msgs
             end
         else
             @@button_running = false
