@@ -81,9 +81,19 @@ class TablettesController < ApplicationController
     end
 
     def button_b
+        stats = ButtonRunner.run('b')
+        render({json: {:buttons => stats}})
+    rescue
+        puts "failed to run button D: #{$!}"
+        render({json: {:error => $!.to_s}})
     end
 
     def button_c
+        stats = ButtonRunner.run('c')
+        render({json: {:buttons => stats}})
+    rescue
+        puts "failed to run button D: #{$!}"
+        render({json: {:error => $!.to_s}})
     end
 
     def button_d
@@ -98,7 +108,7 @@ class TablettesController < ApplicationController
         stats = ButtonRunner.clear
         render({json: {:buttons => stats}})
     rescue
-        puts "failed to run button D: #{$!}"
+        puts "failed to run clear: #{$!}"
         render({json: {:error => $!.to_s}})
     end
 
