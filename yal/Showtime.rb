@@ -310,9 +310,9 @@ class Showtime
         if out_ids.length > rows.length / 2
             puts "WARNING: only #{rows.length - out_ids.length} patrons available for show data (because of opt-out or greeter mismatch)"
         end
-        ids += ((max_pid + 1) .. MAX_PATRONS).to_a  # pad opt-outs for the non-existent patrons
+        out_ids += ((max_pid + 1) .. MAX_PATRONS).to_a  # pad opt-outs for the non-existent patrons
         File.open(OPT_OUT_FILE, "w") do |f|
-            o = ids.collect {|i| "%03d" % i}.join("\n")
+            o = out_ids.collect {|i| "%03d" % i}.join("\n")
             f.puts(o)
         end
 
