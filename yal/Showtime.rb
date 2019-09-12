@@ -300,6 +300,7 @@ class Showtime
         'P-C' => 'VIP C',
         'P-D' => 'VIP D'
     }
+    VIP_KEYS = VIP_DISPLAY.keys
 
     def self.finalize_show_data(performance_id)
         `mkdir -p '#{Media::DATA_DIR}'`
@@ -336,7 +337,7 @@ class Showtime
 pp vips
 
         any = false
-        vips.each do |v, vv|
+        VIP_KEYS.each do |v, vv|
             if !vv
                 puts "> WARNING: We have no #{VIP_DISPLAY[v]}!"
                 any = true
@@ -347,7 +348,7 @@ pp vips
         end
 
         File.open(VIP_FILE, "w") do |f|
-            ['P-A', 'P-B', 'P-C', 'P-D'].each do |which|
+            VIP_KEYS.each do |which|
                 f.puts('%03d' % (vips[which] || 0))
             end
         end
