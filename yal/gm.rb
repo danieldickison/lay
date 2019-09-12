@@ -263,6 +263,20 @@ module GraphicsMagick
         end
     end
 
+    def self.fixed_fit(src, dst, width, height = width, format = nil, quality = nil, annotate = nil)
+        src_info, src = info_and_src(src)
+        convert(
+            "#{src}[0]",
+            "-auto-orient",
+            "-resize", "#{width}x#{height}",
+            "-background", "gray",
+            "-gravity", "center",
+            "-extent", "#{width}x#{height}",
+            anno_args(annotate, width),
+            format_args(dst, format, quality)
+        )
+    end
+
     def self.fixed_height(src, dst, max_width, fixed_height, format = nil, quality = nil, annotate = nil)
         src_info, src = info_and_src(src)
         convert(

@@ -255,6 +255,10 @@ class Yal
         GraphicsMagick.scrub(file, file + ".jpg", "jpg", 85)
     end
 
+    def cli_gm(*args)
+        GraphicsMagick.fixed_fit(args[0], args[1] || args[0], 1000, 300, "jpg", 85)
+    end
+
     def cli_quit
         exit(0)
     end

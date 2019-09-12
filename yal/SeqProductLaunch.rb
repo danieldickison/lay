@@ -134,7 +134,7 @@ class SeqProductLaunch < Sequence
                 b[:company] = isa_special_index
                 dst = ISADORA_PRODUCTLAUNCH_SPECIAL_FMT % isa_special_index
                 isa_special_index += 1
-                img_thumbnail(img, dst, 600, 450, "pid #{pid}", ISADORA_PRODUCTLAUNCH_SPECIAL_DIR, TABLETS_PRODUCTLAUNCH_DIR)
+                img_fixed_fit(img, dst, 600, 450, "pid #{pid}", ISADORA_PRODUCTLAUNCH_SPECIAL_DIR, TABLETS_PRODUCTLAUNCH_DIR)
                 b[:company_url] = TABLETS_PRODUCTLAUNCH_URL + dst
                 fn_pids[dst] = pid
             end
