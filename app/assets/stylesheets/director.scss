@@ -7,6 +7,19 @@
       margin-block-end: 0.2em;
     }
 
+    #cue-display {
+        color: yellow;
+    }
+
+    #cue-display .cue {
+        font-size: 85px;
+        line-height: 70px;
+    }
+
+    #cue-display .cue-dur {
+        font-size: 20px;
+    }
+
     #performance .check {
         font-size: 1.5em;
         vertical-align: -3px;
@@ -41,6 +54,11 @@
     .pre-show-radio-label {
         border: solid 1px green;
         border-radius: 4px;
+        height: 21px;
+    }
+
+    #volume-input {
+        vertical-align: -3px;
     }
 
     #director-messages {
@@ -80,10 +98,6 @@
     .director-form label {
         margin: 5px;
         padding: 5px;
-
-        &.volume-input-label {
-            background: rgba(255, 255, 255, 0.25);
-        }
     }
 
     #director-deets {

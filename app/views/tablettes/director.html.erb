@@ -1,4 +1,8 @@
 <div id="p-director">
+    <div id="cue-display" style="float: right">
+        <span id="cue-display-dur" class="cue-dur"></span> / 
+        <span id="cue-display-cue" class="cue"></span>
+    </div>
     <h1>Playback Server</h1>
     <form id="performance">
         <label>
@@ -35,7 +39,7 @@
             <label class="pre-show-radio-label">
                 Debug: <input id="debug-checkbox" type="checkbox" <% if @debug %>checked<% end %>>
             </label>
-            <label class="volume-input-label">
+            <label class="pre-show-radio-label">
                 Tablet Volume: <input id="volume-input" type="range" min="0" max="100" value=<%= @volume %>>
             </label>
             <button id="play-timecode-button">Play Timecode</button>

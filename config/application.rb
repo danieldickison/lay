@@ -46,6 +46,16 @@ module Lay
 
     RIX_LOGO_VIDEO = '/playback/media_tablets/100-General/100-015-C60-RixLogo_Black_Glow.mp4'.freeze
 
+    @@recent_cue = nil
+    @@recent_cue_start = nil
+
+    def self.stats
+      return {
+        cue: @@recent_cue,
+        cue_dur: @@recent_cue_start ? (Time.now - @@recent_cue_start).round : nil
+      }
+    end
+
     class Testem
       @@run = false
 
@@ -112,7 +122,9 @@ module Lay
 
         cue = message.to_a[0].to_i
         puts "received cue #{cue}"
-        
+        @@recent_cue = cue
+        @@recent_cue_start = Time.now
+
         if cue != 50
             TablettesController.show_time = true
         end
@@ -124,7 +136,6 @@ module Lay
             nil
         when 55
             # TODO
-            # YalRunner.sh("export", performance_number, "OptOut")
             Showtime[:cast_show_time] = true
             SeqSimpleVideo.new(55, RIX_LOGO_VIDEO).tap {|s| s.isadora_delay = 0}
         when 100

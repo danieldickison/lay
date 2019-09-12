@@ -159,6 +159,14 @@ function fetchStats() {
 
         serverError = null;
 
+        if (json.cue.cue) {
+            document.getElementById('cue-display').style.display = 'block';
+            document.getElementById('cue-display-cue').innerHTML = json.cue.cue;
+            document.getElementById('cue-display-dur').innerHTML = formatDur(json.cue.cue_dur);
+        } else {
+            document.getElementById('cue-display').style.display = 'none';
+        }
+
         updateButtons(json.buttons);
 
         document.getElementById('pre-show-radio').checked = !json.show_time;
@@ -211,10 +219,27 @@ function fetchStats() {
             return '';
         } else if (ping > 3600000) {
             return '>1 hour';
-        } else if (ping > 60000) {
+        } else if (ping > 120000) {
             return Math.floor(ping / 60000) + ' min';
         } else {
             return (ping / 1000).toFixed(1) + ' s';
+        }
+    }
+
+    function formatDur(dur) {
+        let h, m, s;
+        if (dur === null || dur === undefined) {
+            return '';
+        }
+
+        h = Math.floor(dur / 3600);
+        m = Math.floor(dur / 60) % 60;
+        s = dur % 60;
+
+        if (h > 0) {
+            return h + ":" + ("0" + m).substr(-2) + ":" + ("0" + s).substr(-2)
+        } else {
+            return ("0" + m).substr(-2) + ":" + ("0" + s).substr(-2)
         }
     }
 
@@ -229,6 +254,7 @@ function fetchStats() {
 
     function buildCacheHover(td, cache) {
         if (!cache || cache.length === 0) {
+            return;
             // debug
             cache = [
                 {path: "/lay/test/done", start: Date.now()/1000 - 10, end: Date.now()/1000, error: null},

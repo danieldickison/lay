@@ -3,19 +3,7 @@ class TablettesController < ApplicationController
     TABLET_BASE_IP_NUM = 200
 
     @debug = false
-    TABLET_TO_TABLE = {
-        1 => 'A',
-        2 => 'B',
-        3 => 'C',
-        4 => 'D',
-        5 => 'E',
-        6 => 'F',
-        7 => 'G',
-        8 => 'H',
-        9 => 'I',
-        10 => 'J',
-        11 => 'XX',
-    }
+
     TABLET_GROUPS = 6
     ALL_TABLETS = (1..26).to_a.freeze
     LOBBY_TABLET_ID_START = 100
@@ -134,7 +122,6 @@ class TablettesController < ApplicationController
     end
 
     def start_cue
-        # Kind of a roundabaout way to trigger the cue sequence since it's currently only implemneted in the osc listener in application.rb
         client = OSC::Client.new('127.0.0.1', 53000)
         msg = OSC::Message.new('/cue', params[:cue])
         client.send(msg)
@@ -164,6 +151,7 @@ class TablettesController < ApplicationController
             show_time: self.class.show_time,
             performance_number: Showtime[:performance_number],
             buttons: ButtonRunner.stats,
+            cue: Lay::OSCApplication.stats,
             tablets: tablet_ids.collect do |id|
                 t = tablets[id] || {}
                 {
@@ -477,7 +465,7 @@ class TablettesController < ApplicationController
                 nil
             end
         end.compact
-        puts "sending to #{clients.length} tablets: #{addr} #{args.join(' ')}"
+        # puts "sending to #{clients.length} tablets: #{addr} #{args.join(' ')}"
         new_msg = OSC::Message.new(addr, *args)
         clients.each do |c|
           begin
