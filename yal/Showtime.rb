@@ -334,8 +334,6 @@ class Showtime
             AND consented != 0 AND vipStatus IS NOT NULL
         SQL
 
-pp vips
-
         any = false
         VIP_KEYS.each do |v, vv|
             if !vv
