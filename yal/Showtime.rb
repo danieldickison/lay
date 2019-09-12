@@ -315,7 +315,7 @@ class Showtime
         max_pid = rows.max_by {|r| r[0]}[0]
         out_ids = rows.find_all {|r| r[1] == 0 || r[2] == 0}.collect {|r| r[0]}
         if out_ids.length > rows.length / 2
-            puts "WARNING: only #{rows.length - out_ids.length} patrons available for show data (because of opt-out or greeter mismatch)"
+            puts "> WARNING: Only #{rows.length - out_ids.length} patrons available for show data"
         end
         out_ids += ((max_pid + 1) .. MAX_PATRONS).to_a  # pad opt-outs for the non-existent patrons
         File.open(OPT_OUT_FILE, "w") do |f|
@@ -336,12 +336,12 @@ class Showtime
         any = false
         vips.each do |v, vv|
             if !vv
-                puts "> We have no #{VIP_DISPLAY[v]}!"
+                puts "> WARNING: We have no #{VIP_DISPLAY[v]}!"
                 any = true
             end
         end
         if any
-            puts "> Consider getting more opt-ins and doing BUTTON C again"
+            puts "> Consider getting more opt-ins and hitting BUTTON C again."
         end
 
         File.open(VIP_FILE, "w") do |f|
