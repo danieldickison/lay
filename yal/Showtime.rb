@@ -318,7 +318,7 @@ class Showtime
         if out_ids.length > rows.length / 2
             puts "> WARNING: Only #{rows.length - out_ids.length} out of #{rows.length} patrons available for show data."
         else
-            puts "> #{rows.length} patrons, #{out_ids.length} opt-outs"
+            puts "> #{rows.length} patrons, #{rows.length - out_ids.length} opt-ins."
         end
         out_ids += ((max_pid + 1) .. MAX_PATRONS).to_a  # pad opt-outs for the non-existent patrons
         File.open(OPT_OUT_FILE, "w") do |f|
@@ -345,6 +345,8 @@ class Showtime
         end
         if any
             puts "> Consider getting more opt-ins and hitting BUTTON C again."
+        else
+            puts "> VIPs are good."
         end
 
         File.open(VIP_FILE, "w") do |f|
