@@ -333,6 +333,8 @@ class Showtime
             AND consented != 0 AND vipStatus IS NOT NULL
         SQL
 
+pp vips
+
         any = false
         vips.each do |v, vv|
             if !vv
