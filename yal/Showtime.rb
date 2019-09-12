@@ -307,7 +307,7 @@ class Showtime
         db = SQLite3::Database.new(Database::DB_FILE)
 
         # opt outs
-        rows = db.execute(<<~SQL).collect {|r| r[0]}
+        rows = db.execute(<<~SQL).to_a
             SELECT pid, consented, greeterMatch
             FROM datastore_patron
             WHERE (performance_1_id = #{performance_id} OR performance_2_id = #{performance_id})
@@ -316,7 +316,9 @@ class Showtime
         max_pid = rows.max_by {|r| r[0]}[0]
         out_ids = rows.find_all {|r| r[1] == 0 || r[2] == 0}.collect {|r| r[0]}
         if out_ids.length > rows.length / 2
-            puts "> WARNING: Only #{rows.length - out_ids.length} patrons available for show data"
+            puts "> WARNING: Only #{rows.length - out_ids.length} out of #{rows.length} patrons available for show data."
+        else
+            puts "> #{rows.length} patrons, #{out_ids.length} opt-outs"
         end
         out_ids += ((max_pid + 1) .. MAX_PATRONS).to_a  # pad opt-outs for the non-existent patrons
         File.open(OPT_OUT_FILE, "w") do |f|
