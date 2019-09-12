@@ -335,8 +335,8 @@ class Showtime
         SQL
 
         any = false
-        VIP_KEYS.each do |v, vv|
-            if !vv
+        VIP_KEYS.each do |v|
+            if !vips[v]
                 puts "> WARNING: We have no #{VIP_DISPLAY[v]}!"
                 any = true
             end
