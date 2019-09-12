@@ -63,6 +63,7 @@ class SeqProductLaunch < Sequence
             }
             (0..12).each do |i|
                 img = row[i]
+                next if !img || img == ''
                 cat = row[i+13]
                 case cat
                 when 'face'
@@ -140,6 +141,7 @@ class SeqProductLaunch < Sequence
             end
             (0..12).each do |i|
                 img = row[i]
+                next if !img || img == ''
                 cat = row[i+13]
                 case cat
                 when 'face'
@@ -197,6 +199,7 @@ class SeqProductLaunch < Sequence
 
             (0..12).each do |i|
                 img = row[i]
+                next if !img || img == ''
                 cat = row[i+13]
                 case cat
                 when 'face'
@@ -299,6 +302,7 @@ class SeqProductLaunch < Sequence
             end
             (0..12).each do |i|
                 img = row[i]
+                next if !img || img == ''
                 cat = row[i+13]
                 case cat
                 when 'face'
@@ -378,7 +382,7 @@ class SeqProductLaunch < Sequence
         SQL
         raj_patrons = RAJ_SEATS.collect do |seat|
             patron = rows.find {|row| row[0].upcase == seat}
-            puts patron.inspect
+            puts "Raj seat #{seat}: #{patron.inspect}"
             next {:table => seat[0]} if !patron
             face_img = patron[3...16].zip(patron[16...29]).find {|img, cat| cat == 'face'}&.first
             if face_img
