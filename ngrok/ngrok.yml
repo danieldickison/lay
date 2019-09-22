@@ -1,0 +1,15 @@
+authtoken: 7iPhUKBzqz122R2gVGnxv_7JA6jTDixhShyJXXNxXnD
+region: us
+tunnels:
+  ssh:
+    addr: 22
+    proto: tcp
+    remote_addr: 1.tcp.ngrok.io:26984
+  web:
+    addr: 8000
+    proto: http
+    subdomain: lookingatyou
+  vnc:
+    addr: 5900
+    proto: tcp
+    remote_addr: 1.tcp.ngrok.io:24770

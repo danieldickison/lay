@@ -1,0 +1,13 @@
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>io.ngrok.onstartup</string>
+
+    <key>Program</key>
+        <string>/opt/ngrok/ngrokd</string>
+
+    <key>KeepAlive</key>
+        <true/>
+</dict>
+</plist>
+

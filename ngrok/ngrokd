@@ -1,0 +1,2 @@
+#!/bin/sh
+/opt/ngrok/ngrok start -config=/opt/ngrok/ngrok.yml --all
