@@ -40,7 +40,7 @@ GEM
     osc-ruby (1.1.2)
     posix-spawn (0.3.13)
     public_suffix (3.1.0)
-    puma (3.12.1)
+    puma (3.12.3)
     rb-readline (0.5.5)
     representable (3.0.4)
       declarative (< 0.1.0)
@@ -63,7 +63,7 @@ DEPENDENCIES
   google_drive
   osc-ruby
   posix-spawn
-  puma (~> 3.7)
+  puma (~> 3.12)
   rb-readline
   sqlite3
 
