@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'sqlite3'
-gem 'puma', '~> 3.7'
+gem 'puma', '~> 3.12'
 
 gem 'google_drive'
 gem 'osc-ruby'
